@@ -1,0 +1,35 @@
+<div class="relative" #dropdownContainer>
+    <button class="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2" (click)="toggleDropdown()">
+        {{ title }}
+        <svg class="w-4 h-4 ml-1" [class.transform]="isOpen" [class.rotate-180]="isOpen" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+
+    <div *ngIf="isOpen" class="absolute top-full left-0 mt-1 w-[800px] bg-white shadow-xl rounded-md p-4 z-50">
+        <div class="grid grid-cols-3 gap-8">
+            <div *ngFor="let section of sections" class="border-r last:border-r-0 pr-6 last:pr-0">
+                <h4 *ngIf="section.title" class="text-sm font-semibold text-gray-500 mb-3">
+                    {{ section.title }}
+                </h4>
+
+                <div [class.grid]="section.columns && section.columns > 1" [class.grid-cols-2]="section.columns === 2"
+                    [class.gap-4]="section.columns && section.columns > 1">
+                    <div *ngFor="let item of section.items" class="mb-2">
+                        <a [href]="item.href || '#'" class="text-gray-700 hover:text-blue-600 block text-sm">
+                            {{ item.label }}
+                        </a>
+
+                        <div *ngIf="item.subItems" class="ml-3 mt-1">
+                            <a *ngFor="let subItem of item.subItems" [href]="subItem.href || '#'"
+                                class="text-gray-500 hover:text-blue-600 block text-sm py-1">
+                                {{ subItem.label }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

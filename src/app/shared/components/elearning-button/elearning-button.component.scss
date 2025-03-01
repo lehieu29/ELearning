@@ -1,0 +1,40 @@
+@import "../../../../assets/styles/color.scss";
+
+:host {
+    .btn {
+        border-radius: 4px;
+        width: 100%;
+        cursor: pointer;
+        &:hover {
+            opacity: 0.89;
+        }
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 0.56;
+    }
+
+    // .btn-primary {
+    //     color: $color-white;
+    //     background-color: $bg-color-primary;
+    // }
+
+    // .btn-secondary {
+    //     color: $color-white;
+    //     background-color: $bg-color-secondary;
+    // }
+
+    // .btn-tertiary {
+    //     color: $color-black1;
+    //     background-color: #fff;
+    // }
+
+    // .btn-quaternary {
+    //     color: 
+    // }
+
+    .btn-quinary {
+
+    }
+}

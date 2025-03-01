@@ -1,0 +1,68 @@
+<!-- advanced-video-player.component.html -->
+<div #videoContainer 
+     class="video-container"
+     (mousemove)="showControlsTemporarily()"
+     [class.fullscreen]="isFullscreen">
+  
+  <video #videoElement class="video-element">
+    <track *ngFor="let track of subtitleTracks; let i = index"
+           [src]="track.src"
+           [label]="track.label"
+           [srclang]="track.lang"
+           kind="subtitles"
+           [default]="i === 0">
+  </video>
+
+  <div class="controls-overlay" [class.visible]="showControls">
+    
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <input type="range" 
+             class="progress-bar" 
+             [value]="currentTime"
+             [max]="duration"
+             (input)="seekTo($event.target.value)">
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="bottom-controls">
+      <div class="left-controls">
+        <button (click)="togglePlay()">
+          {{ isPlaying ? '⏸' : '▶' }}
+        </button>
+        <span class="time-display">
+          {{ currentTime | time }} / {{ duration | time }}
+        </span>
+      </div>
+
+      <div class="right-controls">
+        <div class="settings-menu">
+          <button (click)="showSettingsMenu = showSettingsMenu === 'quality' ? null : 'quality'">
+            Quality
+          </button>
+          <div class="menu" *ngIf="showSettingsMenu === 'quality'">
+            <button *ngFor="let level of qualityLevels" 
+                    (click)="setQuality(level.height)">
+              {{ level.height }}p {{ autoQuality ? '(Auto)' : '' }}
+            </button>
+            <button (click)="setQuality(-1)">Auto</button>
+          </div>
+        </div>
+
+        <button (click)="toggleFullscreen()">
+          {{ isFullscreen ? '⤢' : '⤡' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Subtitle Controls -->
+    <div class="subtitle-menu" *ngIf="showSettingsMenu === 'subtitle'">
+      <button *ngFor="let track of subtitleTracks; let i = index"
+              (click)="setSubtitle(i)">
+        {{ track.label }}
+      </button>
+      <button (click)="setSubtitle(-1)">Off</button>
+    </div>
+
+  </div>
+</div>

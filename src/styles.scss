@@ -1,0 +1,12 @@
+/* You can add global styles to this file, and also import other style files */
+@import "normalize.css";
+
+* {
+    font-family: "Inter", serif;
+    font-optical-sizing: auto;
+    color: #0b0b0b;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

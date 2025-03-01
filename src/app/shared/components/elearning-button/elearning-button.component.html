@@ -1,0 +1,5 @@
+<button [type]="type" [disabled]="disabled" [class]="classBtn" (click)="buttonClick($event)">
+    <span *ngIf="iconStart" class="mr-2" [innerHTML]="iconStart"></span>
+    <ng-content></ng-content>
+    <span *ngIf="iconEnd" class="ml-2" [innerHTML]="iconEnd"></span>
+</button>

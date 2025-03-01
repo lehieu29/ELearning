@@ -1,0 +1,12 @@
+<div class="course-card" *ngFor="let course of courses">
+    <img [src]="course.thumbnail" alt="course thumbnail">
+    <div class="course-info">
+        <h3>{{ course.title }}</h3>
+        <div class="meta">
+            <span>⭐ {{ course.rating }}</span>
+            <span>🕒 {{ course.duration }}</span>
+        </div>
+        <p class="price">{{ course.price | currency }}</p>
+        <button>Enroll Now</button>
+    </div>
+</div>

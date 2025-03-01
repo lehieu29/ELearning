@@ -1,0 +1,14 @@
+@function calculateRem($size) {
+    $remSize: #{$size / 16}rem;
+    @return $remSize;
+}
+
+@mixin font-size($size) {
+    font-size: #{$size}px; //Fallback in px
+    font-size: calculateRem($size);
+}
+
+@mixin line-height($size) {
+    line-height: #{$size}px; //Fallback in px
+    line-height: calculateRem($size);
+}
