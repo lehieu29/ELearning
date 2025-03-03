@@ -1,23 +1,16 @@
-<div class="w-full">
-    <label *ngIf="label" class="block mb-1 text-sm font-medium text-gray-700">
+<div class="textbox-container" [ngClass]="{'has-error': error, 'is-focused': isFocused}">
+    <label [for]="id" class="textbox-label" [ngClass]="{'label-float': value || isFocused}">
         {{ label }}
     </label>
 
+    <div class="input-container">
+        <input [type]="type" [id]="id" [disabled]="disabled" [placeholder]="placeholder" [value]="value"
+            (input)="onInputChange($event)" (focus)="onFocus()" (blur)="onBlur()" class="textbox-input" />
 
-    <div class="relative">
-        <span *ngIf="iconStart" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            {{ iconStart }}
-        </span>
-
-        <input [type]="type" [placeholder]="placeholder" [value]="value" (input)="onChange($event)"
-            (blur)="onTouched()" [class]="classTextBox" />
-
-        <span *ngIf="iconEnd" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-            {{ iconEnd }}
-        </span>
-
+        <div *ngIf="type === 'password'" class="toggle-password" (click)="togglePasswordVisibility()">
+            <i [class]="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
+        </div>
     </div>
 
-    <p *ngIf="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
-
+    <div *ngIf="error" class="error-message">{{ error }}</div>
 </div>

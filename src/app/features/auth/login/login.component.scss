@@ -1,0 +1,217 @@
+@import "../../../../assets/styles/color.scss";
+@import "../../../../assets/styles/mixin.scss";
+
+:host {
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: $light-gray;
+        padding: 20px;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 450px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        padding: 24px 0;
+        border-bottom: 1px solid $medium-gray;
+
+        .logo {
+            height: 35px;
+        }
+    }
+
+    .tab-container {
+        display: flex;
+        border-bottom: 1px solid $medium-gray;
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px;
+            font-weight: 600;
+            color: $dark-gray;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            &.active {
+                color: $primary-color;
+                border-bottom: 3px solid $primary-color;
+            }
+
+            &:hover:not(.active) {
+                background-color: rgba($primary-color, 0.05);
+            }
+        }
+    }
+
+    .form {
+        padding: 24px;
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: $secondary-color;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            color: $error-color;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .forgot-password {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+
+            a {
+                color: $primary-color;
+                text-decoration: none;
+                font-size: 14px;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        .terms-container {
+            margin-bottom: 20px;
+
+            .checkbox-container {
+                display: flex;
+                align-items: flex-start;
+
+                input {
+                    margin-top: 4px;
+                    margin-right: 8px;
+                }
+
+                label {
+                    font-size: 14px;
+                    color: $dark-gray;
+
+                    a {
+                        color: $primary-color;
+                        text-decoration: none;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+        }
+
+        .alternative-signin {
+            margin-top: 24px;
+            text-align: center;
+
+            p {
+                font-size: 14px;
+                color: $dark-gray;
+                margin-bottom: 16px;
+                position: relative;
+
+                &::before,
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    width: 30%;
+                    height: 1px;
+                    background-color: $medium-gray;
+                }
+
+                &::before {
+                    left: 0;
+                }
+
+                &::after {
+                    right: 0;
+                }
+            }
+
+            .social-buttons {
+                display: flex;
+                gap: 12px;
+
+                .social-button {
+                    flex: 1;
+                    padding: 10px;
+                    border-radius: 4px;
+                    border: 1px solid $medium-gray;
+                    background-color: white;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    i {
+                        margin-right: 8px;
+                    }
+
+                    &.google {
+                        color: #db4437;
+
+                        &:hover {
+                            background-color: rgba(#db4437, 0.05);
+                        }
+                    }
+
+                    &.facebook {
+                        color: #4267B2;
+
+                        &:hover {
+                            background-color: rgba(#4267B2, 0.05);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Custom styling for elearning components
+    ::ng-deep {
+        .elearning-textbox {
+            width: 100%;
+        }
+
+        .elearning-button {
+            width: 100%;
+        }
+    }
+
+    // Responsive adjustments
+    @media (max-width: 480px) {
+        .login-card {
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .alternative-signin {
+            .social-buttons {
+                flex-direction: column;
+            }
+        }
+    }
+}

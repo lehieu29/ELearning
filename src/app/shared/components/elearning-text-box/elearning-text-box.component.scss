@@ -1,0 +1,75 @@
+:host {
+    .textbox-container {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .textbox-label {
+        position: absolute;
+        left: 12px;
+        color: #525c65;
+        background-color: white;
+        padding: 0 4px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        pointer-events: none;
+        top: 16px;
+    }
+
+    .label-float {
+        top: -8px;
+        font-size: 12px;
+        color: #02b3e4;
+    }
+
+    .input-container {
+        position: relative;
+    }
+
+    .textbox-input {
+        width: 100%;
+        padding: 16px 12px;
+        font-size: 16px;
+        border: 1px solid #dbe2e8;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .textbox-input:focus {
+        border-color: #02b3e4;
+        outline: none;
+    }
+
+    .is-focused .textbox-label {
+        color: #02b3e4;
+    }
+
+    .has-error .textbox-input {
+        border-color: #ea5252;
+    }
+
+    .has-error .textbox-label {
+        color: #ea5252;
+    }
+
+    .error-message {
+        color: #ea5252;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #525c65;
+    }
+
+    .textbox-input:disabled {
+        background-color: #f3f3f3;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+}

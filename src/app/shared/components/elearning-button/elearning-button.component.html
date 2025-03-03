@@ -1,5 +1,10 @@
-<button [type]="type" [disabled]="disabled" [class]="classBtn" (click)="buttonClick($event)">
-    <span *ngIf="iconStart" class="mr-2" [innerHTML]="iconStart"></span>
-    <ng-content></ng-content>
-    <span *ngIf="iconEnd" class="ml-2" [innerHTML]="iconEnd"></span>
+<button [type]="type" [disabled]="disabled || loading" (click)="onClick($event)"
+    [ngClass]="{'btn-loading': loading, 'btn-primary': variant === 'primary', 'btn-secondary': variant === 'secondary', 'btn-outline': variant === 'outline'}"
+    class="btn">
+    <span *ngIf="loading" class="spinner">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" />
+        </svg>
+    </span>
+    {{ label }}
 </button>
