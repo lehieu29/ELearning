@@ -1,0 +1,145 @@
+<!-- src/app/shared/components/data-table/data-table.component.html -->
+<div class="flex flex-col">
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <div class="inline-block min-w-full align-middle">
+            <div class="overflow-hidden shadow-sm" [ngClass]="{'border border-gray-200 rounded-lg': bordered}">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <!-- Table Header -->
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <!-- Selection Column -->
+                            <th *ngIf="selectable" scope="col" class="w-12 pl-3 py-3 text-left">
+                                <div class="flex items-center">
+                                    <input type="checkbox"
+                                        class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                        [checked]="allSelected" [disabled]="data.length === 0"
+                                        (change)="toggleSelectAll()">
+                                </div>
+                            </th>
+
+                            <!-- Data Columns -->
+                            <th *ngFor="let column of columns" scope="col" [ngStyle]="{'width': column.width}"
+                                class="px-3 py-3 text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                <div class="flex items-center" [ngClass]="{
+                         'justify-start': column.align === 'left' || !column.align,
+                         'justify-center': column.align === 'center',
+                         'justify-end': column.align === 'right',
+                         'cursor-pointer select-none': column.sortable
+                       }" (click)="toggleSort(column)">
+                                    <span>{{ column.label }}</span>
+
+                                    <!-- Sort Indicator -->
+                                    <span *ngIf="column.sortable" class="ml-1">
+                                        <ng-container *ngIf="sortColumn !== column.key">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                            </svg>
+                                        </ng-container>
+                                        <ng-container *ngIf="sortColumn === column.key && sortDirection === 'asc'">
+                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 15l7-7 7 7" />
+                                            </svg>
+                                        </ng-container>
+                                        <ng-container *ngIf="sortColumn === column.key && sortDirection === 'desc'">
+                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </ng-container>
+                                    </span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <!-- Loading State -->
+                        <ng-container *ngIf="loading">
+                            <tr *ngFor="let _ of [].constructor(5)">
+                                <td [attr.colspan]="selectable ? columns.length + 1 : columns.length" class="px-3 py-4">
+                                    <div class="animate-pulse flex space-x-4">
+                                        <div class="flex-1 space-y-4 py-1">
+                                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+
+                        <!-- Empty State -->
+                        <ng-container *ngIf="!loading && data.length === 0">
+                            <tr>
+                                <td [attr.colspan]="selectable ? columns.length + 1 : columns.length"
+                                    class="px-3 py-4 text-center text-sm text-gray-500">
+                                    {{ emptyMessage }}
+                                </td>
+                            </tr>
+                        </ng-container>
+
+                        <!-- Data Rows -->
+                        <ng-container *ngIf="!loading && data.length > 0">
+                            <tr *ngFor="let row of data; let odd = odd" (click)="onRowClick(row)"
+                                [ngClass]="{'bg-gray-50': striped && odd, 'hover:bg-gray-100': hover}"
+                                class="cursor-pointer transition-colors">
+                                <!-- Selection Column -->
+                                <td *ngIf="selectable" class="pl-3 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <input type="checkbox"
+                                            class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                            [checked]="isSelected(row)" (click)="toggleSelectItem(row, $event)">
+                                    </div>
+                                </td>
+
+                                <!-- Data Cells -->
+                                <td *ngFor="let column of columns" class="px-3 py-4 whitespace-nowrap text-sm"
+                                    [ngClass]="{
+                        'text-left': column.align === 'left' || !column.align,
+                        'text-center': column.align === 'center',
+                        'text-right': column.align === 'right',
+                        'text-gray-900': column.type !== 'boolean',
+                        'font-medium': column.type === 'number'
+                      }">
+                                    <!-- Cell Content -->
+                                    <ng-container [ngSwitch]="column.type">
+                                        <span *ngSwitchCase="'boolean'" class="inline-flex">
+                                            <span *ngIf="getNestedProperty(row, column.key)"
+                                                class="h-5 w-5 text-green-500">
+                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </span>
+                                            <span *ngIf="!getNestedProperty(row, column.key)"
+                                                class="h-5 w-5 text-gray-400">
+                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </span>
+                                        </span>
+                                        <span *ngSwitchDefault>{{ getCellValue(row, column) }}</span>
+                                    </ng-container>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="pagination && !loading && data.length > 0"
+        class="py-3 flex items-center justify-between border-t border-gray-200">
+        <app-pagination [totalItems]="totalItems" [itemsPerPage]="pageSize" [currentPage]="currentPage"
+            (pageChanged)="onPageChange($event)">
+        </app-pagination>
+    </div>
+</div>

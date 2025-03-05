@@ -1,0 +1,312 @@
+/* src/app/shared/components/navigation/navigation.component.scss */
+@import "../../../../assets/styles/color.scss";
+@import "../../../../assets/styles/mixin.scss";
+
+:host {
+    .navigation {
+        position: relative;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+    }
+
+    .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        height: 64px;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo-link {
+        margin-right: 24px;
+    }
+
+    .logo {
+        height: 28px;
+    }
+
+    .nav-links {
+        display: flex;
+        align-items: center;
+
+        app-dropdown-menu {
+            margin-right: 20px;
+        }
+    }
+
+    .nav-link {
+        margin-right: 20px;
+        color: $secondary-color;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+
+        &:hover {
+            color: $primary-color;
+        }
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .search-bar {
+        position: relative;
+        margin-right: 16px;
+
+        .search-input {
+            width: 240px;
+            padding: 8px 16px;
+            padding-right: 40px;
+            border: 1px solid $medium-gray;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+
+            &:focus {
+                border-color: $primary-color;
+                outline: none;
+                box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+            }
+        }
+
+        .search-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: $dark-gray;
+            cursor: pointer;
+
+            &:hover {
+                color: $primary-color;
+            }
+        }
+    }
+
+    .auth-links {
+        display: flex;
+        align-items: center;
+
+        .login-btn {
+            margin-right: 16px;
+            color: $primary-color;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+
+            &:hover {
+                color: darken($primary-color, 10%);
+            }
+        }
+
+        .signup-btn {
+            padding: 8px 16px;
+            background-color: $primary-color;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: darken($primary-color, 10%);
+            }
+        }
+    }
+
+    .user-menu {
+        position: relative;
+
+        .user-menu-dropdown {
+            position: relative;
+        }
+
+        .user-button {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: $light-gray;
+            }
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: $primary-color;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .user-name {
+            margin-right: 8px;
+            font-weight: 500;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            margin-top: 8px;
+            display: none;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: -6px;
+                right: 16px;
+                width: 12px;
+                height: 12px;
+                background-color: white;
+                transform: rotate(45deg);
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+                border-left: 1px solid rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .user-menu-dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 8px 16px;
+            color: $secondary-color;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: $light-gray;
+            }
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: $medium-gray;
+            margin: 8px 0;
+        }
+    }
+
+    .mobile-menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: $secondary-color;
+        cursor: pointer;
+    }
+
+    .mobile-menu {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: white;
+        padding: 16px;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 99;
+
+        &.open {
+            transform: translateX(0);
+        }
+    }
+
+    .mobile-nav-section {
+        margin-bottom: 24px;
+    }
+
+    .mobile-nav-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: $secondary-color;
+        margin-bottom: 12px;
+    }
+
+    .mobile-nav-link {
+        display: block;
+        padding: 8px 0;
+        color: $dark-gray;
+        text-decoration: none;
+        font-size: 16px;
+        transition: color 0.3s ease;
+
+        &:hover {
+            color: $primary-color;
+        }
+    }
+
+    .mobile-nav-btn {
+        display: block;
+        padding: 12px 16px;
+        text-align: center;
+        border-radius: 4px;
+        font-weight: 600;
+        text-decoration: none;
+        margin-bottom: 8px;
+
+        &.login {
+            background-color: white;
+            border: 1px solid $primary-color;
+            color: $primary-color;
+        }
+
+        &.signup {
+            background-color: $primary-color;
+            color: white;
+        }
+    }
+
+    .desktop-only {
+        display: flex;
+    }
+
+    @media (max-width: 992px) {
+        .desktop-only {
+            display: none;
+        }
+
+        .mobile-menu-toggle {
+            display: block;
+        }
+
+        .search-bar {
+            width: 100%;
+            margin-bottom: 24px;
+
+            .search-input {
+                width: 100%;
+            }
+        }
+    }
+}

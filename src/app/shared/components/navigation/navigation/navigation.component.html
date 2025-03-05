@@ -1,0 +1,119 @@
+<!-- src/app/shared/components/navigation/navigation.component.html -->
+<nav class="navigation">
+    <!-- Desktop Navigation -->
+    <div class="nav-container">
+        <div class="nav-left">
+            <a href="/" class="logo-link">
+                <img src="assets/images/udacity-logo.svg" alt="Udacity Logo" class="logo">
+            </a>
+
+            <div class="nav-links desktop-only">
+                <app-dropdown-menu title="Programs & Courses" [sections]="coursesDropdown"></app-dropdown-menu>
+                <app-dropdown-menu title="For Enterprise" [sections]="enterpriseDropdown"></app-dropdown-menu>
+                <a href="/career-services" class="nav-link">Career Services</a>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="search-bar desktop-only">
+                <input type="text" placeholder="Search for courses..." class="search-input">
+                <button class="search-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div *ngIf="!isLoggedIn" class="auth-links desktop-only">
+                <a [routerLink]="['/auth/login']" class="login-btn">Log In</a>
+                <a [routerLink]="['/auth/login']" [queryParams]="{tab: 'register'}" class="signup-btn">Sign Up</a>
+            </div>
+
+            <div *ngIf="isLoggedIn" class="user-menu desktop-only">
+                <div class="user-menu-dropdown">
+                    <button class="user-button">
+                        <div class="user-avatar">{{ userFullName.charAt(0) }}</div>
+                        <span class="user-name">{{ userFullName }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+
+                    <div class="dropdown-menu">
+                        <a [routerLink]="['/dashboard']" class="dropdown-item">Dashboard</a>
+                        <a [routerLink]="['/profile']" class="dropdown-item">My Profile</a>
+                        <a [routerLink]="['/profile/settings']" class="dropdown-item">Account Settings</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="javascript:void(0)" (click)="logout()" class="dropdown-item">Log Out</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+                <svg *ngIf="!isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <svg *ngIf="isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-menu" [class.open]="isMobileMenuOpen">
+        <div class="search-bar">
+            <input type="text" placeholder="Search for courses..." class="search-input">
+            <button class="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="mobile-nav-links">
+            <div class="mobile-nav-section">
+                <h3 class="mobile-nav-title">Programs & Courses</h3>
+                <a href="/courses/nanodegree" class="mobile-nav-link">Nanodegree Programs</a>
+                <a href="/courses/executive" class="mobile-nav-link">Executive Programs</a>
+                <a href="/courses/free" class="mobile-nav-link">Free Courses</a>
+            </div>
+
+            <div class="mobile-nav-section">
+                <h3 class="mobile-nav-title">For Enterprise</h3>
+                <a href="/enterprise" class="mobile-nav-link">Udacity for Enterprise</a>
+                <a href="/enterprise/government" class="mobile-nav-link">Government</a>
+                <a href="/enterprise/education" class="mobile-nav-link">Higher Education</a>
+            </div>
+
+            <a href="/career-services" class="mobile-nav-link">Career Services</a>
+
+            <div class="mobile-nav-section" *ngIf="!isLoggedIn">
+                <a [routerLink]="['/auth/login']" class="mobile-nav-btn login">Log In</a>
+                <a [routerLink]="['/auth/login']" [queryParams]="{tab: 'register'}" class="mobile-nav-btn signup">Sign
+                    Up</a>
+            </div>
+
+            <div class="mobile-nav-section" *ngIf="isLoggedIn">
+                <h3 class="mobile-nav-title">My Account</h3>
+                <a [routerLink]="['/dashboard']" class="mobile-nav-link">Dashboard</a>
+                <a [routerLink]="['/profile']" class="mobile-nav-link">My Profile</a>
+                <a [routerLink]="['/profile/settings']" class="mobile-nav-link">Account Settings</a>
+                <a href="javascript:void(0)" (click)="logout()" class="mobile-nav-link">Log Out</a>
+            </div>
+        </div>
+    </div>
+</nav>

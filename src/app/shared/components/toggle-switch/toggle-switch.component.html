@@ -1,0 +1,46 @@
+<div class="flex items-center" [ngClass]="{'flex-row-reverse justify-end': labelPosition === 'left'}">
+    <label *ngIf="label" class="font-medium cursor-pointer select-none" [ngClass]="{
+             'text-gray-700': !disabled,
+             'text-gray-400': disabled,
+             'mr-3': labelPosition === 'left',
+             'ml-3': labelPosition === 'right',
+             'text-sm': size === 'sm',
+             'text-base': size === 'md',
+             'text-lg': size === 'lg'
+           }">
+        {{ label }}
+    </label>
+
+    <button type="button" role="switch" [attr.aria-checked]="checked" [disabled]="disabled"
+        class="relative inline-flex flex-shrink-0 border-2 border-transparent rounded-full transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        [ngClass]="{
+              'bg-gray-200': !checked && !disabled,
+              'bg-blue-500': checked && !disabled && color === 'primary',
+              'bg-green-500': checked && !disabled && color === 'success',
+              'bg-yellow-500': checked && !disabled && color === 'warning',
+              'bg-red-500': checked && !disabled && color === 'danger',
+              'bg-gray-100': disabled,
+              'opacity-60': disabled,
+              'cursor-pointer': !disabled,
+              'cursor-not-allowed': disabled,
+              'h-5 w-10': size === 'sm',
+              'h-6 w-12': size === 'md',
+              'h-7 w-14': size === 'lg'
+            }" (click)="toggle()">
+        <span
+            class="pointer-events-none relative inline-block rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+            [ngClass]="{
+              'translate-x-5': checked && size === 'sm',
+              'translate-x-6': checked && size === 'md',
+              'translate-x-7': checked && size === 'lg',
+              'translate-x-0': !checked,
+              'h-4 w-4': size === 'sm',
+              'h-5 w-5': size === 'md',
+              'h-6 w-6': size === 'lg'
+            }" [ngStyle]="{
+              'top': size === 'sm' ? '2px' : size === 'md' ? '2px' : '2px',
+              'left': size === 'sm' ? '2px' : size === 'md' ? '2px' : '2px'
+            }">
+        </span>
+    </button>
+</div>

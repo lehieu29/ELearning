@@ -1,0 +1,24 @@
+<div class="bg-white rounded-lg overflow-hidden transition-all duration-300" [ngClass]="{
+       'border border-gray-200': bordered,
+       'shadow-none': shadow === 'none',
+       'shadow-sm': shadow === 'sm',
+       'shadow-md': shadow === 'md',
+       'shadow-lg': shadow === 'lg',
+       'hover:shadow-lg transform hover:-translate-y-1': hover,
+       'cursor-pointer': clickable
+     }">
+    <img *ngIf="headerImg" [src]="headerImg" alt="Card header" class="w-full h-48 object-cover">
+
+    <div *ngIf="title || subtitle" class="px-6 py-4 border-b border-gray-200">
+        <h3 *ngIf="title" class="text-lg font-semibold text-gray-800">{{ title }}</h3>
+        <p *ngIf="subtitle" class="text-sm text-gray-600 mt-1">{{ subtitle }}</p>
+    </div>
+
+    <div class="px-6 py-4">
+        <ng-content></ng-content>
+    </div>
+
+    <div class="px-6 py-4 border-t border-gray-200">
+        <ng-content select="[card-footer]"></ng-content>
+    </div>
+</div>

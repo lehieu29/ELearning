@@ -1,0 +1,52 @@
+<!-- src/app/shared/components/file-viewer/file-viewer.component.html -->
+<div class="border border-gray-200 rounded-lg overflow-hidden w-full flex flex-col">
+    <!-- Header with file name -->
+    <div class="bg-gray-50 py-2 px-4 border-b border-gray-200 flex items-center">
+        <i class="fas mr-2" [ngClass]="getFileIcon()"></i>
+        <span class="font-medium truncate">{{ fileName || 'Untitled' }}</span>
+    </div>
+
+    <!-- Content area -->
+    <div class="flex-1 overflow-auto bg-gray-100" [ngStyle]="{'height': height}">
+        <!-- Image viewer -->
+        <img *ngIf="detectedType === 'image' && safeUrl" [src]="fileUrl" [alt]="fileName"
+            class="max-w-full h-auto mx-auto">
+
+        <!-- PDF viewer -->
+        <iframe *ngIf="detectedType === 'pdf' && safeUrl" [src]="safeUrl" class="w-full h-full"
+            frameborder="0"></iframe>
+
+        <!-- Video player -->
+        <video *ngIf="detectedType === 'video'" controls class="w-full h-full">
+            <source [src]="fileUrl" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <!-- Audio player -->
+        <div *ngIf="detectedType === 'audio'" class="flex items-center justify-center h-full">
+            <audio controls [src]="fileUrl">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <!-- Fallback for unsupported files -->
+        <div *ngIf="detectedType === 'other' || 
+                  detectedType === 'office' || 
+                  detectedType === 'text' || 
+                  detectedType === 'code'" class="flex flex-col items-center justify-center h-full p-4 text-center">
+            <div class="text-gray-400 text-6xl mb-4">
+                <i class="fas" [ngClass]="getFileIcon()"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-700">{{ fileName || 'Untitled file' }}</h3>
+            <p class="text-gray-500 mt-2">This file type cannot be previewed directly</p>
+            <a [href]="fileUrl" download
+                class="mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download File
+            </a>
+        </div>
+    </div>
+</div>

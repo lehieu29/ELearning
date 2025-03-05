@@ -1,68 +1,210 @@
-<!-- advanced-video-player.component.html -->
-<div #videoContainer 
-     class="video-container"
-     (mousemove)="showControlsTemporarily()"
-     [class.fullscreen]="isFullscreen">
-  
-  <video #videoElement class="video-element">
-    <track *ngFor="let track of subtitleTracks; let i = index"
-           [src]="track.src"
-           [label]="track.label"
-           [srclang]="track.lang"
-           kind="subtitles"
-           [default]="i === 0">
+<!-- src/app/shared/components/video-player/video-player.component.html -->
+<div #videoContainer class="relative overflow-hidden bg-black w-full h-full"
+  [class.cursor-none]="isPlaying && !showControls" (mousemove)="showControlsTemporarily()"
+  (click)="activeSettingsMenu = null">
+
+  <!-- Video Element -->
+  <video #videoElement class="w-full h-full" [poster]="poster" [muted]="muted" [loop]="loop" preload="auto"
+    (click)="togglePlay()">
+
+    <!-- Subtitles -->
+    <track *ngFor="let subtitle of subtitles; let i = index" [src]="subtitle.src" [label]="subtitle.label"
+      [srclang]="subtitle.srclang" [default]="subtitle.default" kind="subtitles">
+
+    Your browser does not support the video tag.
   </video>
 
-  <div class="controls-overlay" [class.visible]="showControls">
-    
+  <!-- Video Title Overlay -->
+  <div *ngIf="title && showControls"
+    class="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent">
+    <h2 class="text-white text-lg font-medium">{{ title }}</h2>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="absolute inset-0 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
+  </div>
+
+  <!-- Big Play Button (Center) -->
+  <div *ngIf="!isPlaying && showControls" class="absolute inset-0 flex items-center justify-center"
+    (click)="play(); $event.stopPropagation()">
+    <button
+      class="bg-blue-500/80 hover:bg-blue-600/80 text-white rounded-full p-5 transition-all transform hover:scale-110">
+      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Controls Overlay -->
+  <div *ngIf="showControls"
+    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3 flex flex-col transition-opacity"
+    [class.opacity-0]="isPlaying && !showControls" (click)="$event.stopPropagation()">
+
     <!-- Progress Bar -->
-    <div class="progress-container">
-      <input type="range" 
-             class="progress-bar" 
-             [value]="currentTime"
-             [max]="duration"
-             (input)="seekTo($event.target.value)">
+    <div class="relative w-full h-1 bg-gray-600 cursor-pointer mb-3 group" (click)="onProgressBarClick($event)">
+      <!-- Buffered -->
+      <div class="absolute top-0 left-0 h-full bg-gray-400" [style.width.%]="bufferedPercent"></div>
+
+      <!-- Progress -->
+      <div class="absolute top-0 left-0 h-full bg-blue-500" [style.width.%]="(currentTime / duration) * 100 || 0"></div>
+
+      <!-- Scrubber -->
+      <div
+        class="absolute top-0 h-3 w-3 -ml-1.5 -mt-1 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+        [style.left.%]="(currentTime / duration) * 100 || 0"></div>
     </div>
 
-    <!-- Bottom Controls -->
-    <div class="bottom-controls">
-      <div class="left-controls">
-        <button (click)="togglePlay()">
-          {{ isPlaying ? '⏸' : '▶' }}
+    <div class="flex items-center justify-between text-white">
+      <!-- Left Controls -->
+      <div class="flex items-center space-x-4">
+        <!-- Play/Pause -->
+        <button class="focus:outline-none" (click)="togglePlay()">
+          <svg *ngIf="!isPlaying" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <svg *ngIf="isPlaying" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </button>
-        <span class="time-display">
-          {{ currentTime | time }} / {{ duration | time }}
-        </span>
-      </div>
 
-      <div class="right-controls">
-        <div class="settings-menu">
-          <button (click)="showSettingsMenu = showSettingsMenu === 'quality' ? null : 'quality'">
-            Quality
+        <!-- Volume -->
+        <div class="flex items-center space-x-2 relative group">
+          <button class="focus:outline-none" (click)="toggleMute()">
+            <svg *ngIf="isMuted || volume === 0" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                clip-rule="evenodd" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+            <svg *ngIf="!isMuted && volume > 0 && volume < 0.5" class="w-6 h-6" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                clip-rule="evenodd" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072" />
+            </svg>
+            <svg *ngIf="!isMuted && volume >= 0.5" class="w-6 h-6" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                clip-rule="evenodd" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.07 9.93a5 5 0 010 4.14" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.07 8.07a8 8 0 010 7.86" />
+            </svg>
           </button>
-          <div class="menu" *ngIf="showSettingsMenu === 'quality'">
-            <button *ngFor="let level of qualityLevels" 
-                    (click)="setQuality(level.height)">
-              {{ level.height }}p {{ autoQuality ? '(Auto)' : '' }}
-            </button>
-            <button (click)="setQuality(-1)">Auto</button>
+
+          <!-- Volume Slider (visible on hover) -->
+          <div class="hidden group-hover:block absolute bottom-full left-0 mb-2 pb-2">
+            <div class="bg-gray-800 rounded p-2">
+              <input type="range" class="appearance-none w-24 h-1 bg-gray-600 rounded-lg outline-none" min="0" max="1"
+                step="0.05" [value]="isMuted ? 0 : volume" (input)="setVolume(+$event.target.value)">
+            </div>
           </div>
         </div>
 
-        <button (click)="toggleFullscreen()">
-          {{ isFullscreen ? '⤢' : '⤡' }}
+        <!-- Time Display -->
+        <div class="text-sm">
+          <span>{{ formatTime(currentTime) }}</span>
+          <span> / </span>
+          <span>{{ formatTime(duration) }}</span>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center space-x-4">
+        <!-- Playback Speed -->
+        <div class="relative">
+          <button class="text-sm font-medium focus:outline-none"
+            (click)="toggleSettingsMenu('playbackRate'); $event.stopPropagation()">
+            {{ currentPlaybackRate }}x
+          </button>
+
+          <!-- Playback Speed Menu -->
+          <div *ngIf="activeSettingsMenu === 'playbackRate'"
+            class="absolute bottom-full right-0 mb-2 bg-gray-800 rounded shadow-lg z-10">
+            <div class="py-1 w-24">
+              <button *ngFor="let rate of playbackRates"
+                class="block w-full px-4 py-1 text-left text-sm hover:bg-gray-700"
+                [class.text-blue-500]="rate === currentPlaybackRate" (click)="setPlaybackRate(rate)">
+                {{ rate }}x
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quality Settings -->
+        <div *ngIf="qualityLevels.length > 0" class="relative">
+          <button class="focus:outline-none" (click)="toggleSettingsMenu('quality'); $event.stopPropagation()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+
+          <!-- Quality Menu -->
+          <div *ngIf="activeSettingsMenu === 'quality'"
+            class="absolute bottom-full right-0 mb-2 bg-gray-800 rounded shadow-lg z-10">
+            <div class="py-1 w-32">
+              <button *ngFor="let quality of qualityLevels; let i = index"
+                class="block w-full px-4 py-1 text-left text-sm hover:bg-gray-700"
+                [class.text-blue-500]="currentQuality === i" (click)="setQuality(i)">
+                {{ quality.label }}
+              </button>
+              <button class="block w-full px-4 py-1 text-left text-sm hover:bg-gray-700"
+                [class.text-blue-500]="currentQuality === -1" (click)="setQuality(-1)">
+                Auto
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtitles -->
+        <div *ngIf="subtitles.length > 0" class="relative">
+          <button class="focus:outline-none" (click)="toggleSettingsMenu('subtitles'); $event.stopPropagation()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+          </button>
+
+          <!-- Subtitles Menu -->
+          <div *ngIf="activeSettingsMenu === 'subtitles'"
+            class="absolute bottom-full right-0 mb-2 bg-gray-800 rounded shadow-lg z-10">
+            <div class="py-1 w-36">
+              <button *ngFor="let subtitle of subtitles; let i = index"
+                class="block w-full px-4 py-1 text-left text-sm hover:bg-gray-700"
+                [class.text-blue-500]="currentSubtitle === i" (click)="setSubtitle(i)">
+                {{ subtitle.label }}
+              </button>
+              <button class="block w-full px-4 py-1 text-left text-sm hover:bg-gray-700"
+                [class.text-blue-500]="currentSubtitle === -1" (click)="setSubtitle(-1)">
+                Off
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fullscreen Toggle -->
+        <button class="focus:outline-none" (click)="toggleFullscreen()">
+          <svg *ngIf="!isFullscreen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+          </svg>
+          <svg *ngIf="isFullscreen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
     </div>
-
-    <!-- Subtitle Controls -->
-    <div class="subtitle-menu" *ngIf="showSettingsMenu === 'subtitle'">
-      <button *ngFor="let track of subtitleTracks; let i = index"
-              (click)="setSubtitle(i)">
-        {{ track.label }}
-      </button>
-      <button (click)="setSubtitle(-1)">Off</button>
-    </div>
-
   </div>
 </div>

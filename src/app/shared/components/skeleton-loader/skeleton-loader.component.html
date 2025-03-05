@@ -1,0 +1,81 @@
+<!-- src/app/shared/components/skeleton-loader/skeleton-loader.component.html -->
+<div class="space-y-3">
+    <ng-container *ngIf="type !== 'list' && type !== 'table'">
+        <div *ngFor="let item of [].constructor(count)" class="bg-gray-200 animate-pulse" [ngClass]="[
+          roundedClass,
+          heightClass,
+          animation === 'pulse' ? 'animate-pulse' : '',
+          animation === 'wave' ? 'animate-shimmer' : ''
+        ]" [ngStyle]="{
+          'width': width,
+          'height': height || 'auto'
+        }">
+        </div>
+    </ng-container>
+
+    <!-- Card Skeleton -->
+    <ng-container *ngIf="type === 'card'">
+        <div *ngFor="let item of [].constructor(count)"
+            class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <!-- Image -->
+            <div class="w-full h-40 bg-gray-200 animate-pulse"></div>
+
+            <!-- Content -->
+            <div class="p-4 space-y-3">
+                <div class="h-5 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                <div class="h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-4 bg-gray-200 rounded animate-pulse w-4/5"></div>
+                <div class="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+                <div class="flex justify-between">
+                    <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div class="h-8 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- List Skeleton -->
+    <ng-container *ngIf="type === 'list'">
+        <div *ngFor="let item of [].constructor(count)"
+            class="flex items-center space-x-4 p-3 border-b border-gray-200 last:border-0">
+            <!-- Avatar or icon -->
+            <div class="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+
+            <!-- Content -->
+            <div class="flex-1 space-y-2">
+                <div class="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+                <div class="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            </div>
+
+            <!-- Action or status -->
+            <div class="w-14 h-6 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+    </ng-container>
+
+    <!-- Table Skeleton -->
+    <ng-container *ngIf="type === 'table'">
+        <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gray-50 py-3 px-4 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-1/12 mr-8"></div>
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-2/12 mr-8"></div>
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-3/12 mr-8"></div>
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-2/12"></div>
+                </div>
+            </div>
+
+            <!-- Rows -->
+            <div *ngFor="let item of [].constructor(count)" class="border-b border-gray-200 last:border-0">
+                <div class="py-3 px-4">
+                    <div class="flex items-center">
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-1/12 mr-8"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-2/12 mr-8"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-3/12 mr-8"></div>
+                        <div class="h-4 bg-gray-200 rounded animate-pulse w-2/12"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>

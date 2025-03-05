@@ -1,0 +1,74 @@
+<!-- src/app/shared/components/image-gallery/image-gallery.component.html -->
+<div class="w-full" (keydown)="onKeydown($event)">
+    <!-- Grid Gallery -->
+    <div class="grid gap-4" [ngClass]="{
+           'grid-cols-1': columns === 1,
+           'grid-cols-1 md:grid-cols-2': columns === 2,
+           'grid-cols-1 md:grid-cols-2 lg:grid-cols-3': columns === 3,
+           'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4': columns === 4
+         }">
+        <div *ngFor="let image of images" class="relative overflow-hidden rounded-lg group cursor-pointer"
+            (click)="openLightbox(image)">
+            <img [src]="image.src" [alt]="image.alt || ''"
+                class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110">
+
+            <div *ngIf="image.caption && showCaption"
+                class="absolute bottom-0 left-0 right-0 p-2 bg-black bg-opacity-50 text-white text-sm">
+                {{ image.caption }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div *ngIf="lightboxOpen" class="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4"
+        (click)="closeLightbox()">
+        <div class="relative max-w-4xl max-h-full" (click)="$event.stopPropagation()">
+            <!-- Image -->
+            <img *ngIf="selectedImage" [src]="selectedImage.src" [alt]="selectedImage.alt || ''"
+                class="max-w-full max-h-[80vh] object-contain">
+
+            <!-- Caption -->
+            <div *ngIf="selectedImage?.caption && showCaption"
+                class="absolute bottom-0 left-0 right-0 p-3 bg-black bg-opacity-50 text-white text-center">
+                {{ selectedImage.caption }}
+            </div>
+
+            <!-- Navigation Buttons -->
+            <button
+                class="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-white bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-70"
+                (click)="prevImage()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+
+            <button
+                class="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-white bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-70"
+                (click)="nextImage()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+
+            <!-- Close Button -->
+            <button
+                class="absolute top-0 right-0 p-2 text-white bg-black bg-opacity-50 rounded-bl-lg hover:bg-opacity-70"
+                (click)="closeLightbox()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <!-- Thumbnails -->
+            <div *ngIf="showThumbnails && images.length > 1" class="flex justify-center mt-4 space-x-2 overflow-x-auto">
+                <button *ngFor="let thumb of images" class="w-16 h-16 overflow-hidden rounded transition-opacity"
+                    [ngClass]="{'ring-2 ring-blue-500': selectedImage?.id === thumb.id, 'opacity-60 hover:opacity-100': selectedImage?.id !== thumb.id}"
+                    (click)="selectImage(thumb)">
+                    <img [src]="thumb.thumbnail || thumb.src" [alt]="thumb.alt || ''"
+                        class="w-full h-full object-cover">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

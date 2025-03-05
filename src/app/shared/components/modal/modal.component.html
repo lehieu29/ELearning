@@ -1,0 +1,23 @@
+<div *ngIf="isOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 animate-fade-in"
+    (click)="closeModal()">
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] animate-slide-in"
+        [ngClass]="{'w-[400px]': size === 'sm', 'w-[600px]': size === 'md', 'w-[800px]': size === 'lg', 'w-[90vw] h-[90vh]': size === 'full'}"
+        (click)="stopPropagation($event)">
+
+        <div class="flex justify-between items-center p-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">{{ title }}</h2>
+            <button *ngIf="showCloseButton" class="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors"
+                (click)="closeModal()" aria-label="Close">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto" [ngClass]="{'max-h-[calc(90vh-80px)]': size === 'full'}">
+            <ng-content></ng-content>
+        </div>
+    </div>
+</div>

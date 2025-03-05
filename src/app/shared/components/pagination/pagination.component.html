@@ -1,0 +1,19 @@
+<!-- src/app/shared/components/pagination/pagination.component.html -->
+<div class="flex items-center justify-center my-6 select-none" *ngIf="totalPages > 1">
+    <elearning-button type="button" variant="outline" [disabled]="currentPage === 1" (btnClick)="previousPage()"
+        label="&laquo;">
+    </elearning-button>
+
+    <div class="flex items-center mx-2">
+        <ng-container *ngFor="let page of pages">
+            <elearning-button *ngIf="page !== -1" type="button" [variant]="page === currentPage ? 'primary' : 'outline'"
+                (btnClick)="changePage(page)" [label]="page.toString()">
+            </elearning-button>
+            <span *ngIf="page === -1" class="px-3">...</span>
+        </ng-container>
+    </div>
+
+    <elearning-button type="button" variant="outline" [disabled]="currentPage === totalPages" (btnClick)="nextPage()"
+        label="&raquo;">
+    </elearning-button>
+</div>

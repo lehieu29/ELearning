@@ -2,11 +2,10 @@ import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 let nextId = 0;
+
 @Component({
   selector: 'elearning-textbox',
-  standalone: false,
   templateUrl: './elearning-text-box.component.html',
-  styleUrl: './elearning-text-box.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -22,6 +21,9 @@ export class ElearningTextBoxComponent implements ControlValueAccessor, OnInit {
   @Input() placeholder: string = '';
   @Input() disabled: boolean = false;
   @Input() error: string = '';
+  @Input() helperText: string = '';
+  @Input() required: boolean = false;
+  @Input() autocomplete: string = 'off';
 
   value: string = '';
   isFocused: boolean = false;

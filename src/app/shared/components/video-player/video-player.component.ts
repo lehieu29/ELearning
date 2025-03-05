@@ -1,229 +1,403 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+// src/app/shared/components/video-player/video-player.component.ts
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
+import { BaseComponent } from '../base/base-component';
 import Hls from 'hls.js';
+
+export interface Subtitle {
+  src: string;
+  label: string;
+  srclang: string;
+  default?: boolean;
+}
+
+export interface PlaybackQuality {
+  label: string;
+  height: number;
+  bitrate: number;
+}
 
 @Component({
   selector: 'app-video-player',
-  standalone: false,
-  templateUrl: './video-player.component.html',
-  styleUrl: './video-player.component.scss'
+  templateUrl: './video-player.component.html'
 })
-export class VideoPlayerComponent implements AfterViewInit, OnDestroy, OnInit, OnChanges {
+export class VideoPlayerComponent extends BaseComponent implements AfterViewInit, OnDestroy, OnChanges {
   @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
   @ViewChild('videoContainer') videoContainer!: ElementRef<HTMLDivElement>;
+  
   @Input() src!: string;
-  @Input() subtitleTracks: { src: string; label: string; lang: string }[] = [];
-
-  hls!: Hls;
-  currentTime = 0;
-  duration = 0;
-  isPlaying = false;
-  isMuted = false;
-  volume = 1;
-  playbackRate = 1;
-  isFullscreen = false;
-  showControls = false;
-  qualityLevels = [];
-  currentQuality = -1;
-  currentSubtitle = -1;
-  autoQuality = true;
-  showSettingsMenu: 'quality' | 'speed' | 'subtitle' | null = null;
-
-  private controlsTimeout: any;
-  private readonly keyboardShortcuts: { [key: string]: () => void } = {
-    'ArrowRight': () => this.seek(15),
-    'ArrowLeft': () => this.seek(-15),
-    'ArrowUp': () => this.adjustVolume(0.05),
-    'ArrowDown': () => this.adjustVolume(-0.05),
-    ' ': this.togglePlay.bind(this),
-    'k': this.togglePlay.bind(this),
-    'K': this.togglePlay.bind(this),
-    'f': this.toggleFullscreen.bind(this),
-    'F': this.toggleFullscreen.bind(this),
-    'm': this.toggleMute.bind(this),
-    'M': this.toggleMute.bind(this)
-  };
-
-  constructor(private sanitizer: DomSanitizer) {}
-
-  ngOnInit() {
-    this.setupHls();
+  @Input() poster?: string;
+  @Input() autoplay: boolean = false;
+  @Input() muted: boolean = false;
+  @Input() loop: boolean = false;
+  @Input() subtitles: Subtitle[] = [];
+  @Input() title?: string;
+  @Input() startTime: number = 0;
+  
+  // Player state
+  hls: Hls | null = null;
+  isPlaying: boolean = false;
+  isMuted: boolean = false;
+  volume: number = 1;
+  currentTime: number = 0;
+  duration: number = 0;
+  bufferedPercent: number = 0;
+  isFullscreen: boolean = false;
+  showControls: boolean = true;
+  isLoading: boolean = true;
+  
+  // Quality settings
+  qualityLevels: PlaybackQuality[] = [];
+  currentQuality: number = -1; // -1 means auto
+  
+  // Subtitle settings
+  currentSubtitle: number = -1; // -1 means off
+  
+  // Playback settings
+  playbackRates: number[] = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  currentPlaybackRate: number = 1;
+  
+  // UI controls
+  activeSettingsMenu: 'quality' | 'playbackRate' | 'subtitles' | null = null;
+  controlsTimeout: any;
+  
+  ngAfterViewInit(): void {
+    const video = this.videoElement.nativeElement;
+    this.isMuted = this.muted;
+    video.muted = this.muted;
+    
+    this.initPlayer();
+    this.addEventListeners();
+    
+    document.addEventListener('fullscreenchange', this.fullscreenChangeHandler);
   }
-
-  ngAfterViewInit() {
-    this.setupEventListeners();
-    this.setupHlsQualitySwitching();
-
-    document.addEventListener('fullscreenchange', this.fullscreenListener);
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['src']) {
-      this.reinitializePlayer();
+  
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['src'] && !changes['src'].firstChange) {
+      this.resetPlayer();
+      this.initPlayer();
     }
   }
-
-  private setupHls() {
-    if (Hls.isSupported()) {
-      this.hls = new Hls({
-        enableWorker: true,
-        autoStartLoad: true,
-        capLevelToPlayerSize: true,
-        abrEwmaDefaultEstimate: 1e6 // Initial bandwidth estimate
-      });
-
-      this.hls.attachMedia(this.videoElement.nativeElement);
-      this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-        this.hls.loadSource(this.src);
-      });
-
-      this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-        this.qualityLevels = data.levels;
-        this.updateQualityMenu();
-      });
-
-      this.hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-        this.currentQuality = data.level;
-      });
+  
+  private initPlayer(): void {
+    if (!this.src) return;
+    
+    const video = this.videoElement.nativeElement;
+    
+    // Reset player state
+    this.isPlaying = false;
+    this.currentTime = 0;
+    this.duration = 0;
+    this.isLoading = true;
+    this.currentQuality = -1;
+    
+    // Check if HLS format
+    if (this.src.includes('.m3u8')) {
+      if (Hls.isSupported()) {
+        this.setupHls();
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari)
+        video.src = this.src;
+      }
+    } else {
+      // Regular video
+      video.src = this.src;
+    }
+    
+    if (this.startTime > 0) {
+      video.currentTime = this.startTime;
+    }
+    
+    if (this.autoplay) {
+      this.play();
     }
   }
-
-  private setupHlsQualitySwitching() {
-    this.hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
-      const bandwidth = this.hls.bandwidthEstimate;
-      this.autoAdjustQuality(bandwidth);
+  
+  private setupHls(): void {
+    if (this.hls) {
+      this.hls.destroy();
+    }
+    
+    const video = this.videoElement.nativeElement;
+    
+    this.hls = new Hls({
+      enableWorker: true,
+      autoStartLoad: true,
+      capLevelToPlayerSize: true,
+      abrEwmaDefaultEstimate: 1e6 // Initial bandwidth estimate
+    });
+    
+    this.hls.attachMedia(video);
+    
+    this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+      this.hls?.loadSource(this.src);
+    });
+    
+    this.hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+      this.qualityLevels = data.levels.map(level => ({
+        label: `${level.height}p`,
+        height: level.height,
+        bitrate: level.bitrate
+      }));
+      
+      // Sort quality levels from highest to lowest
+      this.qualityLevels.sort((a, b) => b.height - a.height);
+      
+      // Set auto quality by default
+      this.hls!.startLevel = -1;
+      
+      if (this.autoplay) {
+        this.play();
+      }
+    });
+    
+    this.hls.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            // Try to recover network error
+            console.log('Fatal network error encountered, try to recover');
+            this.hls?.startLoad();
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            console.log('Fatal media error encountered, try to recover');
+            this.hls?.recoverMediaError();
+            break;
+          default:
+            // Cannot recover
+            this.hls?.destroy();
+            break;
+        }
+      }
     });
   }
-
-  private autoAdjustQuality(bandwidth: number) {
-    if (!this.autoQuality) return;
-
-    const levels = this.qualityLevels
-      .filter(level => level.bitrate <= bandwidth)
-      .sort((a, b) => b.bitrate - a.bitrate);
-
-    if (levels.length > 0) {
-      this.hls.nextLevel = levels[0].height;
-    }
-  }
-
-  private setupEventListeners() {
+  
+  private addEventListeners(): void {
     const video = this.videoElement.nativeElement;
+    
+    video.addEventListener('play', () => {
+      this.isPlaying = true;
+    });
+    
+    video.addEventListener('pause', () => {
+      this.isPlaying = false;
+    });
     
     video.addEventListener('timeupdate', () => {
       this.currentTime = video.currentTime;
+    });
+    
+    video.addEventListener('durationchange', () => {
       this.duration = video.duration;
     });
-
-    video.addEventListener('play', () => this.isPlaying = true);
-    video.addEventListener('pause', () => this.isPlaying = false);
+    
     video.addEventListener('volumechange', () => {
       this.isMuted = video.muted;
       this.volume = video.volume;
     });
-  }
-
-  togglePlay() {
-    if (this.isPlaying) {
-      this.videoElement.nativeElement.pause();
-    } else {
-      this.videoElement.nativeElement.play();
-    }
-  }
-
-  seek(seconds: number) {
-    this.videoElement.nativeElement.currentTime += seconds;
-  }
-
-  adjustVolume(change: number) {
-    const newVolume = Math.min(Math.max(this.volume + change, 0), 1);
-    this.setVolume(newVolume);
-  }
-
-  toggleMute() {
-    this.videoElement.nativeElement.muted = !this.isMuted;
-  }
-
-  setVolume(volume: number) {
-    this.videoElement.nativeElement.volume = volume;
-    this.videoElement.nativeElement.muted = false;
-  }
-
-  setPlaybackSpeed(speed: number) {
-    this.videoElement.nativeElement.playbackRate = speed;
-    this.playbackRate = speed;
-  }
-
-  toggleFullscreen() {
-    if (!this.isFullscreen) {
-      const elem = this.videoContainer.nativeElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
+    
+    video.addEventListener('loadstart', () => {
+      this.isLoading = true;
+    });
+    
+    video.addEventListener('canplay', () => {
+      this.isLoading = false;
+    });
+    
+    video.addEventListener('waiting', () => {
+      this.isLoading = true;
+    });
+    
+    video.addEventListener('progress', () => {
+      if (video.buffered.length > 0) {
+        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+        this.bufferedPercent = (bufferedEnd / video.duration) * 100;
       }
-    } else {
-      document.exitFullscreen();
-    }
-    // Không cần set isFullscreen ở đây vì sẽ được handle bởi fullscreenListener
-    // this.isFullscreen = !this.isFullscreen;
+    });
+    
+    video.addEventListener('ratechange', () => {
+      this.currentPlaybackRate = video.playbackRate;
+    });
   }
-
-  setQuality(level: number) {
-    this.autoQuality = level === -1;
-    if (level === -1) {
-      this.hls.nextLevel = -1;
-    } else {
-      this.hls.nextLevel = level;
+  
+  // Media controls
+  play(): void {
+    const video = this.videoElement.nativeElement;
+    if (video.paused) {
+      video.play().catch((error) => {
+        console.error('Error attempting to play:', error);
+      });
     }
-    this.showSettingsMenu = null;
   }
-
-  setSubtitle(index: number) {
+  
+  pause(): void {
+    const video = this.videoElement.nativeElement;
+    if (!video.paused) {
+      video.pause();
+    }
+  }
+  
+  togglePlay(): void {
+    if (this.isPlaying) {
+      this.pause();
+    } else {
+      this.play();
+    }
+  }
+  
+  seek(time: number): void {
+    const video = this.videoElement.nativeElement;
+    video.currentTime = time;
+  }
+  
+  setVolume(value: number): void {
+    const video = this.videoElement.nativeElement;
+    video.volume = Math.max(0, Math.min(1, value));
+    if (value > 0 && video.muted) {
+      video.muted = false;
+    }
+  }
+  
+  toggleMute(): void {
+    const video = this.videoElement.nativeElement;
+    video.muted = !video.muted;
+  }
+  
+  setPlaybackRate(rate: number): void {
+    const video = this.videoElement.nativeElement;
+    video.playbackRate = rate;
+    this.activeSettingsMenu = null;
+  }
+  
+  setQuality(index: number): void {
+    if (!this.hls) return;
+    
+    this.currentQuality = index;
+    this.hls.currentLevel = index;
+    this.activeSettingsMenu = null;
+  }
+  
+  setSubtitle(index: number): void {
     this.currentSubtitle = index;
     const tracks = this.videoElement.nativeElement.textTracks;
+    
     for (let i = 0; i < tracks.length; i++) {
       tracks[i].mode = i === index ? 'showing' : 'hidden';
     }
-    this.showSettingsMenu = null;
+    
+    this.activeSettingsMenu = null;
   }
-
-  @HostListener('document:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    if (this.showControls) {
-      const action = this.keyboardShortcuts[event.key];
-      if (action) {
-        action();
-        event.preventDefault();
+  
+  // UI controls
+  toggleFullscreen(): void {
+    const container = this.videoContainer.nativeElement;
+    
+    if (!this.isFullscreen) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
       }
     }
   }
-
-  showControlsTemporarily() {
+  
+  onProgressBarClick(event: MouseEvent): void {
+    const progressBar = event.currentTarget as HTMLElement;
+    const rect = progressBar.getBoundingClientRect();
+    const position = (event.clientX - rect.left) / rect.width;
+    this.seek(position * this.duration);
+  }
+  
+  toggleSettingsMenu(menu: 'quality' | 'playbackRate' | 'subtitles'): void {
+    this.activeSettingsMenu = this.activeSettingsMenu === menu ? null : menu;
+  }
+  
+  showControlsTemporarily(): void {
     this.showControls = true;
     clearTimeout(this.controlsTimeout);
-    this.controlsTimeout = setTimeout(() => {
-      this.showControls = false;
-    }, 3000);
-  }
-
-  private updateQualityMenu() {
-    this.qualityLevels = this.qualityLevels.sort((a, b) => b.height - a.height);
-  }
-
-  private reinitializePlayer() {
-    if (this.hls) {
-      this.hls.destroy();
+    
+    if (this.isPlaying) {
+      this.controlsTimeout = setTimeout(() => {
+        this.showControls = false;
+      }, 3000);
     }
-    this.setupHls();
   }
-
-  fullscreenListener = () => {
-    this.isFullscreen = !!document.fullscreenElement;
+  
+  // Format time display (e.g., 1:23:45)
+  formatTime(seconds: number): string {
+    if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+    
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    
+    return h > 0
+      ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+      : `${m}:${s.toString().padStart(2, '0')}`;
+  }
+  
+  // Event handlers
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    // Only handle keyboard shortcuts when player is in focus
+    if (!this.videoContainer.nativeElement.contains(document.activeElement)) {
+      return;
+    }
+    
+    switch (event.code) {
+      case 'Space':
+        this.togglePlay();
+        event.preventDefault();
+        break;
+      case 'ArrowLeft':
+        this.seek(Math.max(0, this.currentTime - 10));
+        event.preventDefault();
+        break;
+      case 'ArrowRight':
+        this.seek(Math.min(this.duration, this.currentTime + 10));
+        event.preventDefault();
+        break;
+      case 'ArrowUp':
+        this.setVolume(Math.min(1, this.volume + 0.1));
+        event.preventDefault();
+        break;
+      case 'ArrowDown':
+        this.setVolume(Math.max(0, this.volume - 0.1));
+        event.preventDefault();
+        break;
+      case 'KeyM':
+        this.toggleMute();
+        event.preventDefault();
+        break;
+      case 'KeyF':
+        this.toggleFullscreen();
+        event.preventDefault();
+        break;
+    }
+  }
+  
+  fullscreenChangeHandler = (): void => {
+    this.isFullscreen = document.fullscreenElement === this.videoContainer.nativeElement;
   };
-
-  ngOnDestroy() {
+  
+  // Reset and cleanup
+  resetPlayer(): void {
     if (this.hls) {
       this.hls.destroy();
+      this.hls = null;
     }
-    document.removeEventListener('fullscreenchange', this.fullscreenListener);
+    
+    this.qualityLevels = [];
+    this.currentQuality = -1;
+    this.activeSettingsMenu = null;
+  }
+  
+  ngOnDestroy(): void {
+    super.ngOnDestroy();
+    
+    this.resetPlayer();
+    document.removeEventListener('fullscreenchange', this.fullscreenChangeHandler);
+    clearTimeout(this.controlsTimeout);
   }
 }
