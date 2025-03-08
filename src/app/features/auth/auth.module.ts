@@ -7,36 +7,43 @@ import { LoginComponent } from './login/login.component';
 import { AuthService } from '@app/shared/services/auth.service';
 import { AuthGuard } from '@app/shared/guard/auth.guard';
 import { AuthInterceptor } from '@app/shared/interceptor/auth.interceptor';
-import { SharedModule } from '@app/shared/shared.module';
+import { SharedModule } from '@app/shared/components/shared.module';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'register', redirectTo: 'login', pathMatch: 'full' }
+    { path: 'login', component: LoginComponent },
+    { path: 'forgot-password', component: ForgotPasswordComponent },
+    { path: 'reset-password', component: ResetPasswordComponent },
+    { path: 'register', redirectTo: 'login', pathMatch: 'full' }
 ];
 
 @NgModule({
-  declarations: [
-    LoginComponent
-  ],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    RouterModule.forChild(routes),
-    SharedModule
-  ],
-  exports: [
-    LoginComponent,
-    RouterModule
-  ],
-  providers: [
-    AuthService,
-    AuthGuard,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true
-    }
-  ]
+    declarations: [
+        LoginComponent,
+        ForgotPasswordComponent,
+        ResetPasswordComponent
+    ],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        HttpClientModule,
+        RouterModule.forChild(routes),
+        SharedModule
+    ],
+    exports: [
+        LoginComponent,
+        ForgotPasswordComponent,
+        ResetPasswordComponent
+    ],
+    providers: [
+        AuthService,
+        AuthGuard,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthInterceptor,
+            multi: true
+        }
+    ]
 })
 export class AuthModule { }
