@@ -1,0 +1,95 @@
+<!-- src/app/features/dashboard/recommendations/recommendations.component.html -->
+<div class="recommendations">
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Recommended for You</h1>
+            <p class="subtitle">Courses and programs based on your interests and career goals</p>
+        </div>
+    </header>
+
+    <div class="recommendations-container">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Loading recommendations...</p>
+        </div>
+
+        <div *ngIf="!isLoading">
+            <!-- Category Filter -->
+            <div class="filter-container">
+                <div class="category-filters">
+                    <button *ngFor="let category of categories" class="category-btn"
+                        [class.active]="selectedCategory === category" (click)="filterByCategory(category)">
+                        {{ category === 'all' ? 'All Categories' : category }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Course Grid -->
+            <div class="course-grid">
+                <div *ngFor="let course of getFilteredCourses()" class="course-card">
+                    <div class="course-thumbnail">
+                        <img [src]="course.thumbnail" alt="{{ course.title }}">
+                        <div class="course-level">{{ course.level }}</div>
+                    </div>
+
+                    <div class="course-content">
+                        <h3 class="course-title">{{ course.title }}</h3>
+
+                        <div class="course-info">
+                            <div class="info-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span>{{ course.duration }}</span>
+                            </div>
+
+                            <div class="info-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                <span>Online</span>
+                            </div>
+
+                            <div class="info-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M12 20V10"></path>
+                                    <path d="M18 20V4"></path>
+                                    <path d="M6 20v-6"></path>
+                                </svg>
+                                <span>{{ course.enrollmentCount | number }} enrolled</span>
+                            </div>
+                        </div>
+
+                        <p class="course-description">{{ course.description }}</p>
+
+                        <div class="course-footer">
+                            <div class="course-rating">
+                                <div class="stars">
+                                    <span *ngFor="let i of [1, 2, 3, 4, 5]" class="star"
+                                        [class.filled]="i <= course.rating">★</span>
+                                </div>
+                                <span class="rating-value">{{ course.rating }}</span>
+                            </div>
+
+                            <div class="course-price">${{ course.price }}</div>
+                        </div>
+                    </div>
+
+                    <div class="course-actions">
+                        <button class="details-btn" (click)="viewCourseDetails(course.id)">Learn More</button>
+                        <button class="enroll-btn">Enroll Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

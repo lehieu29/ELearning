@@ -1,59 +1,89 @@
-# Elearning
+# 📂 Project Structure Overview
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.5.
+This document provides an overview of the project structure, detailing key modules and components.
 
-## Development server
+## 📁 `src/`
+The main source folder containing the application code.
 
-To start a local development server, run:
+### 📌 `app/`
+Contains the core application features and shared functionalities.
 
-```bash
-ng serve
-```
+#### 🔹 `features/`
+##### ✅ **Authentication**
+- `auth/` → Already implemented
+  - `login/` → User login functionality
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+##### 📊 **Dashboard** *(Needs Expansion)*
+- `dashboard/`
+  - `dashboard.component` → Main dashboard layout
+  - `welcome-banner/` → Welcome section at the top of the dashboard
+  - `course-catalog/` → Browse available courses
+  - `enrolled-courses/` → User's enrolled courses
+  - `progress-tracker/` → Learning progress visualization
 
-## Code scaffolding
+##### 🎓 **Course Management**
+- `course/` → Course viewing feature
+  - `course.module`
+  - `course-details/` → Overview page for a specific course
+  - `course-syllabus/` → Course outline and structure
+  - `lesson-player/` → Video lesson player with controls
+  - `quiz/` → Quiz component
+  - `assignment/` → Assignment submission component
+  - `discussion/` → Discussion/comment section
+  - `resources/` → Additional resources section
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+##### 👤 **User Profile**
+- `profile/`
+  - `profile.module`
+  - `user-info/` → Basic user information
+  - `account-settings/` → Account preferences
+  - `notifications/` → Notification settings
+  - `certificates/` → Earned certificates
 
-```bash
-ng generate component component-name
-```
+##### 🌍 **Community**
+- `community/` → Community features
+  - `community.module`
+  - `forum/` → Discussion forum
+  - `mentorship/` → Mentor connection
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+#### 🔹 `shared/` *(Shared components across the app)*
+##### 📦 **Components**
+- `header/`, `footer/`, `course-card/`, `dropdown-menu/` *(Already exists, some need implementation)*
+- `pagination/`, `search-bar/`, `loader/`, `modal/`, `progress-bar/`, `rating/`, `tabs/`, `tooltip/`, `breadcrumbs/`
 
-```bash
-ng generate --help
-```
+##### ⚙️ **Directives**
+- `click-outside/` → Detect clicks outside element
+- `lazy-load/` → Lazy load images
 
-## Building
+##### ⏳ **Pipes**
+- `time.pipe.ts` → Time formatting *(Already used)*
+- `duration.pipe.ts` → Format course durations
+- `safe-html.pipe.ts` → Sanitize HTML
 
-To build the project run:
+##### 🔐 **Guards & Interceptors**
+- `auth.guard.ts` *(Implemented)*
+- `auth.interceptor.ts` *(Implemented)*
 
-```bash
-ng build
-```
+##### 📄 **Models & Services**
+- Data models: `user.model.ts`, `course.model.ts`, `lesson.model.ts`
+- Services: `auth.service.ts`, `http.service.ts`, `course.service.ts`, `user.service.ts`, `lesson.service.ts`, `notification.service.ts`, `storage.service.ts`
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### 🔹 `core/`
+Singleton services and configurations.
+- `core.module.ts`
+- `error-handler/` → Global error handling
+- `analytics/` → Analytics tracking
+- `config/` → App configuration
 
-## Running unit tests
+### 📌 **Other Key Directories**
+#### 📂 `assets/`
+- `images/`, `fonts/`, `styles/` *(Contains global styling configurations)*
+- `themes/` → Theme variants
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+#### 🌍 `environments/`
+- `environment.ts`, `environment.prod.ts` → Environment configurations
 
-```bash
-ng test
-```
+---
 
-## Running end-to-end tests
+This structure ensures a modular and scalable application architecture, making maintenance and feature expansion easier.
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

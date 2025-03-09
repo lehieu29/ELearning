@@ -1,0 +1,285 @@
+// // src/assets/styles/components/navigation.scss
+
+// @import '../color.scss';
+// @import '../mixin.scss';
+// @import '../variables.scss';
+
+// // ============= NAVBAR ===================
+// .navbar {
+//   display: flex;
+//   flex-wrap: wrap;
+//   align-items: center;
+//   justify-content: space-between;
+//   padding: 0.5rem 1rem;
+//   background-color: var(--bg-header);
+//   border-bottom: 1px solid var(--border-color);
+  
+//   &-brand {
+//     display: inline-block;
+//     padding-top: 0.3125rem;
+//     padding-bottom: 0.3125rem;
+//     margin-right: 1rem;
+//     font-size: 1.25rem;
+//     line-height: inherit;
+//     white-space: nowrap;
+//     color: var(--color-text-primary);
+//     text-decoration: none;
+    
+//     img {
+//       height: 35px;
+//       vertical-align: middle;
+//     }
+//   }
+  
+//   &-nav {
+//     display: flex;
+//     flex-direction: row;
+//     padding-left: 0;
+//     margin-bottom: 0;
+//     list-style: none;
+//   }
+  
+//   &-toggler {
+//     padding: 0.25rem 0.75rem;
+//     font-size: 1.25rem;
+//     line-height: 1;
+//     background-color: transparent;
+//     border: 1px solid var(--border-color);
+//     border-radius: $border-radius;
+    
+//     @include respond-to(lg) {
+//       display: none;
+//     }
+//   }
+  
+//   &-collapse {
+//     flex-grow: 1;
+    
+//     @include respond-to(max-md) {
+//       display: none;
+//       width: 100%;
+      
+//       &.show {
+//         display: block;
+//       }
+//     }
+    
+//     @include respond-to(lg) {
+//       display: flex !important;
+//     }
+//   }
+// }
+
+// .nav-item {
+//   margin-bottom: 0;
+// }
+
+// .nav-link {
+//   display: block;
+//   padding: 0.5rem 1rem;
+//   color: var(--color-text-primary);
+//   text-decoration: none;
+//   transition: color 0.15s ease-in-out;
+  
+//   &:hover,
+//   &:focus {
+//     color: var(--color-primary);
+//   }
+  
+//   &.active {
+//     color: var(--color-primary);
+//     font-weight: 600;
+//   }
+  
+//   &.disabled {
+//     color: var(--color-text-muted);
+//     pointer-events: none;
+//     cursor: default;
+//   }
+// }
+
+// // ============= SIDEBAR ===================
+// .sidebar {
+//   width: $sidebar-width;
+//   position: fixed;
+//   top: $header-height;
+//   bottom: 0;
+//   left: 0;
+//   z-index: $z-index-fixed;
+//   background-color: var(--bg-sidebar);
+//   border-right: 1px solid var(--border-color);
+//   transition: all 0.3s ease;
+//   overflow-y: auto;
+  
+//   @include custom-scrollbar(6px, transparent, rgba($grey-120, 0.5));
+  
+//   @include respond-to(max-md) {
+//     transform: translateX(-100%);
+    
+//     &.show {
+//       transform: translateX(0);
+//     }
+//   }
+  
+//   &-collapsed {
+//     width: $sidebar-collapsed-width;
+    
+//     .sidebar-link-text,
+//     .sidebar-dropdown-icon {
+//       display: none;
+//     }
+    
+//     .sidebar-link {
+//       justify-content: center;
+//       padding: 1rem;
+//     }
+    
+//     .sidebar-header {
+//       justify-content: center;
+//       padding: 1rem;
+//     }
+    
+//     .sidebar-footer {
+//       justify-content: center;
+//       padding: 1rem;
+//     }
+//   }
+  
+//   &-header {
+//     display: flex;
+//     align-items: center;
+//     padding: 1rem;
+//     border-bottom: 1px solid var(--border-color);
+//   }
+  
+//   &-content {
+//     padding: 1rem 0;
+//   }
+  
+//   &-footer {
+//     padding: 1rem;
+//     border-top: 1px solid var(--border-color);
+//     margin-top: auto;
+//   }
+  
+//   &-section {
+//     margin-bottom: 0.5rem;
+    
+//     &-title {
+//       color: var(--color-text-muted);
+//       font-size: 0.75rem;
+//       font-weight: 600;
+//       text-transform: uppercase;
+//       padding: 0.5rem 1rem;
+//       margin-bottom: 0.5rem;
+//     }
+//   }
+  
+//   &-link {
+//     display: flex;
+//     align-items: center;
+//     padding: 0.75rem 1rem;
+//     color: var(--color-text-primary);
+//     text-decoration: none;
+//     transition: all 0.2s ease;
+    
+//     &:hover {
+//       background-color: rgba($grey-80, 0.5);
+//       color: var(--color-primary);
+//     }
+    
+//     &.active {
+//       background-color: rgba($primary-color, 0.1);
+//       color: var(--color-primary);
+//       font-weight: 600;
+//       border-left: 3px solid var(--color-primary);
+//     }
+    
+//     &-icon {
+//       margin-right: 0.75rem;
+//       display: flex;
+//       align-items: center;
+//       justify-content: center;
+//       width: 1.5rem;
+//       height: 1.5rem;
+      
+//       svg {
+//         width: 1rem;
+//         height: 1rem;
+//       }
+//     }
+    
+//     &-text {
+//       flex: 1;
+//     }
+//   }
+  
+//   &-dropdown {
+//     &-icon {
+//       margin-left: 0.5rem;
+//       transition: transform 0.2s ease;
+      
+//       &.open {
+//         transform: rotate(180deg);
+//       }
+//     }
+    
+//     &-content {
+//       padding-left: 2.5rem;
+//       max-height: 0;
+//       overflow: hidden;
+//       transition: max-height 0.2s ease;
+      
+//       &.open {
+//         max-height: 500px;
+//       }
+//     }
+//   }
+// }
+
+// // ============= BREADCRUMB ===================
+// .breadcrumb {
+//   display: flex;
+//   flex-wrap: wrap;
+//   padding: 0.75rem 1rem;
+//   margin-bottom: 1rem;
+//   list-style: none;
+//   background-color: rgba($grey-80, 0.5);
+//   border-radius: $border-radius;
+  
+//   &-item {
+//     display: flex;
+    
+//     & + .breadcrumb-item {
+//       padding-left: 0.5rem;
+      
+//       &::before {
+//         display: inline-block;
+//         padding-right: 0.5rem;
+//         color: var(--color-text-muted);
+//         content: "/";
+//       }
+//     }
+    
+//     &.active {
+//       color: var(--color-text-muted);
+//     }
+    
+//     a {
+//       color: var(--color-primary);
+//       text-decoration: none;
+      
+//       &:hover {
+//         text-decoration: underline;
+//       }
+//     }
+//   }
+// }
+
+// // ============= TABS ===================
+// .nav-tabs {
+//   display: flex;
+//   flex-wrap: wrap;
+//   padding-left: 0;
+//   margin-bottom: 0;
+//   list-style: none;

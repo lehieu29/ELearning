@@ -1,47 +1,46 @@
-
-// ================ BRAND BLUE  =================
+// ================ BRAND COLORS =================
+// Primary Brand Colors
 $brand-blue-80: #4248ff;
 $brand-blue-100: #2015ff;
 $brand-blue-120: #0000cc;
 $brand-blue-140: #142580;
 $brand-blue-160: #171a53;
-// ==============================================
 
 // ================== PURPLE ====================
 $purple-80: #b181ff;
 $purple-100: #9e62ff;
 $purple-120: #7e4ecc;
-// ==============================================
 
 // =============== LIGHT BLUE ===================
 $light-blue-80: #6597ff;
 $light-blue-100: #3f7dff;
 $light-blue-120: #3264cc;
-// ==============================================
 
 // ================ SEA FOAMS ===================
 $seafoam-80: #33d1b4;
 $seafoam-100: #00c5a1;
 $seafoam-120: #00a687;
-// ==============================================
 
 // ================= LIME =======================
 $lime-80: #caee3a;
 $lime-100: #bdea09;
 $lime-120: #a6cc00;
-// ==============================================
 
-// ============= BLACK/WHITE/GREY ===============
+// ============= GREYSCALE COLORS ===============
 $grey-80: #f6f6f6;
 $grey-100: #cbd5de;
 $grey-120: #7d97ad;
 $grey-140: #536483;
 $text-black: #0b0b0b;
 $color-white: #ffffff;
-// ==============================================
 
+// ============= SEMANTIC COLORS ===============
 $error-red: #d73a01;
+$success-green: #2cce66;
+$warning-yellow: #ffcc00;
+$info-blue: #3498db;
 
+// ============= ELEARNING COLORS ===============
 $primary-color: #02b3e4;
 $secondary-color: #2d3c49;
 $light-gray: #f3f3f3;
@@ -49,3 +48,62 @@ $medium-gray: #dbe2e8;
 $dark-gray: #525c65;
 $error-color: #ea5252;
 $success-color: #42b883;
+
+// ============= BACKGROUND COLORS =============
+$bg-light: #f9fafb;
+$bg-dark: #1a1c23;
+$bg-highlight: #f0f7ff;
+$bg-card: #ffffff;
+$bg-card-dark: #2a2d3a;
+
+// ============= TEXT COLORS ===================
+$text-primary: #2d3748;
+$text-secondary: #718096;
+$text-muted: #a0aec0;
+$text-light: #f7fafc;
+$text-link: #4299e1;
+$text-link-hover: #2b6cb0;
+
+// ============= BORDER COLORS ================
+$border-light: #e2e8f0;
+$border-medium: #cbd5e0;
+$border-dark: #4a5568;
+
+// ============= SHADOW COLORS ================
+$shadow-color: rgba(0, 0, 0, 0.1);
+$shadow-color-dark: rgba(0, 0, 0, 0.2);
+
+// ============= OVERLAY COLORS ===============
+$overlay-light: rgba(255, 255, 255, 0.7);
+$overlay-dark: rgba(0, 0, 0, 0.7);
+
+// ============= COLOR MAPS ==================
+// Map for theme colors - use with function color()
+$theme-colors: (
+    "primary": $primary-color,
+    "secondary": $secondary-color,
+    "success": $success-color,
+    "error": $error-color,
+    "warning": $warning-yellow,
+    "info": $info-blue,
+    "light": $light-gray,
+    "dark": $dark-gray,
+    "white": $color-white,
+    "black": $text-black
+);
+
+// Function to retrieve color from map
+@function color($color-name) {
+    @return map-get($theme-colors, $color-name);
+}
+
+// Helper function to create color variants
+@function create-color-variant($color, $lightness) {
+    @if $lightness < 0 {
+        @return mix(#000000, $color, abs($lightness));
+    }
+
+    @else {
+        @return mix(#ffffff, $color, $lightness);
+    }
+}

@@ -1,14 +1,236 @@
+// ============= TYPOGRAPHY MIXINS ===================
+// Chuyển đổi từ pixel sang rem
 @function calculateRem($size) {
-    $remSize: #{$size / 16}rem;
-    @return $remSize;
+    $remSize: $size / 16px;
+    @return #{$remSize}rem;
 }
 
+// Thiết lập font-size với fallback px
 @mixin font-size($size) {
-    font-size: #{$size}px; //Fallback in px
+    font-size: $size; // Fallback in px
     font-size: calculateRem($size);
 }
 
+// Thiết lập line-height với fallback px
 @mixin line-height($size) {
-    line-height: #{$size}px; //Fallback in px
+    line-height: $size; // Fallback in px
     line-height: calculateRem($size);
+}
+
+// Thiết lập văn bản cắt ngắn với dấu ba chấm
+@mixin text-truncate($lines: 1) {
+    @if $lines ==1 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @else {
+        display: -webkit-box;
+        -webkit-line-clamp: $lines;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+// ============= LAYOUT MIXINS ===================
+// Thiết lập flexbox
+@mixin flex($direction: row, $justify: flex-start, $align: stretch, $wrap: nowrap) {
+    display: flex;
+    flex-direction: $direction;
+    justify-content: $justify;
+    align-items: $align;
+    flex-wrap: $wrap;
+}
+
+// Thiết lập grid
+@mixin grid($columns: 1, $gap: 0) {
+    display: grid;
+    grid-template-columns: repeat($columns, 1fr);
+    gap: $gap;
+}
+
+// Thiết lập absolute center
+@mixin absolute-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+// Thiết lập fixed full
+@mixin fixed-full {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+// ============= RESPONSIVE MIXINS ===================
+// Media queries
+@mixin respond-to($breakpoint) {
+    @if $breakpoint ==xs {
+        @media (max-width: 575.98px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint ==sm {
+        @media (min-width: 576px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint ==md {
+        @media (min-width: 768px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint ==lg {
+        @media (min-width: 992px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint ==xl {
+        @media (min-width: 1200px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint ==xxl {
+        @media (min-width: 1400px) {
+            @content;
+        }
+    }
+}
+
+// Hide element but keep it accessible
+@mixin visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Thiết lập container responsive
+@mixin container {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 1rem;
+    padding-left: 1rem;
+
+    @include respond-to(sm) {
+        max-width: 540px;
+    }
+
+    @include respond-to(md) {
+        max-width: 720px;
+    }
+
+    @include respond-to(lg) {
+        max-width: 960px;
+    }
+
+    @include respond-to(xl) {
+        max-width: 1140px;
+    }
+
+    @include respond-to(xxl) {
+        max-width: 1320px;
+    }
+}
+
+// ============= ANIMATION MIXINS ===================
+// Thiết lập transition
+@mixin transition($property: all, $duration: 0.3s, $timing: ease) {
+    transition-property: $property;
+    transition-duration: $duration;
+    transition-timing-function: $timing;
+}
+
+// Thiết lập animation
+@mixin animation($name, $duration: 1s, $timing: ease, $iteration: 1, $direction: normal, $fill-mode: none) {
+    animation-name: $name;
+    animation-duration: $duration;
+    animation-timing-function: $timing;
+    animation-iteration-count: $iteration;
+    animation-direction: $direction;
+    animation-fill-mode: $fill-mode;
+}
+
+// ============= STYLE MIXINS ===================
+// Thiết lập scrollbar
+@mixin custom-scrollbar($width: 8px, $track-color: #f1f1f1, $thumb-color: #888) {
+    &::-webkit-scrollbar {
+        width: $width;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $track-color;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $thumb-color;
+        border-radius: $width / 2;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: darken($thumb-color, 10%);
+    }
+}
+
+// Thiết lập shadow
+@mixin shadow($level: 1) {
+    @if $level ==1 {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+
+    @else if $level ==2 {
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    }
+
+    @else if $level ==3 {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    }
+
+    @else if $level ==4 {
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    }
+
+    @else if $level ==5 {
+        box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
+    }
+}
+
+// Gradient background
+@mixin gradient($direction: to right, $start-color: #4568dc, $end-color: #b06ab3) {
+    background: linear-gradient($direction, $start-color, $end-color);
+}
+
+// Các kiểu card phổ biến
+@mixin card-style($padding: 1rem, $radius: 0.5rem, $bg-color: white, $shadow-level: 1) {
+    padding: $padding;
+    border-radius: $radius;
+    background-color: $bg-color;
+    @include shadow($shadow-level);
+}
+
+// Nhiệu ứng hover đẹp mắt
+@mixin hover-effect {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+        @include shadow(3);
+    }
 }

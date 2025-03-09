@@ -1,0 +1,118 @@
+@import '../color.scss';
+@import '../variables.scss';
+
+// ============= THEME VARIABLES ===================
+// Light Theme (Default)
+:root {
+    --bg-body: #{$bg-light};
+    --bg-card: #{$bg-card};
+    --bg-header: #{$color-white};
+    --bg-footer: #{$grey-80};
+    --bg-sidebar: #{$color-white};
+    --bg-input: #{$color-white};
+    --bg-button-primary: #{$primary-color};
+    --bg-button-secondary: #{$secondary-color};
+
+    --color-text-primary: #{$text-primary};
+    --color-text-secondary: #{$text-secondary};
+    --color-text-muted: #{$text-muted};
+    --color-text-inverted: #{$text-light};
+    --color-link: #{$text-link};
+    --color-link-hover: #{$text-link-hover};
+
+    --border-color: #{$border-light};
+    --border-color-focus: #{$primary-color};
+
+    --shadow-color: #{$shadow-color};
+    --shadow-sm: #{$shadow-sm};
+    --shadow-md: #{$shadow-md};
+    --shadow-lg: #{$shadow-lg};
+
+    --color-primary: #{$primary-color};
+    --color-secondary: #{$secondary-color};
+    --color-success: #{$success-color};
+    --color-error: #{$error-color};
+    --color-warning: #{$warning-yellow};
+    --color-info: #{$info-blue};
+}
+
+// Dark Theme
+.dark-theme {
+    --bg-body: #{$bg-dark};
+    --bg-card: #{$bg-card-dark};
+    --bg-header: #252836;
+    --bg-footer: #1e2029;
+    --bg-sidebar: #252836;
+    --bg-input: #2a2d3a;
+    --bg-button-primary: #{$primary-color};
+    --bg-button-secondary: #{$dark-gray};
+
+    --color-text-primary: #{$text-light};
+    --color-text-secondary: #a0aec0;
+    --color-text-muted: #718096;
+    --color-text-inverted: #{$text-primary};
+    --color-link: #63b3ed;
+    --color-link-hover: #4299e1;
+
+    --border-color: #2d3748;
+    --border-color-focus: #{$primary-color};
+
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+
+    // Semantic colors can stay mostly the same, with slight adjustments
+    --color-primary: #{$primary-color};
+    --color-secondary: #{$secondary-color};
+    --color-success: #{$success-color};
+    --color-error: #{$error-color};
+    --color-warning: #{$warning-yellow};
+    --color-info: #{$info-blue};
+}
+
+// ============= THEME MIXINS ===================
+// Use theme color
+@mixin themed($property, $key) {
+    #{$property}: var(--#{$key});
+}
+
+// Theme-aware shadow
+@mixin themed-shadow($level: 'md') {
+    box-shadow: var(--shadow-#{$level});
+}
+
+// CSS Variable Usage Examples
+.themed-component {
+    background-color: var(--bg-card);
+    color: var(--color-text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    h2 {
+        color: var(--color-primary);
+    }
+
+    p {
+        color: var(--color-text-secondary);
+    }
+
+    a {
+        color: var(--color-link);
+
+        &:hover {
+            color: var(--color-link-hover);
+        }
+    }
+}
+
+// Apply dark theme automatically based on user preference
+@media (prefers-color-scheme: dark) {
+    :root.system-theme {
+        @extend .dark-theme;
+    }
+}

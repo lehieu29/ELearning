@@ -1,0 +1,308 @@
+// src/assets/styles/components/buttons.scss
+
+@import '../color.scss';
+@import '../mixin.scss';
+@import '../variables.scss';
+
+// ============= BUTTON BASE ===================
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border: none;
+    border-radius: $border-radius;
+    cursor: pointer;
+    @include transition(all, 0.3s, ease);
+    text-decoration: none;
+    line-height: 1.5;
+
+    &:disabled,
+    &.disabled {
+        opacity: 0.65;
+        pointer-events: none;
+    }
+
+    // Icon spacing
+    .icon {
+        &-left {
+            margin-right: 0.5rem;
+        }
+
+        &-right {
+            margin-left: 0.5rem;
+        }
+    }
+}
+
+// ============= BUTTON SIZES ===================
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: $border-radius-sm;
+}
+
+.btn-md {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: $border-radius;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.125rem;
+    border-radius: $border-radius-lg;
+}
+
+// ============= BUTTON VARIANTS ===================
+// Primary Button
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+
+    &:hover {
+        background-color: darken($primary-color, 7%);
+    }
+
+    &:active {
+        background-color: darken($primary-color, 10%);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.5);
+        outline: none;
+    }
+}
+
+// Secondary Button
+.btn-secondary {
+    background-color: var(--color-secondary);
+    color: white;
+
+    &:hover {
+        background-color: darken($secondary-color, 7%);
+    }
+
+    &:active {
+        background-color: darken($secondary-color, 10%);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($secondary-color, 0.5);
+        outline: none;
+    }
+}
+
+// Outline Button
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+
+    &:hover {
+        background-color: rgba($primary-color, 0.1);
+    }
+
+    &:active {
+        background-color: rgba($primary-color, 0.2);
+    }
+
+    // src/assets/styles/components/buttons.scss (tiếp tục)
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.3);
+        outline: none;
+    }
+}
+
+// Ghost Button
+.btn-ghost {
+    background-color: transparent;
+    color: var(--color-text-primary);
+
+    &:hover {
+        background-color: rgba($grey-100, 0.2);
+    }
+
+    &:active {
+        background-color: rgba($grey-100, 0.3);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($grey-100, 0.3);
+        outline: none;
+    }
+}
+
+// Success Button
+.btn-success {
+    background-color: var(--color-success);
+    color: white;
+
+    &:hover {
+        background-color: darken($success-color, 7%);
+    }
+
+    &:active {
+        background-color: darken($success-color, 10%);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($success-color, 0.5);
+        outline: none;
+    }
+}
+
+// Error Button
+.btn-error {
+    background-color: var(--color-error);
+    color: white;
+
+    &:hover {
+        background-color: darken($error-color, 7%);
+    }
+
+    &:active {
+        background-color: darken($error-color, 10%);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($error-color, 0.5);
+        outline: none;
+    }
+}
+
+// Warning Button
+.btn-warning {
+    background-color: var(--color-warning);
+    color: $text-black;
+
+    &:hover {
+        background-color: darken($warning-yellow, 7%);
+    }
+
+    &:active {
+        background-color: darken($warning-yellow, 10%);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($warning-yellow, 0.5);
+        outline: none;
+    }
+}
+
+// Info Button
+.btn-info {
+    background-color: var(--color-info);
+    color: white;
+
+    &:hover {
+        background-color: darken($info-blue, 7%);
+    }
+
+    &:active {
+        background-color: darken($info-blue, 10%);
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba($info-blue, 0.5);
+        outline: none;
+    }
+}
+
+// ============= BUTTON STATES ===================
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        top: 50%;
+        left: 50%;
+        margin-left: -0.5rem;
+        margin-top: -0.5rem;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+    }
+}
+
+// Full width button
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+// Icon only button
+.btn-icon {
+    padding: 0.5rem;
+    border-radius: 50%;
+
+    &.btn-sm {
+        padding: 0.375rem;
+    }
+
+    &.btn-lg {
+        padding: 0.75rem;
+    }
+}
+
+// Button with badge
+.btn-with-badge {
+    position: relative;
+
+    .badge {
+        position: absolute;
+        top: -0.5rem;
+        right: -0.5rem;
+    }
+}
+
+// Button group
+.btn-group {
+    display: inline-flex;
+
+    .btn {
+        position: relative;
+        flex: 1 1 auto;
+
+        &:not(:first-child) {
+            margin-left: -1px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        &:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        &:hover {
+            z-index: 1;
+        }
+
+        &:focus {
+            z-index: 2;
+        }
+
+        &:active {
+            z-index: 3;
+        }
+    }
+}
+
+// Keyframes for loading spinner
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

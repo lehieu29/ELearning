@@ -1,0 +1,263 @@
+// src/assets/styles/components/cards.scss
+
+@import '../color.scss';
+@import '../mixin.scss';
+@import '../variables.scss';
+
+// ============= CARD BASE ===================
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: var(--bg-card);
+    background-clip: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: $border-radius;
+
+    &:hover {
+        @include transition(box-shadow, 0.3s, ease);
+    }
+}
+
+// Card with hover effect
+.card-hover {
+    @include transition(transform, 0.3s, ease, box-shadow, 0.3s, ease);
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+// Card with shadow
+.card-shadow {
+    box-shadow: var(--shadow-sm);
+    border: none;
+
+    &:hover {
+        box-shadow: var(--shadow-md);
+    }
+}
+
+// ============= CARD LAYOUT ===================
+.card-header {
+    padding: 1rem;
+    margin-bottom: 0;
+    background-color: rgba($grey-80, 0.5);
+    border-bottom: 1px solid var(--border-color);
+
+    &:first-child {
+        border-radius: calc(#{$border-radius} - 1px) calc(#{$border-radius} - 1px) 0 0;
+    }
+}
+
+.card-body {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.card-footer {
+    padding: 1rem;
+    background-color: rgba($grey-80, 0.5);
+    border-top: 1px solid var(--border-color);
+
+    &:last-child {
+        border-radius: 0 0 calc(#{$border-radius} - 1px) calc(#{$border-radius} - 1px);
+    }
+}
+
+.card-img-top {
+    width: 100%;
+    border-top-left-radius: calc(#{$border-radius} - 1px);
+    border-top-right-radius: calc(#{$border-radius} - 1px);
+}
+
+.card-img-bottom {
+    width: 100%;
+    border-bottom-right-radius: calc(#{$border-radius} - 1px);
+    border-bottom-left-radius: calc(#{$border-radius} - 1px);
+}
+
+.card-img-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1.25rem;
+    border-radius: $border-radius;
+}
+
+.card-img {
+    width: 100%;
+    border-radius: calc(#{$border-radius} - 1px);
+}
+
+// ============= CARD VARIATIONS ===================
+// Card with image cap
+.card-image-cap {
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+}
+
+// Horizontal card
+.card-horizontal {
+    flex-direction: row;
+
+    .card-img-left {
+        width: 30%;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+        object-fit: cover;
+    }
+
+    .card-body {
+        flex: 1;
+    }
+}
+
+// Card with background image
+.card-bg-image {
+    background-size: cover;
+    background-position: center;
+    color: white;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
+        border-radius: $border-radius;
+    }
+
+    .card-body {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+// ============= COURSE CARD ===================
+.course-card {
+    @extend .card;
+    width: $course-card-width;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .course-card-img {
+        height: $course-card-image-height;
+        object-fit: cover;
+    }
+
+    .course-card-body {
+        padding: 1rem;
+    }
+
+    .course-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        @include text-truncate(2);
+        height: 2.8rem;
+    }
+
+    .course-card-instructor {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .course-card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+
+        .course-card-rating {
+            display: flex;
+            align-items: center;
+            color: #f39c12;
+
+            .star-icon {
+                margin-right: 0.25rem;
+            }
+
+            .rating-count {
+                color: var(--color-text-muted);
+                margin-left: 0.25rem;
+            }
+        }
+
+        .course-card-students {
+            color: var(--color-text-muted);
+        }
+    }
+
+    .course-card-price {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--color-primary);
+
+        .original-price {
+            text-decoration: line-through;
+            color: var(--color-text-muted);
+            margin-right: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+    }
+
+    .course-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--border-color);
+
+        .course-level {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: $border-radius-sm;
+            background-color: $grey-80;
+            color: var(--color-text-secondary);
+        }
+
+        .course-duration {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+        }
+    }
+}
+
+// ============= CARD GRIDS ===================
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+
+    @include respond-to(sm) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include respond-to(md) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include respond-to(lg) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
