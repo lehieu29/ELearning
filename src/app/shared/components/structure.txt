@@ -1,1 +1,0 @@
-accordion, alert, badge, base, breadcrumbs, card, course-card, data-table, dropdown-menu, elearning-button, elearning-text-box, file-upload, file-viewer, footer, header, image-gallery, loader, modal, navigation, pagination, progress-bar, rating, search-bar, skeleton-loader, stepper, tabs, tag-input, timeline, toggle-switch, tooltip, 

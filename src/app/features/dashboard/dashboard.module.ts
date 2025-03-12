@@ -16,9 +16,7 @@ const routes: Routes = [
         component: DashboardComponent,
         canActivate: [AuthGuard],
         children: [
-            { path: '', component: DashboardHomeComponent },
-            { path: 'enrolled-courses', component: EnrolledCoursesComponent },
-            { path: 'recommendations', component: RecommendationsComponent }
+            { path: '', component: DashboardComponent }
         ]
     }
 ];
@@ -26,9 +24,6 @@ const routes: Routes = [
 @NgModule({
     declarations: [
         DashboardComponent,
-        DashboardHomeComponent,
-        EnrolledCoursesComponent,
-        RecommendationsComponent,
         CourseCatalogComponent
     ],
     imports: [

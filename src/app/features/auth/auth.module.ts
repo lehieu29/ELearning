@@ -1,49 +1,41 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from './login/login.component';
-import { AuthService } from '@app/shared/services/auth.service';
-import { AuthGuard } from '@app/shared/guard/auth.guard';
-import { AuthInterceptor } from '@app/shared/interceptor/auth.interceptor';
-import { SharedModule } from '@app/shared/components/shared.module';
-import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { RouterModule } from '@angular/router';
 
-const routes: Routes = [
-    { path: 'login', component: LoginComponent },
-    { path: 'forgot-password', component: ForgotPasswordComponent },
-    { path: 'reset-password', component: ResetPasswordComponent },
-    { path: 'register', redirectTo: 'login', pathMatch: 'full' }
-];
+import { LoginComponent } from './login/login.component';
+import { RegistrationComponent } from './registration/registration.component';
+import { PasswordResetComponent } from './password-reset/password-reset.component';
+import { SocialLoginComponent } from './social-login/social-login.component';
+import { TwoFactorAuthComponent } from './two-factor-authentication/two-factor-authentication.component';
+import { EmailVerificationComponent } from './email-verification/email-verification.component';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-    declarations: [
-        LoginComponent,
-        ForgotPasswordComponent,
-        ResetPasswordComponent
-    ],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        HttpClientModule,
-        RouterModule.forChild(routes),
-        SharedModule
-    ],
-    exports: [
-        LoginComponent,
-        ForgotPasswordComponent,
-        ResetPasswordComponent
-    ],
-    providers: [
-        AuthService,
-        AuthGuard,
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: AuthInterceptor,
-            multi: true
-        }
-    ]
+  declarations: [
+    LoginComponent,
+    RegistrationComponent,
+    PasswordResetComponent,
+    SocialLoginComponent,
+    TwoFactorAuthComponent,
+    EmailVerificationComponent
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule.forChild([
+      { path: 'login', component: LoginComponent },
+      { path: 'register', component: RegistrationComponent },
+      { path: 'password-reset', component: PasswordResetComponent },
+      { path: 'email-verification', component: EmailVerificationComponent },
+      { path: 'two-factor', component: TwoFactorAuthComponent }
+    ]),
+    SharedModule
+  ],
+  exports: [
+    LoginComponent,
+    RegistrationComponent,
+    SocialLoginComponent
+  ]
 })
 export class AuthModule { }
