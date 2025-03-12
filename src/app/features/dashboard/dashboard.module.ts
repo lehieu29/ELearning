@@ -5,12 +5,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { DashboardComponent } from './dashboard.component';
-import { DashboardHomeComponent } from './dashboard-home/dashboard-home.component';
-import { EnrolledCoursesComponent } from './enrolled-courses/enrolled-courses.component';
-import { RecommendationsComponent } from './recommendations/recommendations.component';
 
 import { AuthGuard } from '@app/shared/guard/auth.guard';
 import { SharedModule } from '@app/shared/components/shared.module';
+import { CourseCatalogComponent } from './course-catalog/course-catalog.component';
 
 const routes: Routes = [
     {
@@ -30,7 +28,8 @@ const routes: Routes = [
         DashboardComponent,
         DashboardHomeComponent,
         EnrolledCoursesComponent,
-        RecommendationsComponent
+        RecommendationsComponent,
+        CourseCatalogComponent
     ],
     imports: [
         CommonModule,

@@ -1,94 +1,131 @@
 <!-- src/app/features/dashboard/dashboard.component.html -->
-<div class="dashboard-layout">
-    <app-navigation></app-navigation>
+<div class="container mx-auto px-4 py-8">
+    <!-- Welcome Banner -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">Welcome back!</h1>
+        <p class="text-gray-600 mt-2">Continue your learning journey or explore new courses.</p>
+    </div>
 
-    <div class="dashboard-main">
-        <aside class="dashboard-sidebar">
-            <div class="user-profile">
-                <div class="user-avatar">{{ userFullName.charAt(0) }}</div>
-                <div class="user-info">
-                    <h3 class="user-name">{{ userFullName }}</h3>
-                    <p class="user-role">Student</p>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center my-12">
+        <app-loader size="lg"></app-loader>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div *ngIf="!isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Enrolled Courses -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">My Courses</h2>
+                    <a routerLink="/courses" class="text-blue-600 hover:text-blue-800 text-sm">View All</a>
+                </div>
+
+                <div *ngIf="enrolledCourses.length === 0" class="text-center py-8">
+                    <p class="text-gray-500">You haven't enrolled in any courses yet.</p>
+                    <a routerLink="/courses"
+                        class="mt-4 inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Browse Courses
+                    </a>
+                </div>
+
+                <div *ngIf="enrolledCourses.length > 0" class="space-y-4">
+                    <div *ngFor="let course of enrolledCourses"
+                        class="border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center">
+                        <img [src]="course.thumbnail" [alt]="course.title"
+                            class="w-24 h-24 object-cover rounded-md mr-4 mb-4 sm:mb-0">
+                        <div class="flex-1">
+                            <h3 class="font-medium text-gray-900">{{ course.title }}</h3>
+                            <p class="text-sm text-gray-600 mt-1">{{ course.instructors[0]?.fullName }}</p>
+
+                            <!-- Progress Bar -->
+                            <div class="mt-3">
+                                <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                    <span>Progress</span>
+                                    <span>30%</span>
+                                </div>
+                                <app-progress-bar [progress]="30" height="sm"></app-progress-bar>
+                            </div>
+                        </div>
+                        <a [routerLink]="['/courses', course.id]"
+                            class="mt-4 sm:mt-0 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                            Continue
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Activity Feed and Recommendations -->
+        <div class="space-y-8">
+            <!-- Recommended Courses -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Recommended for You</h2>
+
+                <div *ngIf="recommendedCourses.length === 0" class="text-center py-4">
+                    <p class="text-gray-500">No recommendations available.</p>
+                </div>
+
+                <div *ngIf="recommendedCourses.length > 0" class="space-y-4">
+                    <div *ngFor="let course of recommendedCourses"
+                        class="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                        <div class="flex">
+                            <img [src]="course.thumbnail" [alt]="course.title"
+                                class="w-16 h-16 object-cover rounded mr-3">
+                            <div>
+                                <h3 class="font-medium text-gray-900 text-sm">{{ course.title }}</h3>
+                                <p class="text-xs text-gray-600 mt-1">{{ course.level }}</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-yellow-500 mr-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </span>
+                                    <span class="text-xs text-gray-600">{{ course.rating | number:'1.1-1' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <nav class="sidebar-nav">
-                <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-                    class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="9"></rect>
-                        <rect x="14" y="3" width="7" height="5"></rect>
-                        <rect x="14" y="12" width="7" height="9"></rect>
-                        <rect x="3" y="16" width="7" height="5"></rect>
-                    </svg>
-                    <span>Dashboard</span>
-                </a>
+            <!-- Learning Stats -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Learning Stats</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <div
+                            class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Hours Learned</p>
+                            <p class="text-xl font-semibold text-gray-800">12.5</p>
+                        </div>
+                    </div>
 
-                <a routerLink="/dashboard/enrolled-courses" routerLinkActive="active" class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                    <span>My Courses</span>
-                </a>
-
-                <a routerLink="/dashboard/recommendations" routerLinkActive="active" class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon
-                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                        </polygon>
-                    </svg>
-                    <span>Recommendations</span>
-                </a>
-
-                <a routerLink="/profile" class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span>My Profile</span>
-                </a>
-
-                <a routerLink="/profile/achievements" class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="8" r="7"></circle>
-                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                    </svg>
-                    <span>Achievements</span>
-                </a>
-
-                <div class="nav-divider"></div>
-
-                <a routerLink="/profile/settings" class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path
-                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                        </path>
-                    </svg>
-                    <span>Settings</span>
-                </a>
-
-                <a href="javascript:void(0)" (click)="logout()" class="nav-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    <span>Logout</span>
-                </a>
-            </nav>
-        </aside>
-
-        <main class="dashboard-content">
-            <router-outlet></router-outlet>
-        </main>
+                    <div class="flex items-center">
+                        <div
+                            class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Lessons Completed</p>
+                            <p class="text-xl font-semibold text-gray-800">23</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

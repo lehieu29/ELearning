@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CourseFiltersComponent } from './course-filters.component';
+import { PaginationComponent } from './pagination.component';
 
-describe('CourseFiltersComponent', () => {
-  let component: CourseFiltersComponent;
-  let fixture: ComponentFixture<CourseFiltersComponent>;
+describe('PaginationComponent', () => {
+  let component: PaginationComponent;
+  let fixture: ComponentFixture<PaginationComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CourseFiltersComponent]
+      declarations: [PaginationComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CourseFiltersComponent);
+    fixture = TestBed.createComponent(PaginationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
