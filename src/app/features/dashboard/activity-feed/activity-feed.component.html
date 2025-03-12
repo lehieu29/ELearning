@@ -1,0 +1,66 @@
+<!-- File path: src/app/features/dashboard/activity-feed/activity-feed.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading && activities.length === 0" class="flex justify-center items-center p-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 text-red-800">
+        {{ error }}
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && activities.length === 0" class="p-6 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+        </svg>
+        <p class="mt-3 text-gray-600">No activity yet</p>
+        <p class="text-sm text-gray-500 mt-1">Start learning to see your activity here</p>
+    </div>
+
+    <!-- Activity List -->
+    <div *ngIf="activities.length > 0" class="divide-y divide-gray-100">
+        <div *ngFor="let activity of activities" class="p-4 hover:bg-gray-50 transition-colors">
+            <div class="flex">
+                <!-- Activity Icon -->
+                <div class="flex-shrink-0 mr-4">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <i [class]="getActivityIcon(activity.type)"></i>
+                    </div>
+                </div>
+
+                <!-- Activity Content -->
+                <div class="flex-1 min-w-0">
+                    <a *ngIf="activity.actionUrl" [routerLink]="activity.actionUrl" class="hover:text-blue-600">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ activity.title }}</p>
+                    </a>
+                    <p *ngIf="!activity.actionUrl" class="text-sm font-medium text-gray-900 truncate">{{ activity.title
+                        }}</p>
+
+                    <p *ngIf="activity.description" class="text-sm text-gray-500 truncate">{{ activity.description }}
+                    </p>
+
+                    <p class="text-xs text-gray-400 mt-1">
+                        {{ activity.timestamp | date:'MMM d, h:mm a' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load More -->
+    <div *ngIf="hasMore && showLoadMore" class="p-4 border-t border-gray-200 text-center">
+        <button (click)="loadMore()" [disabled]="isLoading"
+            class="text-blue-600 hover:text-blue-800 text-sm font-medium focus:outline-none"
+            [ngClass]="{'opacity-50 cursor-not-allowed': isLoading}">
+            <span *ngIf="!isLoading">Load More</span>
+            <span *ngIf="isLoading">Loading...</span>
+        </button>
+    </div>
+</div>

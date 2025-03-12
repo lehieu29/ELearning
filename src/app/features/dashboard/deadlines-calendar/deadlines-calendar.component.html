@@ -1,0 +1,136 @@
+<!-- File path: src/app/features/dashboard/deadlines-calendar/deadlines-calendar.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Upcoming Deadlines</h3>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center p-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 text-red-800">
+        {{ error }}
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !error">
+        <!-- Upcoming Deadlines List -->
+        <div class="p-4 border-b border-gray-200">
+            <h4 class="text-base font-medium text-gray-700 mb-3">Next 7 Days</h4>
+
+            <!-- Empty State -->
+            <div *ngIf="upcomingDeadlines.length === 0" class="text-center py-4">
+                <p class="text-gray-500">No upcoming deadlines in the next 7 days</p>
+            </div>
+
+            <!-- Deadlines List -->
+            <div *ngIf="upcomingDeadlines.length > 0" class="space-y-3">
+                <div *ngFor="let deadline of upcomingDeadlines"
+                    class="border border-gray-200 hover:border-blue-300 rounded-lg p-3 transition-colors flex">
+                    <!-- Priority Indicator -->
+                    <div class="flex-shrink-0 w-1 rounded-full mr-3" [ngClass]="getPriorityClass(deadline.priority)">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <h5 class="font-medium text-gray-800">{{ deadline.title }}</h5>
+                            <span class="text-sm text-gray-500 ml-2">{{ deadline.dueDate | date:'MMM d' }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">{{ deadline.courseName }}</p>
+
+                        <!-- Deadline Type Badge -->
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" [ngClass]="{
+                        'bg-purple-100 text-purple-800': deadline.type === 'assignment',
+                        'bg-blue-100 text-blue-800': deadline.type === 'quiz',
+                        'bg-green-100 text-green-800': deadline.type === 'project',
+                        'bg-red-100 text-red-800': deadline.type === 'exam',
+                        'bg-gray-100 text-gray-800': deadline.type === 'other'
+                      }">
+                                {{ deadline.type | titlecase }}
+                            </span>
+
+                            <a [routerLink]="deadline.url" class="text-blue-600 hover:text-blue-800 text-sm">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="p-4">
+            <!-- Calendar Header -->
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-base font-medium text-gray-700">{{ monthNames[selectedMonth.getMonth()] }} {{
+                    selectedMonth.getFullYear() }}</h4>
+
+                <div class="flex space-x-2">
+                    <button (click)="previousMonth()" class="p-1 rounded hover:bg-gray-100" aria-label="Previous month">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button (click)="nextMonth()" class="p-1 rounded hover:bg-gray-100" aria-label="Next month">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="grid grid-cols-7 gap-px bg-gray-200 rounded overflow-hidden">
+                <!-- Weekday Headers -->
+                <div *ngFor="let day of dayNames"
+                    class="bg-gray-100 h-10 flex items-center justify-center text-xs font-medium text-gray-500">
+                    {{ day }}
+                </div>
+
+                <!-- Calendar Days -->
+                <div *ngFor="let day of calendarDays" class="bg-white min-h-14 p-1" [ngClass]="{'opacity-40': !day}">
+                    <div *ngIf="day" class="h-full flex flex-col">
+                        <!-- Day Number -->
+                        <div class="flex justify-between">
+                            <span class="text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center"
+                                [ngClass]="{'bg-blue-500 text-white': isToday(day), 'text-gray-700': !isToday(day)}">
+                                {{ day.getDate() }}
+                            </span>
+
+                            <!-- Deadline Indicators -->
+                            <div *ngIf="hasDeadlines(day)" class="flex space-x-0.5">
+                                <div *ngFor="let deadline of getDeadlinesForDay(day) | slice:0:2"
+                                    class="w-2 h-2 rounded-full" [ngClass]="getPriorityClass(deadline.priority)">
+                                </div>
+                                <div *ngIf="getDeadlinesForDay(day).length > 2"
+                                    class="w-2 h-2 rounded-full bg-gray-400"></div>
+                            </div>
+                        </div>
+
+                        <!-- Deadline Preview -->
+                        <div *ngIf="hasDeadlines(day)" class="mt-1 text-xs overflow-hidden space-y-1">
+                            <div *ngFor="let deadline of getDeadlinesForDay(day) | slice:0:2"
+                                class="truncate text-gray-700 bg-gray-50 px-1 py-0.5 rounded-sm"
+                                [title]="deadline.title">
+                                {{ deadline.title }}
+                            </div>
+                            <div *ngIf="getDeadlinesForDay(day).length > 2" class="text-gray-500 text-center">
+                                +{{ getDeadlinesForDay(day).length - 2 }} more
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

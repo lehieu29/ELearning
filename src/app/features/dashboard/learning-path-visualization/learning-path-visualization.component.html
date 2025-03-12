@@ -1,0 +1,128 @@
+<!-- File path: src/app/features/dashboard/learning-path-visualization/learning-path-visualization.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Your Learning Path</h3>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="bg-red-50 text-red-800 p-4 rounded-md">
+        {{ error }}
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && learningPath.length === 0" class="text-center py-8">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p class="mt-4 text-gray-600">No learning path available yet</p>
+        <a routerLink="/courses" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
+            Browse courses to get started
+        </a>
+    </div>
+
+    <!-- Learning Path Visualization -->
+    <div *ngIf="!isLoading && !error && learningPath.length > 0" class="relative">
+        <!-- Vertical Timeline with Nodes -->
+        <div class="space-y-8">
+            <ng-container *ngFor="let node of learningPath; let i = index; let last = last">
+                <div class="flex items-start">
+                    <!-- Path Node -->
+                    <div class="flex-shrink-0 relative">
+                        <!-- Node Indicator -->
+                        <div [ngClass]="[
+                  'w-8 h-8 rounded-full flex items-center justify-center text-white',
+                  getStatusColor(node.status)
+                ]">
+                            <ng-container [ngSwitch]="node.type">
+                                <svg *ngSwitchCase="'course'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                                <svg *ngSwitchCase="'module'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                    <polyline points="2 17 12 22 22 17"></polyline>
+                                    <polyline points="2 12 12 17 22 12"></polyline>
+                                </svg>
+                                <svg *ngSwitchCase="'certificate'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="8" r="7"></circle>
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                </svg>
+                            </ng-container>
+                        </div>
+
+                        <!-- Vertical Line -->
+                        <div *ngIf="!last"
+                            class="absolute top-8 left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-gray-200"></div>
+                    </div>
+
+                    <!-- Node Content -->
+                    <div class="ml-4 flex-1">
+                        <div class="flex flex-col">
+                            <div class="text-base font-medium text-gray-900">{{ node.title }}</div>
+
+                            <!-- Progress indicator for course nodes -->
+                            <div *ngIf="node.type === 'course' && node.progress !== undefined" class="mt-2 space-y-1">
+                                <div class="flex justify-between text-xs text-gray-600">
+                                    <span>Progress</span>
+                                    <span>{{ node.progress }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-blue-500 h-1.5 rounded-full" [style.width.%]="node.progress"></div>
+                                </div>
+                            </div>
+
+                            <!-- Certificate card -->
+                            <div *ngIf="node.type === 'certificate'"
+                                class="mt-2 p-3 border border-green-200 bg-green-50 rounded-md">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                    <span class="text-sm text-green-700">Complete all courses to earn your
+                                        certificate</span>
+                                </div>
+                            </div>
+
+                            <!-- Child nodes (for modules) -->
+                            <div *ngIf="node.children && node.children.length > 0"
+                                class="mt-4 pl-4 border-l-2 border-gray-200 space-y-3">
+                                <div *ngFor="let child of node.children" class="flex items-center">
+                                    <div [ngClass]="[
+                        'w-2 h-2 rounded-full mr-2',
+                        getStatusColor(child.status)
+                      ]"></div>
+                                    <div class="text-sm">
+                                        <a [routerLink]="['/courses', child.id]"
+                                            class="text-gray-700 hover:text-blue-600">
+                                            {{ child.title }}
+                                        </a>
+                                        <div *ngIf="child.progress !== undefined" class="text-xs text-gray-500">
+                                            {{ child.status === 'completed' ? 'Completed' :
+                                            child.status === 'in-progress' ? child.progress + '% complete' :
+                                            child.status === 'locked' ? 'Locked' : 'Available' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>

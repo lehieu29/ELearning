@@ -1,0 +1,54 @@
+<!-- File path: src/app/features/dashboard/welcome-banner/welcome-banner.component.html -->
+<div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg overflow-hidden">
+    <div class="px-6 py-8 md:px-10 md:py-12">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex justify-center items-center h-20">
+            <app-loader size="md" color="white"></app-loader>
+        </div>
+
+        <!-- Content -->
+        <div *ngIf="!isLoading" class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="mb-6 md:mb-0">
+                <h1 class="text-2xl md:text-3xl font-bold text-white">
+                    {{ greeting }}, {{ getUserDisplayName() }}!
+                </h1>
+                <p class="mt-2 text-blue-100">
+                    {{ motivationalQuote }}
+                </p>
+
+                <!-- Quick Stats -->
+                <div class="mt-6 flex space-x-4">
+                    <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2">
+                        <p class="text-xs uppercase text-blue-100">Today's Goal</p>
+                        <p class="font-bold text-white text-xl">30 min</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2">
+                        <p class="text-xs uppercase text-blue-100">Streak</p>
+                        <p class="font-bold text-white text-xl">5 days</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="flex flex-col space-y-3 md:text-right">
+                <a routerLink="/courses"
+                    class="inline-block bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-colors">
+                    Explore Courses
+                </a>
+                <a routerLink="/dashboard/continue-learning"
+                    class="inline-block bg-blue-700 bg-opacity-50 text-white hover:bg-opacity-70 px-6 py-3 rounded-lg font-medium transition-colors">
+                    Continue Learning
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decorative Wave Pattern -->
+    <div class="h-16 bg-white overflow-hidden">
+        <svg class="w-full h-full text-blue-500 fill-current" preserveAspectRatio="none" viewBox="0 0 1200 120">
+            <path
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z">
+            </path>
+        </svg>
+    </div>
+</div>

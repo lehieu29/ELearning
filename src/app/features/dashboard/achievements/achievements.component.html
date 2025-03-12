@@ -1,0 +1,116 @@
+<!-- File path: src/app/features/dashboard/achievements/achievements.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Your Achievements</h3>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center p-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 text-red-800">
+        {{ error }}
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !error" class="p-4">
+        <!-- Filters -->
+        <div class="flex flex-wrap space-x-2 mb-6">
+            <button (click)="filterAchievements('all')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="activeFilter === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                All ({{ achievements.length }})
+            </button>
+            <button (click)="filterAchievements('unlocked')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="activeFilter === 'unlocked' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                Unlocked ({{ unlockedAchievements.length }})
+            </button>
+            <button (click)="filterAchievements('in-progress')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="activeFilter === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                In Progress ({{ inProgressAchievements.length }})
+            </button>
+            <button (click)="filterAchievements('locked')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="activeFilter === 'locked' ? 'bg-gray-100 text-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                Locked ({{ lockedAchievements.length }})
+            </button>
+        </div>
+
+        <!-- Achievement Stats -->
+        <div class="flex flex-wrap justify-between mb-6 bg-gray-50 p-4 rounded-lg">
+            <div class="text-center px-4 py-2">
+                <div class="text-2xl font-bold text-gray-700">{{ achievements.length }}</div>
+                <div class="text-sm text-gray-500">Total</div>
+            </div>
+            <div class="text-center px-4 py-2">
+                <div class="text-2xl font-bold text-green-600">{{ unlockedAchievements.length }}</div>
+                <div class="text-sm text-gray-500">Unlocked</div>
+            </div>
+            <div class="text-center px-4 py-2">
+                <div class="text-2xl font-bold text-blue-600">{{ inProgressAchievements.length }}</div>
+                <div class="text-sm text-gray-500">In Progress</div>
+            </div>
+            <div class="text-center px-4 py-2">
+                <div class="text-2xl font-bold text-gray-400">{{ lockedAchievements.length }}</div>
+                <div class="text-sm text-gray-500">Locked</div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="getFilteredAchievements().length === 0" class="text-center py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 7h-3m3 4h-2m2 4h-1m1 4H8M4 4v16"></path>
+                <path
+                    d="M12 4c1.05 0 2.55 2 2.55 2H20l-5 4.5 1.5 4.5h-3.8c0 1-2.25 3-4.25 3s-4.25-2-4.25-3H4v-1l2-1V8l-2-4h8Z">
+                </path>
+            </svg>
+            <p class="mt-3 text-gray-600">No achievements found</p>
+        </div>
+
+        <!-- Achievements Grid -->
+        <div *ngIf="getFilteredAchievements().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let achievement of getFilteredAchievements()"
+                class="border rounded-lg overflow-hidden transition-transform hover:shadow-md"
+                [ngClass]="getAchievementClass(achievement)">
+                <div class="p-4">
+                    <div class="flex items-start">
+                        <!-- Badge/Icon -->
+                        <div class="flex-shrink-0 mr-4">
+                            <div class="h-12 w-12 rounded-full bg-white flex items-center justify-center">
+                                <i *ngIf="!achievement.badgeImageUrl" [class]="getAchievementIcon(achievement)"
+                                    class="text-2xl"></i>
+                                <img *ngIf="achievement.badgeImageUrl" [src]="achievement.badgeImageUrl"
+                                    [alt]="achievement.title" class="h-10 w-10">
+                            </div>
+                        </div>
+
+                        <!-- Achievement Details -->
+                        <div class="flex-1">
+                            <h4 class="text-base font-medium">{{ achievement.title }}</h4>
+                            <p class="text-sm mt-1">{{ achievement.description }}</p>
+
+                            <!-- Progress (if not unlocked) -->
+                            <div *ngIf="!achievement.isUnlocked && achievement.progress !== undefined && achievement.maxProgress"
+                                class="mt-3">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span>Progress</span>
+                                    <span>{{ achievement.progress }} / {{ achievement.maxProgress }}</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500 rounded-full"
+                                        [style.width.%]="(achievement.progress / achievement.maxProgress) * 100"></div>
+                                </div>
+                            </div>
+
+                            <!-- Earned Date (if unlocked) -->
+                            <div *ngIf="achievement.isUnlocked && achievement.earnedDate" class="mt-2 text-xs">
+                                <span>Earned {{ achievement.earnedDate | date:'mediumDate' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
