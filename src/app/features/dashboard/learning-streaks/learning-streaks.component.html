@@ -1,0 +1,165 @@
+<!-- File path: src/app/features/dashboard/learning-streaks/learning-streaks.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Your Learning Streaks</h3>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center p-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 text-red-800">
+        {{ error }}
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !error" class="p-4">
+        <!-- Streak Highlights -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <!-- Current Streak -->
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="w-12 h-12 mx-auto mb-2 rounded-full text-white flex items-center justify-center text-xl font-bold"
+                    [ngClass]="getStreakColor(currentStreak)">
+                    {{ currentStreak }}
+                </div>
+                <h4 class="text-sm font-medium text-gray-700">Current Streak</h4>
+                <p class="text-xs text-gray-500">consecutive days</p>
+            </div>
+
+            <!-- Longest Streak -->
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="w-12 h-12 mx-auto mb-2 rounded-full text-white flex items-center justify-center text-xl font-bold"
+                    [ngClass]="getStreakColor(longestStreak)">
+                    {{ longestStreak }}
+                </div>
+                <h4 class="text-sm font-medium text-gray-700">Longest Streak</h4>
+                <p class="text-xs text-gray-500">consecutive days</p>
+            </div>
+
+            <!-- Total Days Learned -->
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div
+                    class="w-12 h-12 mx-auto mb-2 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl font-bold">
+                    {{ totalDaysLearned }}
+                </div>
+                <h4 class="text-sm font-medium text-gray-700">Total Days</h4>
+                <p class="text-xs text-gray-500">of learning</p>
+            </div>
+        </div>
+
+        <!-- Time Period Filter -->
+        <div class="mb-6 flex space-x-2">
+            <button (click)="changeTimePeriod('week')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="timePeriod === 'week' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                Week
+            </button>
+            <button (click)="changeTimePeriod('month')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="timePeriod === 'month' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                Month
+            </button>
+            <button (click)="changeTimePeriod('year')" class="px-3 py-1 text-sm rounded-full transition-colors"
+                [ngClass]="timePeriod === 'year' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                Year
+            </button>
+        </div>
+
+        <!-- Activity Calendar -->
+        <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Learning Activity</h4>
+
+            <!-- Calendar Grid -->
+            <div class="grid gap-1" [ngClass]="{
+                    'grid-cols-7': timePeriod === 'week',
+                    'grid-cols-15': timePeriod === 'month',
+                    'grid-cols-52': timePeriod === 'year'
+                }">
+
+                <!-- Week View -->
+                <ng-container *ngIf="timePeriod === 'week'">
+                    <!-- Day Headers -->
+                    <div *ngFor="let day of dayNames" class="text-xs text-center text-gray-500 font-medium">
+                        {{ day }}
+                    </div>
+
+                    <!-- Activity Cells (Last 7 days) -->
+                    <ng-container *ngFor="let day of calendarDays.slice(0, 7).reverse()">
+                        <div class="w-full aspect-square rounded-sm hover:ring-2 hover:ring-blue-400 cursor-pointer transition-all tooltip"
+                            [ngClass]="getActivityColorClass(day.minutesLearned)" [title]="getActivityTooltip(day)">
+                        </div>
+                    </ng-container>
+                </ng-container>
+
+                <!-- Month View -->
+                <ng-container *ngIf="timePeriod === 'month'">
+                    <!-- Activity Cells (Last 30 days) -->
+                    <ng-container *ngFor="let day of calendarDays.slice(0, 30).reverse()">
+                        <div class="w-full aspect-square rounded-sm hover:ring-2 hover:ring-blue-400 cursor-pointer transition-all tooltip"
+                            [ngClass]="getActivityColorClass(day.minutesLearned)" [title]="getActivityTooltip(day)">
+                        </div>
+                    </ng-container>
+                </ng-container>
+
+                <!-- Year View -->
+                <ng-container *ngIf="timePeriod === 'year'">
+                    <!-- Activity Cells (Last 365 days, group by week) -->
+                    <ng-container *ngFor="let week of weekSummaries">
+                        <div class="w-full aspect-square rounded-sm hover:ring-2 hover:ring-blue-400 cursor-pointer transition-all tooltip"
+                            [ngClass]="getActivityColorClass(week.averageMinutesPerDay * week.daysActive)"
+                            [title]="formatWeekRange(week.weekStart, week.weekEnd) + ': ' + formatMinutes(week.totalMinutes) + ' of learning'">
+                        </div>
+                    </ng-container>
+                </ng-container>
+            </div>
+
+            <!-- Calendar Legend -->
+            <div class="flex items-center justify-end mt-2 text-xs text-gray-500">
+                <span class="mr-1">Less</span>
+                <div class="w-3 h-3 rounded-sm bg-gray-200 mr-0.5"></div>
+                <div class="w-3 h-3 rounded-sm bg-green-200 mr-0.5"></div>
+                <div class="w-3 h-3 rounded-sm bg-green-300 mr-0.5"></div>
+                <div class="w-3 h-3 rounded-sm bg-green-400 mr-0.5"></div>
+                <div class="w-3 h-3 rounded-sm bg-green-500 mr-1"></div>
+                <span>More</span>
+            </div>
+        </div>
+
+        <!-- Weekly Summary -->
+        <div>
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Weekly Activity Summary</h4>
+
+            <div class="space-y-4">
+                <ng-container *ngFor="let week of weekSummaries.slice(0, 4)">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium">{{ formatWeekRange(week.weekStart, week.weekEnd) }}</span>
+                            <span class="text-xs text-gray-500">{{ week.daysActive }} active days</span>
+                        </div>
+
+                        <!-- Day Indicators -->
+                        <div class="flex space-x-1 mb-3">
+                            <ng-container *ngFor="let day of [0, 1, 2, 3, 4, 5, 6]">
+                                <div class="w-full h-1.5 rounded-full"
+                                    [ngClass]="(week.daysActive > day) ? 'bg-blue-500' : 'bg-gray-200'">
+                                </div>
+                            </ng-container>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="text-xl font-semibold">{{ formatMinutes(week.totalMinutes) }}</span>
+                                <span class="text-xs text-gray-500 ml-1">total</span>
+                            </div>
+
+                            <div class="text-right">
+                                <span class="text-sm font-medium">{{ formatMinutes(week.averageMinutesPerDay) }}</span>
+                                <span class="text-xs text-gray-500 ml-1">per active day</span>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</div>

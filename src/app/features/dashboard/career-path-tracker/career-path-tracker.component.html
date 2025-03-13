@@ -1,0 +1,231 @@
+<!-- File path: src/app/features/dashboard/career-path-tracker/career-path-tracker.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Career Path Tracker</h3>
+        <p class="text-sm text-gray-600 mt-1">Track your progress toward specific career paths based on your skills and
+            courses</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center p-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 text-red-800">
+        {{ error }}
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !error" class="p-4">
+        <!-- Filters and Search -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-3 md:space-y-0">
+            <!-- Filter Options -->
+            <div class="flex flex-wrap space-x-2">
+                <button (click)="onFilterChange('all')" class="px-3 py-1 text-sm rounded-full transition-colors mb-2"
+                    [ngClass]="filterBy === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                    All Paths
+                </button>
+                <button (click)="onFilterChange('recommended')"
+                    class="px-3 py-1 text-sm rounded-full transition-colors mb-2"
+                    [ngClass]="filterBy === 'recommended' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                    Recommended
+                </button>
+                <button (click)="onFilterChange('in-progress')"
+                    class="px-3 py-1 text-sm rounded-full transition-colors mb-2"
+                    [ngClass]="filterBy === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                    In Progress
+                </button>
+                <button (click)="onFilterChange('highest-match')"
+                    class="px-3 py-1 text-sm rounded-full transition-colors mb-2"
+                    [ngClass]="filterBy === 'highest-match' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                    Best Match
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="w-full md:w-64">
+                <app-search-bar [placeholder]="'Search career paths...'" (search)="onSearch($event)"></app-search-bar>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div *ngIf="filteredPaths.length === 0" class="bg-gray-50 rounded-lg p-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">No career paths found</h3>
+            <p class="mt-1 text-gray-500">Try adjusting your search or filter criteria.</p>
+        </div>
+
+        <!-- Career Path Content -->
+        <div *ngIf="filteredPaths.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Career Paths List (Sidebar) -->
+            <div class="md:col-span-1 bg-gray-50 rounded-lg p-4 overflow-y-auto max-h-[600px]">
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Career Paths</h4>
+
+                <div class="space-y-3">
+                    <div *ngFor="let path of filteredPaths" (click)="selectPath(path)"
+                        class="border rounded-lg p-3 hover:border-blue-300 cursor-pointer transition-all"
+                        [ngClass]="selectedPath?.id === path.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'">
+
+                        <div class="flex justify-between items-start">
+                            <h5 class="font-medium text-gray-900">{{ path.title }}</h5>
+                            <span class="text-xs px-2 py-0.5 rounded-full"
+                                [ngClass]="getDemandBadgeClass(path.demandLevel)">
+                                {{ path.demandLevel | titlecase }}
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mt-2">
+                            <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <span>Progress</span>
+                                <span>{{ path.progress }}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div class="h-1.5 rounded-full bg-blue-500" [style.width.%]="path.progress"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-2 text-xs">
+                            <span class="text-gray-500">{{ path.estimatedTimeToComplete }}</span>
+                            <span [ngClass]="getMatchScoreClass(path.matchScore)">
+                                {{ path.matchScore }}% match
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Career Path Details -->
+            <div *ngIf="selectedPath" class="md:col-span-2 bg-white">
+                <div class="mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ selectedPath.title }}</h3>
+                    <p class="text-gray-600 mt-1">{{ selectedPath.description }}</p>
+
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-sm text-gray-500">Median Salary</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ selectedPath.medianSalary }}</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-sm text-gray-500">Timeframe</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ selectedPath.estimatedTimeToComplete }}
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-sm text-gray-500">Match Score</p>
+                            <p class="text-lg font-semibold" [ngClass]="getMatchScoreClass(selectedPath.matchScore)">
+                                {{ selectedPath.matchScore }}%
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Required Skills -->
+                <div class="mb-4">
+                    <h4 class="text-lg font-medium text-gray-800 mb-2">Required Skills</h4>
+
+                    <div class="space-y-4">
+                        <div *ngFor="let skill of selectedPath.requiredSkills"
+                            class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h5 class="font-medium">{{ skill.name }}</h5>
+                                <span class="text-sm">
+                                    {{ skill.currentProficiency }} / {{ skill.requiredProficiency }}
+                                </span>
+                            </div>
+
+                            <!-- Skill Progress Bar -->
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                                <div class="h-2 rounded-full bg-blue-500"
+                                    [style.width.%]="(skill.currentProficiency / skill.requiredProficiency) * 100">
+                                </div>
+                            </div>
+
+                            <!-- Related Courses -->
+                            <h6 class="text-sm font-medium text-gray-700 mb-2">Related Courses</h6>
+                            <div class="space-y-2">
+                                <div *ngFor="let course of skill.courses"
+                                    class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center">
+                                        <svg *ngIf="course.completed" class="h-4 w-4 text-green-500 mr-2" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"
+                                                fill="none"></circle>
+                                            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                        <svg *ngIf="!course.completed && course.enrolled"
+                                            class="h-4 w-4 text-blue-500 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"
+                                                fill="none"></circle>
+                                            <path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                        <svg *ngIf="!course.completed && !course.enrolled"
+                                            class="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"
+                                                fill="none"></circle>
+                                        </svg>
+                                        <span [ngClass]="{
+                                            'text-green-700': course.completed,
+                                            'text-blue-700': !course.completed && course.enrolled,
+                                            'text-gray-700': !course.completed && !course.enrolled
+                                        }">{{ course.title }}</span>
+                                    </div>
+
+                                    <a *ngIf="!course.completed && !course.enrolled"
+                                        [routerLink]="['/courses', course.id]"
+                                        class="text-xs text-blue-600 hover:text-blue-800">
+                                        Enroll
+                                    </a>
+                                    <a *ngIf="!course.completed && course.enrolled"
+                                        [routerLink]="['/courses', course.id]"
+                                        class="text-xs text-blue-600 hover:text-blue-800">
+                                        Continue
+                                    </a>
+                                    <span *ngIf="course.completed" class="text-xs text-green-600">
+                                        Completed
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Recommended Step -->
+                <div *ngIf="getNextRecommendedCourse()" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="text-lg font-medium text-blue-800 mb-2">Next Recommended Step</h4>
+                    <p class="text-blue-700 mb-3">To progress in this career path, focus on:</p>
+
+                    <a [routerLink]="['/courses', getNextRecommendedCourse()?.id]"
+                        class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <svg class="h-5 w-5 text-blue-700" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-gray-800">{{ getNextRecommendedCourse()?.title }}</h5>
+                                <p class="text-sm text-gray-600">Start this course to improve your skills</p>
+                            </div>
+                        </div>
+
+                        <span class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md">
+                            Start Learning
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

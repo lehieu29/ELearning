@@ -25,6 +25,14 @@ export class RecommendationEngineComponent extends BaseComponent implements OnIn
 
   activeFilter: 'all' | 'category' | 'popular' | 'career' | 'skill' = 'all';
 
+  filters = [
+    { label: 'All', value: 'all' },
+    { label: 'By Category', value: 'category' },
+    { label: 'Popular', value: 'popular' },
+    { label: 'Career', value: 'career' },
+    { label: 'Skills', value: 'skill' }
+  ];
+
   constructor(
     private courseService: CourseService,
     private http: HttpService
@@ -38,6 +46,7 @@ export class RecommendationEngineComponent extends BaseComponent implements OnIn
 
   loadRecommendations(): void {
     this.isLoading = true;
+    this.error = '';
 
     this.http.get<ApiResponse<RecommendedCourse[]>>('user/recommendations')
       .pipe(takeUntil(this._onDestroySub))

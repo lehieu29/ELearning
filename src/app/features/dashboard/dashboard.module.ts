@@ -16,6 +16,10 @@ import { AchievementsComponent } from './achievements/achievements.component';
 import { WelcomeBannerComponent } from './welcome-banner/welcome-banner.component';
 import { DeadlinesCalendarComponent } from './deadlines-calendar/deadlines-calendar.component';
 import { RecommendationEngineComponent } from './recommendation-engine/recommendation-engine.component';
+import { SkillGraphComponent } from './skill-graph/skill-graph.component';
+import { LearningStreaksComponent } from './learning-streaks/learning-streaks.component';
+import { CareerPathTrackerComponent } from './career-path-tracker/career-path-tracker.component';
+import { CourseCompletionStatsComponent } from './course-completion-stats/course-completion-stats.component';
 
 const routes: Routes = [
     {
@@ -38,7 +42,11 @@ const routes: Routes = [
         AchievementsComponent,
         WelcomeBannerComponent,
         DeadlinesCalendarComponent,
-        RecommendationEngineComponent
+        RecommendationEngineComponent,
+        SkillGraphComponent,
+        LearningStreaksComponent,
+        CareerPathTrackerComponent,
+        CourseCompletionStatsComponent
     ],
     imports: [
         CommonModule,

@@ -1,1 +1,83 @@
-<p>recommendation-engine works!</p>
+<!-- File path: src/app/features/dashboard/recommendation-engine/recommendation-engine.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">Recommended For You</h3>
+            <div class="flex space-x-2">
+                <button *ngFor="let filter of filters" (click)="filterRecommendations(filter.value)"
+                    class="px-3 py-1 text-sm rounded-full transition-colors" [ngClass]="activeFilter === filter.value 
+              ? 'bg-blue-100 text-blue-800' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                    {{ filter.label }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center p-16">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-6 text-center">
+        <p class="text-red-500">{{ error }}</p>
+        <button (click)="loadRecommendations()" class="mt-2 text-blue-500 hover:underline">Try Again</button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && filteredCourses.length === 0" class="p-16 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+        <p class="mt-4 text-lg font-medium text-gray-500">No recommendations yet</p>
+        <p class="mt-2 text-gray-500">Keep learning and we'll suggest courses based on your interests</p>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !error && filteredCourses.length > 0" class="p-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div *ngFor="let course of filteredCourses"
+                class="border border-gray-200 rounded-md p-4 hover:border-blue-300 transition-colors">
+                <div class="flex">
+                    <img [src]="course.thumbnail" [alt]="course.title" class="w-20 h-20 object-cover rounded-md mr-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-base font-medium text-gray-900 truncate">{{ course.title }}</h4>
+                            <span class="ml-2 text-xs py-1 px-2 rounded-full"
+                                [ngClass]="getMatchScoreClass(course.matchScore)">
+                                {{ course.matchScore }}% match
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 line-clamp-2 mt-1">{{ course.description }}</p>
+
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-xs font-medium px-2 py-0.5 bg-gray-100 text-gray-800 rounded">{{
+                                course.level }}</span>
+                            <div class="flex items-center text-yellow-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path
+                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                <span class="ml-1 text-xs text-gray-600">{{ course.rating | number:'1.1-1' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <a [routerLink]="['/courses', course.id]"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View Course
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="course.reason" class="mt-2 border-t border-gray-100 pt-2">
+                    <p class="text-xs text-gray-500 italic">{{ course.reason }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

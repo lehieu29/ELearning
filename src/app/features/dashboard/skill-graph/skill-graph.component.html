@@ -1,0 +1,113 @@
+<!-- File path: src/app/features/dashboard/skill-graph/skill-graph.component.html -->
+<div class="w-full bg-white rounded-lg shadow-sm">
+    <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Your Skill Graph</h3>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center p-6">
+        <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="p-4 text-red-800">
+        {{ error }}
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !error" class="p-4">
+        <!-- Category Filters -->
+        <div class="flex flex-wrap space-x-2 mb-6">
+            <button (click)="changeCategory('all')" class="px-3 py-1 text-sm rounded-full transition-colors mb-2"
+                [ngClass]="activeCategory === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                All Skills
+            </button>
+            <button *ngFor="let category of skillCategories" (click)="changeCategory(category.name)"
+                class="px-3 py-1 text-sm rounded-full transition-colors mb-2"
+                [ngClass]="activeCategory === category.name ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                {{ category.name }}
+            </button>
+        </div>
+
+        <!-- Skill Visualization Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Radar Chart -->
+            <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-center min-h-64">
+                <!-- This would be the radar chart -->
+                <!-- In a real implementation, this would use a charting library like Chart.js or D3.js -->
+                <div class="text-center">
+                    <svg viewBox="0 0 300 300" class="w-full max-w-xs mx-auto">
+                        <!-- Background Web -->
+                        <circle cx="150" cy="150" r="120" fill="none" stroke="#e2e8f0" stroke-width="1" />
+                        <circle cx="150" cy="150" r="90" fill="none" stroke="#e2e8f0" stroke-width="1" />
+                        <circle cx="150" cy="150" r="60" fill="none" stroke="#e2e8f0" stroke-width="1" />
+                        <circle cx="150" cy="150" r="30" fill="none" stroke="#e2e8f0" stroke-width="1" />
+
+                        <!-- Skill Data Points -->
+                        <ng-container *ngFor="let skill of chartData; let i = index">
+                            <!-- Calculate position based on angle and proficiency -->
+                            <ng-container *ngIf="chartData.length > 0">
+                                <ng-container *ngLet="i * (360 / chartData.length) * (Math.PI / 180) as angle">
+                                    <ng-container *ngLet="skill.value / 100 * 120 as radius">
+                                        <ng-container *ngLet="150 + radius * Math.cos(angle) as x">
+                                            <ng-container *ngLet="150 + radius * Math.sin(angle) as y">
+                                                <!-- Data point -->
+                                                <circle [attr.cx]="x" [attr.cy]="y" r="4" [attr.fill]="skill.color" />
+
+                                                <!-- Label -->
+                                                <text [attr.x]="150 + 140 * Math.cos(angle)"
+                                                    [attr.y]="150 + 140 * Math.sin(angle)" fill="#4a5568" font-size="10"
+                                                    text-anchor="middle">
+                                                    {{ skill.name }}
+                                                </text>
+                                            </ng-container>
+                                        </ng-container>
+                                    </ng-container>
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+
+                        <!-- Connect the dots to form the polygon -->
+                        <ng-container *ngIf="chartData.length > 0">
+                            <polygon [attr.points]="chartData.map((skill, i) => {
+                                    const angle = i * (360 / chartData.length) * (Math.PI / 180);
+                                    const radius = skill.value / 100 * 120;
+                                    return (150 + radius * Math.cos(angle)) + ',' + (150 + radius * Math.sin(angle));
+                                }).join(' ')" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="2" />
+                        </ng-container>
+                    </svg>
+
+                    <p class="text-xs text-gray-500 mt-2">Your skill distribution</p>
+                </div>
+            </div>
+
+            <!-- Skill List -->
+            <div class="space-y-3">
+                <ng-container *ngFor="let skill of chartData">
+                    <div class="border rounded-lg p-3 bg-white">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 rounded-full mr-2" [style.background-color]="skill.color"></div>
+                                <h4 class="font-medium">{{ skill.name }}</h4>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full" [ngClass]="getSkillLevelClass(skill.value)">
+                                {{ getSkillLevelText(skill.value) }}
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full" [style.width.%]="skill.value"
+                                [style.background-color]="skill.color"></div>
+                        </div>
+
+                        <div class="flex justify-between mt-2 text-xs text-gray-500">
+                            <span>{{ skill.value }}%</span>
+                            <span>{{ skill.courseCount }} course{{ skill.courseCount !== 1 ? 's' : '' }}</span>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</div>
