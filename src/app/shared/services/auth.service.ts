@@ -23,6 +23,13 @@ export class AuthService {
   ) {
     this.loadUserFromStorage();
   }
+
+  /**
+   * Quên mật khẩu/Reset password
+   */
+  requestPasswordReset(email: string): Observable<any> {
+    return this.http.post<AuthResponse>('auth/reset', email);
+  }
   
   /**
    * Tải thông tin người dùng từ localStorage khi khởi tạo service

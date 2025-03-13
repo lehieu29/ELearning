@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
+import { BaseComponent } from '@app/shared/components/base/base-component';
+import { LoginRequest, RegisterRequest } from '@app/shared/models/auth.model';
 import { AuthService } from '@app/shared/services/auth.service';
+import { takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -9,7 +12,7 @@ import { AuthService } from '@app/shared/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent extends BaseComponent implements OnInit {
   activeTab: 'login' | 'register' = 'login';
   loginForm: FormGroup;
   registerForm: FormGroup;
@@ -19,7 +22,9 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) { 
+    super();
+  }
 
   ngOnInit(): void {
     this.initLoginForm();
@@ -128,8 +133,13 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     
     const { email, password } = this.loginForm.value;
+
+    const body: LoginRequest = {
+      email,
+      password
+    }
     
-    this.authService.login(email, password).subscribe(
+    this.authService.login(body).subscribe(
       success => {
         this.isLoading = false;
         if (success) {
@@ -157,8 +167,12 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     
     const { fullName, email, password } = this.registerForm.value;
-    
-    this.authService.register(fullName, email, password).subscribe(
+    const body: RegisterRequest = {
+      fullName,
+      email,
+      password
+    }
+    this.authService.register(body).pipe(takeUntil(this._onDestroySub)).subscribe(
       success => {
         this.isLoading = false;
         if (success) {

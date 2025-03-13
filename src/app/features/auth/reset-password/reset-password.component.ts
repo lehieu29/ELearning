@@ -1,49 +1,53 @@
+// File path: src/app/features/auth/reset-password/reset-password.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@app/shared/services/auth.service';
+import { BaseComponent } from '@app/shared/components/base/base-component';
+import { takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
   standalone: false,
-  templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss']
+  templateUrl: './reset-password.component.html'
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent extends BaseComponent implements OnInit {
   resetForm: FormGroup;
   resetToken: string;
   isLoading = false;
   resetComplete = false;
   errorMessage = '';
-  
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService
-  ) { }
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.resetToken = this.route.snapshot.queryParams['token'];
-    
+
     if (!this.resetToken) {
       this.errorMessage = 'Invalid or expired reset link. Please request a new password reset.';
       return;
     }
-    
+
     this.initResetForm();
   }
 
   initResetForm(): void {
     this.resetForm = this.fb.group({
       password: ['', [
-        Validators.required, 
+        Validators.required,
         Validators.minLength(8),
         this.passwordStrengthValidator
       ]],
       confirmPassword: ['', [Validators.required]]
-    }, { 
-      validators: this.passwordMatchValidator 
+    }, {
+      validators: this.passwordMatchValidator
     });
   }
 
@@ -84,27 +88,27 @@ export class ResetPasswordComponent implements OnInit {
 
   getErrorMessage(controlName: string): string {
     const control = this.resetForm.get(controlName);
-    
+
     if (!control || !control.errors || !control.touched) {
       return '';
     }
-    
+
     if (control.errors.required) {
       return 'This field is required';
     }
-    
+
     if (control.errors.minlength) {
       return `Must be at least ${control.errors.minlength.requiredLength} characters`;
     }
-    
+
     if (control.errors.weakPassword) {
       return 'Password must include uppercase, lowercase, number and special character';
     }
-    
+
     if (control.errors.passwordMismatch) {
       return 'Passwords do not match';
     }
-    
+
     return 'Invalid input';
   }
 
@@ -113,20 +117,22 @@ export class ResetPasswordComponent implements OnInit {
       this.resetForm.markAllAsTouched();
       return;
     }
-    
+
     this.isLoading = true;
     const password = this.resetForm.get('password').value;
-    
-    this.authService.resetPassword(this.resetToken, password).subscribe(
-      success => {
-        this.isLoading = false;
-        this.resetComplete = true;
-      },
-      error => {
-        this.isLoading = false;
-        this.errorMessage = 'Unable to reset your password. The reset link may have expired.';
-      }
-    );
+
+    this.authService.resetPassword(this.resetToken, password)
+      .pipe(takeUntil(this._onDestroySub))
+      .subscribe({
+        next: success => {
+          this.isLoading = false;
+          this.resetComplete = true;
+        },
+        error: error => {
+          this.isLoading = false;
+          this.errorMessage = 'Unable to reset your password. The reset link may have expired.';
+        }
+      });
   }
 
   navigateToLogin(): void {

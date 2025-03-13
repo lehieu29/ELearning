@@ -11,7 +11,7 @@ export interface RegisterRequest {
     fullName: string;
     email: string;
     password: string;
-    termsAccepted: boolean;
+    termsAccepted?: boolean;
 }
 
 export interface AuthResponse {
