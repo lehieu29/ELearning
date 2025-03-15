@@ -1,0 +1,152 @@
+<!-- File path: src/app/features/courses/discussion/threaded-comments/threaded-comments.component.html -->
+<div>
+    <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+        {{ error }}
+        <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
+            <span class="text-xl">&times;</span>
+        </button>
+    </div>
+
+    <div *ngIf="comments.length === 0" class="text-center py-6 text-gray-500">
+        No comments yet. Be the first to comment!
+    </div>
+
+    <div class="space-y-6">
+        <ng-container *ngFor="let comment of rootComments">
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div class="p-4">
+                    <div class="flex items-start">
+                        <div class="mr-3">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
+                                {{ comment.author.name.charAt(0) }}
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">{{ comment.author.name }}</h4>
+                                    <p class="text-xs text-gray-500">{{ comment.createdAt | date:'medium' }}</p>
+                                </div>
+                                <div>
+                                    <button (click)="startReply(comment.id)"
+                                        class="text-sm text-blue-600 hover:text-blue-800">
+                                        Reply
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-gray-700">
+                                {{ comment.text }}
+                            </div>
+                            <div class="mt-2 flex items-center space-x-4">
+                                <button (click)="likeComment(comment)" class="flex items-center text-sm"
+                                    [ngClass]="{'text-blue-600': comment.isLiked, 'text-gray-500 hover:text-blue-600': !comment.isLiked}">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z">
+                                        </path>
+                                    </svg>
+                                    {{ comment.likeCount || 0 }}
+                                </button>
+                            </div>
+
+                            <!-- Reply Form -->
+                            <div *ngIf="replyingTo === comment.id" class="mt-4">
+                                <div class="flex items-start">
+                                    <div class="mr-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-sm">
+                                            Y
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-2">
+                                        <app-elearning-text-box [(ngModel)]="replyText"
+                                            placeholder="Write your reply..." [multiline]="true">
+                                        </app-elearning-text-box>
+                                        <div class="flex justify-end space-x-2">
+                                            <app-elearning-button buttonType="secondary" (click)="cancelReply()">
+                                                Cancel
+                                            </app-elearning-button>
+                                            <app-elearning-button buttonType="primary" (click)="submitReply(comment)"
+                                                [disabled]="!replyText.trim()">
+                                                Reply
+                                            </app-elearning-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Replies -->
+                <div *ngIf="comment.replies && comment.replies.length > 0" class="border-t bg-gray-50">
+                    <div class="p-4 pl-12 space-y-4">
+                        <div *ngFor="let reply of comment.replies" class="flex items-start">
+                            <div class="mr-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-sm">
+                                    {{ reply.author.name.charAt(0) }}
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">{{ reply.author.name }}</h4>
+                                        <p class="text-xs text-gray-500">{{ reply.createdAt | date:'medium' }}</p>
+                                    </div>
+                                    <div>
+                                        <button (click)="startReply(reply.id)"
+                                            class="text-sm text-blue-600 hover:text-blue-800">
+                                            Reply
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-gray-700">
+                                    {{ reply.text }}
+                                </div>
+                                <div class="mt-2 flex items-center space-x-4">
+                                    <button (click)="likeComment(reply)" class="flex items-center text-sm"
+                                        [ngClass]="{'text-blue-600': reply.isLiked, 'text-gray-500 hover:text-blue-600': !reply.isLiked}">
+                                        <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z">
+                                            </path>
+                                        </svg>
+                                        {{ reply.likeCount || 0 }}
+                                    </button>
+                                </div>
+
+                                <!-- Nested Reply Form -->
+                                <div *ngIf="replyingTo === reply.id" class="mt-4">
+                                    <div class="flex items-start">
+                                        <div class="mr-3">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-sm">
+                                                Y
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 space-y-2">
+                                            <app-elearning-text-box [(ngModel)]="replyText"
+                                                placeholder="Write your reply..." [multiline]="true">
+                                            </app-elearning-text-box>
+                                            <div class="flex justify-end space-x-2">
+                                                <app-elearning-button buttonType="secondary" (click)="cancelReply()">
+                                                    Cancel
+                                                </app-elearning-button>
+                                                <app-elearning-button buttonType="primary" (click)="submitReply(reply)"
+                                                    [disabled]="!replyText.trim()">
+                                                    Reply
+                                                </app-elearning-button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+</div>

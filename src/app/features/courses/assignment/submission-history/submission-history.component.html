@@ -1,0 +1,88 @@
+<!-- File path: src/app/features/courses/assignment/submission-history/submission-history.component.html -->
+<div>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center py-4">
+    <app-loader size="sm"></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+    {{ error }}
+    <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
+      <span class="text-xl">&times;</span>
+    </button>
+  </div>
+
+  <!-- No Submissions -->
+  <div *ngIf="!isLoading && submissions.length === 0" class="text-center py-8">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">No submissions yet</h3>
+    <p class="mt-1 text-sm text-gray-500">
+      You haven't submitted this assignment yet.
+    </p>
+  </div>
+
+  <!-- Submission History Table -->
+  <div *ngIf="!isLoading && submissions.length > 0">
+    <div class="flex flex-col">
+      <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+          <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Version
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Submitted
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Grade
+                  </th>
+                  <th scope="col" class="relative px-6 py-3">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let submission of submissions; let i = index">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">Version {{ i + 1 }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ submission.submittedAt | date:'medium' }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
+                      [ngClass]="getStatusBgColor(submission.status) + ' ' + getStatusColor(submission.status)">
+                      {{ submission.status | titlecase }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div *ngIf="submission.status === 'graded'">
+                      {{ submission.grade }}/{{ submission.maxGrade }} ({{ (submission.grade / submission.maxGrade) * 100 | number:'1.0-0' }}%)
+                    </div>
+                    <div *ngIf="submission.status !== 'graded'">
+                      -
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="{{ submission.fileUrl }}" target="_blank" class="text-blue-600 hover:text-blue-900">
+                      Download
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

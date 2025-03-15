@@ -1,0 +1,95 @@
+<!-- File path: src/app/features/courses/discussion/discussion.component.html -->
+<div class="bg-gray-50 min-h-screen">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <app-loader></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+    {{ error }}
+    <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
+      <span class="text-xl">&times;</span>
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- Topics Sidebar -->
+      <div class="md:w-1/3 lg:w-1/4">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <div class="bg-gray-50 px-4 py-3 border-b">
+            <h2 class="text-lg font-medium text-gray-900">Discussion Topics</h2>
+          </div>
+          <div class="divide-y divide-gray-200">
+            <a *ngFor="let topic of topics" 
+              (click)="selectTopic(topic.id)"
+              [ngClass]="{'bg-blue-50': currentTopicId === topic.id}"
+              class="block px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
+              <h3 class="text-sm font-medium text-gray-900">{{ topic.title }}</h3>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ topic.comments.length }} {{ topic.comments.length === 1 ? 'comment' : 'comments' }}
+              </p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discussion Thread -->
+      <div class="md:w-2/3 lg:w-3/4">
+        <div *ngIf="currentDiscussion" class="bg-white rounded-lg shadow-md overflow-hidden">
+          <!-- Topic Header -->
+          <div class="bg-gray-50 px-6 py-4 border-b">
+            <h2 class="text-xl font-medium text-gray-900">{{ currentDiscussion.title }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ currentDiscussion.description }}</p>
+          </div>
+          
+          <!-- Comments List -->
+          <div class="px-6 py-4 space-y-6">
+            <app-threaded-comments 
+              [comments]="currentDiscussion.comments"
+              [courseId]="courseId"
+              [discussionId]="currentTopicId">
+            </app-threaded-comments>
+          </div>
+          
+          <!-- New Comment Box -->
+          <div class="px-6 py-4 bg-gray-50 border-t">
+            <h3 class="text-sm font-medium text-gray-900 mb-2">Add a comment</h3>
+            <div class="flex">
+              <app-elearning-text-box 
+                [(ngModel)]="newCommentText" 
+                placeholder="Write your comment here..." 
+                [multiline]="true" 
+                class="flex-1 mr-2">
+              </app-elearning-text-box>
+              <app-elearning-button 
+                buttonType="primary" 
+                (click)="submitNewComment()"
+                [disabled]="!newCommentText.trim()">
+                Comment
+              </app-elearning-button>
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+              Use <app-mention-system></app-mention-system> to mention other users
+            </div>
+          </div>
+        </div>
+
+        <!-- No Topic Selected -->
+        <div *ngIf="!currentDiscussion && topics.length > 0" class="bg-white rounded-lg shadow-md p-6 text-center">
+          <p class="text-gray-500">Please select a discussion topic from the sidebar.</p>
+        </div>
+
+        <!-- No Topics Available -->
+        <div *ngIf="!currentDiscussion && topics.length === 0" class="bg-white rounded-lg shadow-md p-6 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No discussion topics available</h3>
+          <p class="mt-1 text-sm text-gray-500">There are no discussion topics for this course yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

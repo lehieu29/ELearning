@@ -59,7 +59,29 @@ import { TagInputComponent } from './tag-input/tag-input.component';
     ],
     exports: [
         ElearningTextBoxComponent,
-        ElearningButtonComponent
+        ElearningButtonComponent,
+        PaginationComponent,
+        SearchBarComponent,
+        LoaderComponent,
+        ModalComponent,
+        ProgressBarComponent,
+        RatingComponent,
+        TabsComponent,
+        BadgeComponent,
+        TooltipComponent,
+        BreadcrumbsComponent,
+        CardComponent,
+        AlertComponent,
+        AccordionComponent,
+        FileUploadComponent,
+        ToggleSwitchComponent,
+        StepperComponent,
+        DataTableComponent,
+        SkeletonLoaderComponent,
+        ImageGalleryComponent,
+        TimelineComponent,
+        FileViewerComponent,
+        TagInputComponent
     ]
 })
 export class SharedModule {}

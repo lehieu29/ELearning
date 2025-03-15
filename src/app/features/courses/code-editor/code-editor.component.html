@@ -1,0 +1,64 @@
+<!-- File path: src/app/features/course/code-editor/code-editor.component.html -->
+<div class="flex flex-col h-full bg-white rounded-lg shadow-lg">
+  <!-- Editor Header -->
+  <div class="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
+    <div class="flex items-center space-x-2">
+      <h3 class="text-lg font-medium text-gray-700">Code Editor</h3>
+      <span class="px-2 py-1 text-xs font-medium text-white bg-blue-500 rounded">{{ language }}</span>
+    </div>
+    
+    <div class="flex items-center space-x-2">
+      <app-environment-selector
+        [selectedLanguage]="language"
+        (languageChanged)="language = $event; initMonacoEditor()">
+      </app-environment-selector>
+      
+      <button 
+        class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+        (click)="toggleTheme()" 
+        aria-label="Toggle theme">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Editor Toolbar -->
+  <div class="flex items-center justify-between p-2 bg-gray-50 border-b border-gray-200">
+    <div class="flex items-center space-x-2">
+      <app-elearning-button 
+        buttonType="primary" 
+        [disabled]="isExecuting" 
+        (click)="executeCode()">
+        {{ isExecuting ? 'Running...' : 'Run Code' }}
+      </app-elearning-button>
+      
+      <app-elearning-button 
+        buttonType="secondary" 
+        (click)="resetCode()">
+        Reset
+      </app-elearning-button>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <app-auto-save [courseId]="courseId" [lessonId]="lessonId"></app-auto-save>
+      <app-version-control [courseId]="courseId" [lessonId]="lessonId"></app-version-control>
+      <app-code-snippets [language]="language" (snippetSelected)="editor.trigger('keyboard', 'type', { text: $event })"></app-code-snippets>
+      <app-linting-tools [code]="currentCode" [language]="language"></app-linting-tools>
+    </div>
+  </div>
+  
+  <!-- Editor Container -->
+  <div class="flex flex-grow">
+    <div class="w-full h-96" #editorContainer></div>
+  </div>
+  
+  <!-- Console Output -->
+  <div class="border-t border-gray-200">
+    <div class="bg-gray-800 p-3 text-gray-200 font-mono text-sm h-32 overflow-y-auto">
+      <p class="text-xs text-gray-400 mb-1">Console Output:</p>
+      <pre>{{ consoleOutput || 'Run your code to see the output here' }}</pre>
+    </div>
+  </div>
+</div>

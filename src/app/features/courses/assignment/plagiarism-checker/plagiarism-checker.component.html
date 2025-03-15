@@ -1,0 +1,158 @@
+<!-- File path: src/app/features/courses/assignment/plagiarism-checker/plagiarism-checker.component.html -->
+<div>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center py-4">
+        <app-loader size="sm"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+        {{ error }}
+        <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
+            <span class="text-xl">&times;</span>
+        </button>
+    </div>
+
+    <!-- Not Checked Yet -->
+    <div *ngIf="!isLoading && (!result || result.status === 'not-checked')" class="text-center py-8">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+            </path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No plagiarism check run yet</h3>
+        <p class="mt-1 text-sm text-gray-500">
+            Run a plagiarism check to ensure your work is original.
+        </p>
+        <div class="mt-6">
+            <button type="button" (click)="runPlagiarismCheck()"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Run Plagiarism Check
+            </button>
+        </div>
+    </div>
+
+    <!-- Check in Progress -->
+    <div *ngIf="!isLoading && result && result.status === 'checking'" class="text-center py-8">
+        <app-loader size="md"></app-loader>
+        <p class="mt-4 text-sm text-gray-500">
+            Running plagiarism check. This may take a few minutes...
+        </p>
+    </div>
+
+    <!-- Results Available -->
+    <div *ngIf="!isLoading && result && result.status === 'checked'" class="space-y-6">
+        <!-- Summary -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-medium text-gray-900">Plagiarism Check Results</h3>
+                <p class="text-sm text-gray-500">Last checked: {{ result.lastCheckedDate | date:'medium' }}</p>
+            </div>
+            <button type="button" (click)="runPlagiarismCheck()" [disabled]="checkInProgress"
+                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                Re-run Check
+            </button>
+        </div>
+
+        <!-- Score Card -->
+        <div class="bg-white border rounded-lg shadow-sm p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold"
+                        [ngClass]="getSeverityBgColor(result.score) + ' ' + getSeverityColor(result.score)">
+                        {{ result.score }}%
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-medium">Similarity Score</h4>
+                        <p class="text-sm" [ngClass]="getSeverityColor(result.score)">
+                            {{ getPlagiarismSeverity(result.score) }} similarity detected
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <svg *ngIf="result.score <= 25" class="h-10 w-10 text-green-500" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <!-- File path: src/app/features/courses/assignment/plagiarism-checker/plagiarism-checker.component.html -->
+                    <div>
+                        <!-- Loading State -->
+                        <div *ngIf="isLoading" class="flex justify-center py-4">
+                            <app-loader size="sm"></app-loader>
+                        </div>
+
+                        <!-- Error State -->
+                        <div *ngIf="error"
+                            class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                            {{ error }}
+                            <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
+                                <span class="text-xl">&times;</span>
+                            </button>
+                        </div>
+
+                        <!-- Not Checked Yet -->
+                        <div *ngIf="!isLoading && (!result || result.status === 'not-checked')"
+                            class="text-center py-8">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No plagiarism check run yet</h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Run a plagiarism check to ensure your work is original.
+                            </p>
+                            <div class="mt-6">
+                                <button type="button" (click)="runPlagiarismCheck()"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    Run Plagiarism Check
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Check in Progress -->
+                        <div *ngIf="!isLoading && result && result.status === 'checking'" class="text-center py-8">
+                            <app-loader size="md"></app-loader>
+                            <p class="mt-4 text-sm text-gray-500">
+                                Running plagiarism check. This may take a few minutes...
+                            </p>
+                        </div>
+
+                        <!-- Results Available -->
+                        <div *ngIf="!isLoading && result && result.status === 'checked'" class="space-y-6">
+                            <!-- Summary -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">Plagiarism Check Results</h3>
+                                    <p class="text-sm text-gray-500">Last checked: {{ result.lastCheckedDate |
+                                        date:'medium' }}</p>
+                                </div>
+                                <button type="button" (click)="runPlagiarismCheck()" [disabled]="checkInProgress"
+                                    class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500">
+                                    Re-run Check
+                                </button>
+                            </div>
+
+                            <!-- Score Card -->
+                            <div class="bg-white border rounded-lg shadow-sm p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold"
+                                            [ngClass]="getSeverityBgColor(result.score) + ' ' + getSeverityColor(result.score)">
+                                            {{ result.score }}%
+                                        </div>
+                                        <div class="ml-4">
+                                            <h4 class="font-medium">Similarity Score</h4>
+                                            <p class="text-sm" [ngClass]="getSeverityColor(result.score)">
+                                                {{ getPlagiarismSeverity(result.score) }} similarity detected
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <svg *ngIf="result.score <= 25" class="h-10 w-10 text-green-500" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>

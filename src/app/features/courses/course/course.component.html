@@ -1,0 +1,55 @@
+<div class="min-h-screen bg-gray-50">
+  <app-loader *ngIf="isLoading" class="flex justify-center py-10"></app-loader>
+
+  <app-alert *ngIf="error" type="error" message="{{ error }}" class="m-4"></app-alert>
+
+  <ng-container *ngIf="course && !isLoading">
+    <!-- Course Header -->
+    <div class="bg-white shadow-md border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div class="mb-4 md:mb-0">
+            <h1 class="text-2xl font-bold text-gray-900">{{ course.title }}</h1>
+            <p class="text-sm text-gray-500">Instructor: {{ course.instructor }}</p>
+          </div>
+          <div class="flex space-x-2">
+            <app-elearning-button buttonType="secondary" [routerLink]="['/dashboard']">
+              Back to Dashboard
+            </app-elearning-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Navigation -->
+    <div class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <app-tabs>
+          <a routerLink="details" routerLinkActive="bg-blue-50 text-blue-600" class="px-4 py-2">
+            Overview
+          </a>
+          <a routerLink="syllabus" routerLinkActive="bg-blue-50 text-blue-600" class="px-4 py-2">
+            Syllabus
+          </a>
+          <a routerLink="lesson/{{ course.currentLessonId || 'first' }}" routerLinkActive="bg-blue-50 text-blue-600" class="px-4 py-2">
+            Lessons
+          </a>
+          <a routerLink="resources" routerLinkActive="bg-blue-50 text-blue-600" class="px-4 py-2">
+            Resources
+          </a>
+          <a routerLink="discussion" routerLinkActive="bg-blue-50 text-blue-600" class="px-4 py-2">
+            Discussion
+          </a>
+          <a routerLink="notes" routerLinkActive="bg-blue-50 text-blue-600" class="px-4 py-2">
+            Notes
+          </a>
+        </app-tabs>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <router-outlet></router-outlet>
+    </div>
+  </ng-container>
+</div>

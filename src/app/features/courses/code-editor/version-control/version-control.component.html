@@ -1,0 +1,148 @@
+<!-- File path: src/app/features/course/code-editor/version-control/version-control.component.html -->
+<div class="relative">
+  <button 
+    class="flex items-center space-x-1 text-sm text-gray-700 hover:text-blue-600 focus:outline-none"
+    (click)="toggleVersionList()"
+    title="Version history">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>History</span>
+  </button>
+  
+  <button 
+    class="ml-2 text-sm text-blue-600 hover:text-blue-800 focus:outline-none"
+    (click)="createSnapshot()"
+    title="Create snapshot">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+    </svg>
+  </button>
+  
+  <!-- Version dropdown -->
+  <div *ngIf="showVersionList" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10">
+    <div class="py-1 border rounded-md max-h-64 overflow-y-auto">
+      <div class="px-4 py-2 text-sm text-gray-700 font-medium border-b">Version History</div>
+      
+      <div *ngIf="versions.length === 0" class="px-4 py-3 text-sm text-gray-500 italic">
+        No saved versions available
+      </div>
+      
+      <ul *ngIf="versions.length > 0">
+        <li *ngFor="let version of versions" 
+            class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex justify-between items-center"
+            (click)="restoreVersion(version)">
+          <span>{{ version.timestamp | date:'short' }}</span>
+          <span *ngIf="version.isSnapshot" class="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+            Snapshot
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div>
+  <app-elearning-button 
+    buttonType="secondary"
+    size="sm"
+    (click)="toggleVersionHistory()"
+    class="flex items-center">
+    <span class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Version History
+    </span>
+  </app-elearning-button>
+
+  <!-- Version History Modal -->
+  <div *ngIf="showVersionHistory" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-3xl max-h-[80vh] flex flex-col">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Version History</h3>
+        <button (click)="toggleVersionHistory()" class="text-gray-400 hover:text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="p-4 flex flex-col h-full">
+        <!-- Save new version form -->
+        <div class="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <h4 class="text-sm font-medium mb-2">Save Current State as New Version</h4>
+          <div class="flex">
+            <app-elearning-text-box
+              placeholder="Version description" 
+              class="flex-1 mr-2"
+              #versionDescription>
+            </app-elearning-text-box>
+            <app-elearning-button 
+              buttonType="primary" 
+              [disabled]="isLoading"
+              (click)="saveVersion(versionDescription.value)">
+              Save Version
+            </app-elearning-button>
+          </div>
+        </div>
+        
+        <!-- Versions list -->
+        <div class="flex-1 overflow-y-auto">
+          <div *ngIf="isLoading" class="flex items-center justify-center h-20">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+          
+          <div *ngIf="!isLoading && versions.length === 0" class="text-center py-8 text-gray-500">
+            No saved versions found
+          </div>
+          
+          <div *ngIf="!isLoading && versions.length > 0" class="space-y-2">
+            <div *ngFor="let version of versions" 
+                 class="p-3 bg-gray-50 dark:bg-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                 (click)="viewVersion(version)">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-medium">{{ version.description || 'Unnamed version' }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ version.createdAt | date:'medium' }} • {{ version.language }}
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <app-elearning-button 
+                    buttonType="secondary" 
+                    size="xs"
+                    (click)="restoreVersion(version)">
+                    Restore
+                  </app-elearning-button>
+                  <button 
+                    class="text-red-500 hover:text-red-700" 
+                    (click)="deleteVersion(version, $event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Version preview -->
+        <div *ngIf="selectedVersion" class="mt-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-sm font-medium">Version Preview: {{ selectedVersion.description || 'Unnamed version' }}</h4>
+            <button (click)="selectedVersion = undefined" class="text-gray-400 hover:text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto max-h-60 text-sm font-mono">
+            <pre>{{ selectedVersion.code }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

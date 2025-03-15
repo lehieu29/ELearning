@@ -1,0 +1,111 @@
+<!-- File path: src/app/features/courses/resources/resources.component.html -->
+<div class="bg-gray-50 min-h-screen">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <app-loader></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Course Resources</h1>
+    
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <div class="flex items-center space-x-2">
+          <span class="text-gray-700">Filter:</span>
+          <div class="flex flex-wrap gap-2">
+            <button 
+              (click)="onCategoryChange('all')"
+              [ngClass]="{
+                'bg-blue-100 text-blue-700 border-blue-300': selectedCategory === 'all',
+                'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200': selectedCategory !== 'all'
+              }"
+              class="px-3 py-1 rounded-full text-sm border transition-colors">
+              All
+            </button>
+            
+            <button 
+              *ngFor="let category of categories"
+              (click)="onCategoryChange(category)"
+              [ngClass]="{
+                'bg-blue-100 text-blue-700 border-blue-300': selectedCategory === category,
+                'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200': selectedCategory !== category
+              }"
+              class="px-3 py-1 rounded-full text-sm border transition-colors">
+              {{ category }}
+            </button>
+          </div>
+        </div>
+        
+        <div class="w-full md:w-64">
+          <app-search-bar 
+            placeholder="Search resources..." 
+            (search)="onSearchChange($event)">
+          </app-search-bar>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Resource List -->
+    <div *ngIf="filteredResources.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let resource of filteredResources" class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+        <div class="p-4">
+          <div class="flex items-start">
+            <div class="mr-4 bg-blue-100 rounded-md p-3 text-blue-600">
+              <svg *ngIf="resource.type === 'pdf'" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              <svg *ngIf="resource.type === 'video'" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+              <svg *ngIf="resource.type === 'link'" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+              </svg>
+              <svg *ngIf="resource.type === 'code'" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+              </svg>
+              <svg *ngIf="resource.type === 'image'" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <svg *ngIf="!['pdf', 'video', 'link', 'code', 'image'].includes(resource.type)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900 mb-1">{{ resource.title }}</h3>
+              <div class="text-xs text-gray-500 mb-2">
+                <span class="inline-block bg-gray-100 px-2 py-1 rounded">{{ resource.category }}</span>
+                <span class="mx-2">•</span>
+                <span>{{ resource.size || 'Unknown size' }}</span>
+              </div>
+              <p class="text-sm text-gray-600 line-clamp-2 mb-4">{{ resource.description }}</p>
+              <app-elearning-button 
+                buttonType="secondary" 
+                (click)="downloadResource(resource)"
+                class="w-full">
+                <ng-container *ngIf="resource.type === 'link'">Open Link</ng-container>
+                <ng-container *ngIf="resource.type !== 'link'">Download</ng-container>
+              </app-elearning-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div *ngIf="filteredResources.length === 0 && !isLoading" class="bg-white rounded-lg shadow-sm p-8 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">No resources found</h3>
+      <p class="mt-1 text-sm text-gray-500">
+        {{ resources.length > 0 ? 'Try adjusting your filters.' : 'No resources are available for this course yet.' }}
+      </p>
+    </div>
+  </div>
+</div>

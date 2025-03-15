@@ -1,0 +1,134 @@
+<!-- File path: src/app/features/courses/bookmark-system/bookmark-system.component.html -->
+<div class="bg-gray-50 min-h-screen">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <app-loader></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+    {{ error }}
+    <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
+      <span class="text-xl">&times;</span>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading" class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Course Bookmarks</h1>
+    
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+        <!-- Content Type Filter -->
+        <div class="flex flex-wrap gap-2 mb-4 md:mb-0">
+          <button *ngFor="let category of filterCategories"
+            [ngClass]="[
+              'px-3 py-1 rounded-full text-sm font-medium',
+              category.isActive ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            ]"
+            (click)="setFilter(category.name)">
+            {{ category.name | titlecase }} ({{ category.count }})
+          </button>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="relative">
+          <input
+            type="text"
+            class="w-full md:w-72 pl-10 pr-4 py-2 border rounded-lg"
+            placeholder="Search bookmarks..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange($event.target.value)">
+          <div class="absolute left-3 top-2.5 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bookmarks List -->
+    <div *ngIf="filteredBookmarks.length > 0" class="space-y-4">
+      <div *ngFor="let bookmark of filteredBookmarks" class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="p-4 flex flex-col md:flex-row md:items-center">
+          <!-- Content Type Icon -->
+          <div class="flex-shrink-0 mr-4 mb-3 md:mb-0">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" 
+              [ngClass]="{
+                'bg-blue-100 text-blue-600': bookmark.contentType === 'lesson',
+                'bg-purple-100 text-purple-600': bookmark.contentType === 'quiz',
+                'bg-green-100 text-green-600': bookmark.contentType === 'assignment',
+                'bg-yellow-100 text-yellow-600': bookmark.contentType === 'resource',
+                'bg-gray-100 text-gray-600': !bookmark.contentType || bookmark.contentType === 'other'
+              }">
+              <svg *ngIf="bookmark.contentType === 'lesson'" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <svg *ngIf="bookmark.contentType === 'quiz'" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <svg *ngIf="bookmark.contentType === 'assignment'" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <svg *ngIf="bookmark.contentType === 'resource' || !bookmark.contentType || bookmark.contentType === 'other'" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Bookmark Details -->
+          <div class="flex-1">
+            <h3 class="text-lg font-medium text-gray-900">{{ bookmark.title }}</h3>
+            <div class="flex items-center text-sm text-gray-600 mt-1">
+              <span class="font-medium mr-2">{{ bookmark.contentType | titlecase }}</span>
+              
+              <!-- Timestamp for video content -->
+              <span *ngIf="bookmark.timestamp !== undefined" class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded">
+                {{ formatTimestamp(bookmark.timestamp) }}
+              </span>
+              
+              <!-- Date Added -->
+              <span class="ml-auto text-gray-500">
+                Bookmarked: {{ bookmark.createdAt | date:'mediumDate' }}
+              </span>
+            </div>
+            
+            <!-- Note -->
+            <div *ngIf="bookmark.note" class="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+              {{ bookmark.note }}
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex items-center mt-4 md:mt-0">
+            <a [routerLink]="['/course', courseId, bookmark.contentType, bookmark.contentId]" 
+              [queryParams]="bookmark.timestamp ? {t: bookmark.timestamp} : {}" 
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 mr-2">
+              Go to Content
+            </a>
+            <button (click)="removeBookmark(bookmark.id)" 
+              class="text-red-600 hover:text-red-800 p-2">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No Bookmarks State -->
+    <div *ngIf="filteredBookmarks.length === 0" class="bg-white rounded-lg shadow-md p-8 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+      </svg>
+      <h3 class="mt-2 text-lg font-medium text-gray-900">No bookmarks found</h3>
+      <p class="mt-1 text-gray-500">
+        {{ bookmarks.length > 0 ? 'Try adjusting your filters or search query.' : 'Start bookmarking important parts of the course to save them for later.' }}
+      </p>
+    </div>
+  </div>
+</div>

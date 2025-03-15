@@ -1,0 +1,85 @@
+<!-- File path: src/app/features/courses/quiz/retry-mechanism/retry-mechanism.component.html -->
+<div class="bg-white rounded-lg shadow-md p-6">
+  <div class="text-center mb-6">
+    <div *ngIf="lastScore < passingScore" class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    
+    <div *ngIf="lastScore >= passingScore" class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    
+    <h2 class="text-xl font-bold mt-4">
+      {{ lastScore >= passingScore ? 'Quiz Passed!' : 'You can try again' }}
+    </h2>
+  </div>
+  
+  <div class="mb-6">
+    <div class="flex justify-between text-sm text-gray-600 mb-1">
+      <span>Your last score</span>
+      <span>{{ lastScore }}%</span>
+    </div>
+    
+    <div class="w-full bg-gray-200 rounded-full h-2">
+      <div class="h-2 rounded-full"
+        [style.width.%]="lastScore"
+        [ngClass]="{
+          'bg-green-500': lastScore >= passingScore,
+          'bg-yellow-500': lastScore < passingScore && lastScore >= 60,
+          'bg-red-500': lastScore < 60
+        }">
+      </div>
+    </div>
+    
+    <div class="mt-1">
+      <span class="text-xs text-gray-500">Passing score: {{ passingScore }}%</span>
+    </div>
+  </div>
+  
+  <div class="mb-6">
+    <div class="flex justify-between">
+      <span class="text-sm">Attempt</span>
+      <span class="text-sm">{{ currentAttempt }} of {{ maxAttempts || '∞' }}</span>
+    </div>
+    
+    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+      <div class="h-1.5 bg-blue-600 rounded-full" 
+        [style.width.%]="maxAttempts ? (currentAttempt / maxAttempts) * 100 : 0">
+      </div>
+    </div>
+  </div>
+  
+  <div class="text-center" *ngIf="lastScore < passingScore">
+    <p class="text-gray-600 mb-4">
+      You didn't reach the passing score yet. You have {{ attemptsText }}.
+    </p>
+    
+    <app-elearning-button
+      buttonType="primary"
+      [disabled]="!canRetry"
+      (click)="onRetryClick()">
+      Retry Quiz
+    </app-elearning-button>
+    
+    <p *ngIf="!canRetry" class="text-red-600 mt-4 text-sm">
+      You've used all your available attempts for this quiz.
+    </p>
+  </div>
+  
+  <div class="text-center" *ngIf="lastScore >= passingScore">
+    <p class="text-gray-600 mb-4">
+      Congratulations! You've passed this quiz. You can still retry to improve your score if you want.
+    </p>
+    
+    <app-elearning-button
+      buttonType="secondary"
+      [disabled]="!canRetry"
+      (click)="onRetryClick()">
+      Try to improve score
+    </app-elearning-button>
+  </div>
+</div>

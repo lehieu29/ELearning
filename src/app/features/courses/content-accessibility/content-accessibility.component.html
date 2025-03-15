@@ -1,0 +1,208 @@
+<!-- File path: src/app/features/courses/content-accessibility/content-accessibility.component.html -->
+<div class="bg-gray-50 min-h-screen py-6">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="bg-white rounded-lg shadow-sm">
+      <!-- Header -->
+      <div class="p-6 border-b border-gray-200">
+        <h1 class="text-2xl font-bold text-gray-900">Accessibility Settings</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Customize your learning experience to meet your accessibility needs
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="p-6 flex items-center justify-center">
+        <app-loader></app-loader>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="p-4 bg-red-50 text-red-700 border-l-4 border-red-500">
+        {{ error }}
+      </div>
+
+      <!-- Form -->
+      <div *ngIf="!isLoading" class="p-6">
+        <form [formGroup]="accessibilityForm" (ngSubmit)="savePreferences()">
+          <!-- Visual Settings Section -->
+          <div class="mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Visual Settings</h2>
+
+            <!-- Font Size -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
+              <div class="flex flex-wrap gap-3">
+                <ng-container *ngFor="let option of fontSizeOptions">
+                  <label class="relative cursor-pointer">
+                    <input type="radio" formControlName="fontSize" [value]="option.value" class="sr-only">
+                    <span class="px-4 py-2 border rounded-md inline-block"
+                          [ngClass]="{
+                            'bg-blue-100 border-blue-400 text-blue-800': accessibilityForm.value.fontSize === option.value,
+                            'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': accessibilityForm.value.fontSize !== option.value
+                          }">
+                      {{ option.label }}
+                    </span>
+                  </label>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- Contrast -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Contrast</label>
+              <div class="flex flex-wrap gap-3">
+                <ng-container *ngFor="let option of contrastOptions">
+                  <label class="relative cursor-pointer">
+                    <input type="radio" formControlName="contrast" [value]="option.value" class="sr-only">
+                    <span class="px-4 py-2 border rounded-md inline-block"
+                          [ngClass]="{
+                            'bg-blue-100 border-blue-400 text-blue-800': accessibilityForm.value.contrast === option.value,
+                            'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': accessibilityForm.value.contrast !== option.value
+                          }">
+                      {{ option.label }}
+                    </span>
+                  </label>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- Animations -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Animation Preferences</label>
+              <div class="flex flex-wrap gap-3">
+                <ng-container *ngFor="let option of animationOptions">
+                  <label class="relative cursor-pointer">
+                    <input type="radio" formControlName="animations" [value]="option.value" class="sr-only">
+                    <span class="px-4 py-2 border rounded-md inline-block"
+                          [ngClass]="{
+                            'bg-blue-100 border-blue-400 text-blue-800': accessibilityForm.value.animations === option.value,
+                            'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': accessibilityForm.value.animations !== option.value
+                          }">
+                      {{ option.label }}
+                    </span>
+                  </label>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <!-- Screen Reader Settings -->
+          <div class="mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Screen Reader Settings</h2>
+            
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <input type="checkbox" id="screenReaderOptimized" formControlName="screenReaderOptimized"
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                <label for="screenReaderOptimized" class="ml-2 text-sm text-gray-700">
+                  Optimize content for screen readers
+                </label>
+              </div>
+              <p class="text-xs text-gray-500 ml-6">
+                Improves navigation and description of UI elements for screen readers
+              </p>
+              
+              <div class="flex items-center">
+                <input type="checkbox" id="useKeyboardShortcuts" formControlName="useKeyboardShortcuts"
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                <label for="useKeyboardShortcuts" class="ml-2 text-sm text-gray-700">
+                  Enable keyboard shortcuts
+                </label>
+              </div>
+              <div class="ml-6 text-xs text-gray-500">
+                <p class="mb-1">Navigation: J (previous), K (next), H (home)</p>
+                <p>Video controls: Space (play/pause), M (mute), F (fullscreen)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio & Video Settings -->
+          <div class="mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Audio & Video Settings</h2>
+            
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <input type="checkbox" id="autoGenerateTranscripts" formControlName="autoGenerateTranscripts"
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                <label for="autoGenerateTranscripts" class="ml-2 text-sm text-gray-700">
+                  Auto-generate transcripts for videos
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <input type="checkbox" id="showCaptions" formControlName="showCaptions"
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                <label for="showCaptions" class="ml-2 text-sm text-gray-700">
+                  Show captions by default
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <input type="checkbox" id="textToSpeech" formControlName="textToSpeech"
+                       class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                <label for="textToSpeech" class="ml-2 text-sm text-gray-700">
+                  Enable text-to-speech for articles and transcripts
+                </label>
+              </div>
+              
+              <div *ngIf="accessibilityForm.value.textToSpeech" class="ml-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reading Speed</label>
+                <div class="flex items-center space-x-2">
+                  <input type="range" formControlName="readingSpeed" min="0.5" max="2" step="0.1"
+                         class="w-48 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                  <span class="text-sm text-gray-700">{{ accessibilityForm.value.readingSpeed }}x</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-between pt-4 border-t border-gray-200">
+            <button type="button" 
+                    (click)="resetToDefaults()"
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+              Reset to Defaults
+            </button>
+            <div class="space-x-3">
+              <button type="button"
+                      (click)="testSettings()"
+                      class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Preview
+              </button>
+              <button type="submit"
+                      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Save Preferences
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Accessibility Resources -->
+    <div class="mt-6 bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">Accessibility Resources</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border border-gray-200 rounded-md p-4">
+          <h3 class="text-md font-medium text-gray-800 mb-2">Keyboard Navigation Guide</h3>
+          <p class="text-sm text-gray-600 mb-3">Learn how to navigate our platform using only keyboard shortcuts.</p>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">View Guide</a>
+        </div>
+        <div class="border border-gray-200 rounded-md p-4">
+          <h3 class="text-md font-medium text-gray-800 mb-2">Screen Reader Compatibility</h3>
+          <p class="text-sm text-gray-600 mb-3">Information about our platform's compatibility with popular screen readers.</p>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Learn More</a>
+        </div>
+        <div class="border border-gray-200 rounded-md p-4">
+          <h3 class="text-md font-medium text-gray-800 mb-2">Request Assistance</h3>
+          <p class="text-sm text-gray-600 mb-3">Need help with accessibility features? Our team is here to assist.</p>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Contact Support</a>
+        </div>
+        <div class="border border-gray-200 rounded-md p-4">
+          <h3 class="text-md font-medium text-gray-800 mb-2">Accessibility Statement</h3>
+          <p class="text-sm text-gray-600 mb-3">Review our commitment to creating an accessible learning environment.</p>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Read Statement</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

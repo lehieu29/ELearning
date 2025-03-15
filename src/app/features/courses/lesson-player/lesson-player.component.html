@@ -1,0 +1,115 @@
+<div class="bg-gray-50 min-h-screen">
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <app-loader></app-loader>
+  </div>
+
+  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error && lesson" class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Lesson Title and Navigation -->
+    <div class="mb-4">
+      <h1 class="text-2xl font-bold text-gray-900">{{ lesson.title }}</h1>
+      <div class="flex items-center text-sm text-gray-500 mt-1">
+        <span>{{ lesson.durationMinutes }} min</span>
+        <span class="mx-2">•</span>
+        <span *ngIf="lesson.isCompleted" class="text-green-600 flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+          </svg>
+          Completed
+        </span>
+        <span *ngIf="!lesson.isCompleted">Not completed</span>
+      </div>
+    </div>
+
+    <!-- Video Player -->
+    <div class="relative bg-black rounded-lg overflow-hidden shadow-lg mb-6">
+      <video 
+        #videoPlayer
+        [src]="lesson.videoUrl" 
+        class="w-full h-auto" 
+        controls
+        [playbackRate]="playbackSpeed"
+        (ended)="onVideoEnded()"
+        controlsList="nodownload"
+        preload="metadata">
+      </video>
+      
+      <!-- Video Controls Overlay -->
+      <div class="absolute bottom-16 right-4 flex space-x-2">
+        <app-speed-control 
+          [currentSpeed]="playbackSpeed" 
+          (speedChanged)="onSpeedChange($event)">
+        </app-speed-control>
+        
+        <app-picture-in-picture 
+          [isActive]="isPictureInPictureActive"
+          (togglePiP)="togglePictureInPicture()">
+        </app-picture-in-picture>
+        
+        <app-download-options 
+          *ngIf="lesson.resources?.length"
+          [resources]="lesson.resources">
+        </app-download-options>
+      </div>
+    </div>
+
+    <!-- Interactive Timeline -->
+    <app-interactive-timestamp 
+      *ngIf="lesson.timestamps?.length" 
+      [timestamps]="lesson.timestamps"
+      [videoElement]="videoPlayer?.nativeElement">
+    </app-interactive-timestamp>
+
+    <!-- Lesson Controls -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div class="flex items-center space-x-2">
+        <app-elearning-button 
+          [buttonType]="showTranscript ? 'primary' : 'secondary'"
+          (click)="toggleTranscript()">
+          {{ showTranscript ? 'Hide Transcript' : 'Show Transcript' }}
+        </app-elearning-button>
+        
+        <app-elearning-button 
+          [buttonType]="showAnnotationTools ? 'primary' : 'secondary'"
+          (click)="toggleAnnotationTools()">
+          {{ showAnnotationTools ? 'Hide Annotations' : 'Annotate' }}
+        </app-elearning-button>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <app-elearning-button 
+          *ngIf="lesson.previousLessonId"
+          buttonType="secondary"
+          [routerLink]="['/course', courseId, 'lesson', lesson.previousLessonId]">
+          Previous
+        </app-elearning-button>
+        
+        <app-elearning-button 
+          *ngIf="lesson.nextLessonId"
+          buttonType="primary"
+          [routerLink]="['/course', courseId, 'lesson', lesson.nextLessonId]">
+          Next Lesson
+        </app-elearning-button>
+      </div>
+    </div>
+
+    <!-- Transcript Area -->
+    <div *ngIf="showTranscript" class="mb-6">
+      <app-transcript [text]="lesson.transcript"></app-transcript>
+    </div>
+
+    <!-- Annotation Tools -->
+    <div *ngIf="showAnnotationTools" class="mb-6">
+      <app-annotation-tools [lessonId]="lessonId"></app-annotation-tools>
+    </div>
+
+    <!-- Lesson Description -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-bold mb-4">About this lesson</h2>
+      <p class="text-gray-700">{{ lesson.description }}</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<div class="relative inline-block text-left">
+  <button 
+    type="button" 
+    class="flex items-center justify-center bg-gray-800 bg-opacity-70 hover:bg-opacity-80 text-white rounded p-2 transition"
+    (click)="toggleDropdown()"
+    [attr.aria-expanded]="isDropdownOpen"
+    aria-haspopup="true">
+    <span class="text-sm font-medium">{{ currentSpeed }}x</span>
+    <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+  </button>
+</div>

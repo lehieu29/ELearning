@@ -1,0 +1,65 @@
+<!-- File path: src/app/features/courses/lesson-player/annotation-tools/annotation-tools.component.html -->
+<div class="bg-white rounded-lg shadow p-4">
+  <h3 class="text-lg font-medium text-gray-900 mb-4">Notes & Annotations</h3>
+  
+  <!-- Add new annotation -->
+  <div class="mb-4">
+    <div class="flex items-center mb-2">
+      <div class="text-sm font-medium text-gray-700 mr-2">Highlight color:</div>
+      <div class="flex space-x-2">
+        <button 
+          *ngFor="let color of colorOptions"
+          (click)="selectedColor = color"
+          class="w-6 h-6 rounded-full border border-gray-300"
+          [style.background-color]="color"
+          [ngClass]="{'ring-2 ring-gray-400': selectedColor === color}">
+        </button>
+      </div>
+    </div>
+    
+    <div class="flex">
+      <elearning-text-box 
+        placeholder="Add a note at the current timestamp..."
+        [(ngModel)]="newAnnotation"
+        [ngModelOptions]="{standalone: true}"
+        class="flex-1">
+      </elearning-text-box>
+      
+      <app-elearning-button 
+        class="ml-2"
+        buttonType="primary"
+        [disabled]="!newAnnotation.trim()"
+        (click)="addAnnotation()">
+        Add Note
+      </app-elearning-button>
+    </div>
+  </div>
+  
+  <!-- Annotations list -->
+  <div *ngIf="isLoading" class="flex justify-center py-4">
+    <app-loader size="sm"></app-loader>
+  </div>
+  
+  <div *ngIf="!isLoading && annotations.length === 0" class="text-center py-4 text-gray-500">
+    No annotations yet. Add your first note above!
+  </div>
+  
+  <div *ngIf="!isLoading && annotations.length > 0" class="space-y-3">
+    <div *ngFor="let annotation of annotations" class="relative border border-gray-200 rounded-md p-3" [style.border-left-color]="annotation.color" [style.border-left-width]="'4px'">
+      <div class="flex justify-between items-start mb-1">
+        <div class="text-xs font-medium text-gray-500">
+          {{ formatTimestamp(annotation.timestamp) }} • {{ annotation.createdAt | date:'short' }}
+        </div>
+        <button 
+          (click)="deleteAnnotation(annotation.id)" 
+          class="text-gray-400 hover:text-red-500"
+          aria-label="Delete annotation">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+      <p class="text-sm text-gray-700">{{ annotation.text }}</p>
+    </div>
+  </div>
+</div>

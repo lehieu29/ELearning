@@ -1,0 +1,40 @@
+<!-- File path: src/app/features/course/code-editor/environment-selector/environment-selector.component.html -->
+<div class="relative" (clickOutside)="closeDropdown()">
+  <button 
+    (click)="toggleEnvironmentsDropdown()"
+    class="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+    [disabled]="isLoading">
+    <span *ngIf="isLoading" class="mr-2">
+      <div class="animate-spin rounded-full h-3 w-3 border-t-2 border-blue-500"></div>
+    </span>
+    <span *ngIf="selectedEnvironment">
+      <img *ngIf="selectedEnvironment.icon" [src]="selectedEnvironment.icon" alt="{{ selectedEnvironment.name }}" class="w-4 h-4 mr-2">
+      {{ selectedEnvironment.name }}
+    </span>
+    <span *ngIf="!selectedEnvironment && !isLoading">
+      Select Environment
+    </span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+  
+  <!-- Environment dropdown -->
+  <div *ngIf="showEnvironments" 
+       class="absolute top-full left-0 mt-1 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
+    <div class="py-1">
+      <div *ngFor="let env of environments"
+           (click)="selectEnvironment(env)"
+           class="flex items-center px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+           [class.bg-blue-50]="selectedEnvironment?.id === env.id">
+        <img *ngIf="env.icon" [src]="env.icon" alt="{{ env.name }}" class="w-4 h-4 mr-2">
+        <span>{{ env.name }}</span>
+        <span *ngIf="env.version" class="ml-2 text-xs text-gray-500">v{{ env.version }}</span>
+      </div>
+      
+      <div *ngIf="environments.length === 0 && !isLoading" class="px-4 py-2 text-sm text-gray-500 italic">
+        No environments available for {{ currentLanguage }}
+      </div>
+    </div>
+  </div>
+</div>

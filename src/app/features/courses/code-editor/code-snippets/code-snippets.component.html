@@ -1,0 +1,55 @@
+<!-- File path: src/app/features/course/code-editor/code-snippets/code-snippets.component.html -->
+<div class="relative">
+  <button 
+    class="flex items-center space-x-1 text-sm text-gray-700 hover:text-blue-600 focus:outline-none"
+    (click)="toggleSnippetsPanel()"
+    title="Code snippets">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+    <span>Snippets</span>
+  </button>
+  
+  <!-- Snippets Panel -->
+  <div 
+    *ngIf="showSnippetsPanel" 
+    class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10">
+    <div class="flex flex-col max-h-80 rounded-md">
+      <!-- Header -->
+      <div class="flex justify-between items-center px-4 py-2 border-b">
+        <h3 class="text-sm font-medium text-gray-700">Code Snippets</h3>
+        <button 
+          class="text-gray-400 hover:text-gray-600"
+          (click)="toggleSnippetsPanel()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Search -->
+      <div class="px-4 py-2 border-b">
+        <app-elearning-text-box
+          type="text"
+          placeholder="Search snippets..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()">
+        </app-elearning-text-box>
+      </div>
+      
+      <!-- Snippet List -->
+      <div class="overflow-y-auto max-h-64">
+        <div *ngIf="filteredSnippets.length === 0" class="p-4 text-sm text-gray-500 italic">
+          No snippets found
+        </div>
+        
+        <div *ngFor="let snippet of filteredSnippets" 
+            class="px-4 py-2 border-b hover:bg-gray-50 cursor-pointer"
+            (click)="selectSnippet(snippet)">
+          <div class="text-sm font-medium text-gray-700">{{ snippet.name }}</div>
+          <div class="text-xs text-gray-500">{{ snippet.description }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

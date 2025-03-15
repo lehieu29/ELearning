@@ -1,0 +1,15 @@
+<p>picture-in-picture works!</p>
+<!-- File path: src/app/features/courses/lesson-player/picture-in-picture/picture-in-picture.component.html -->
+<button 
+  *ngIf="isPipSupported"
+  (click)="onToggle()"
+  class="flex items-center justify-center bg-gray-800 bg-opacity-70 hover:bg-opacity-80 text-white rounded p-2 transition"
+  [ngClass]="{'bg-blue-600 bg-opacity-100 hover:bg-opacity-90': isActive}">
+  
+  <span class="sr-only">{{ isActive ? 'Exit Picture-in-Picture' : 'Enter Picture-in-Picture' }}</span>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path *ngIf="!isActive" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v5a1 1 0 01-1 1h-1.5a1 1 0 00-1 1v1a1 1 0 01-1 1H8.5a1 1 0 01-1-1v-1a1 1 0 00-1-1H5a1 1 0 01-1-1V4z"></path>
+    <path *ngIf="isActive" d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h14a1 1 0 001-1V5a1 1 0 00-1-1H3zm1 2h12v8H4V6zm3 3a1 1 0 10-2 0v2a1 1 0 102 0V9z"></path>
+  </svg>
+</button>
