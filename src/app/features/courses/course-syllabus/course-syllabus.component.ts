@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { BaseComponent } from '@app/shared/components/base/base-component';
 import { CourseService } from '@app/shared/services/course.service';
 import { CourseSyllabus, CourseSection, Lesson } from '@app/shared/models/course.model';
@@ -11,11 +11,14 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class CourseSyllabusComponent extends BaseComponent implements OnInit, OnChanges {
   @Input() courseId: string;
-  
   syllabus: CourseSyllabus;
-  expandedSections: { [key: string]: boolean } = {}; // Lưu trạng thái mở rộng của từng section
-  isLoading = false;
-  error = '';
+  expandedSections: Set<string> = new Set();
+  isLoading: boolean = true;
+  error: string = '';
+  
+  // Track completion statistics
+  totalLessons: number = 0;
+  completedLessons: number = 0;
   
   constructor(
     private courseService: CourseService,
@@ -24,12 +27,21 @@ export class CourseSyllabusComponent extends BaseComponent implements OnInit, On
     super();
   }
   
+  /**
+   * Khởi tạo component, tải dữ liệu nếu có courseId
+   * Initialize component, load data if courseId exists
+   */
   ngOnInit(): void {
     if (this.courseId) {
       this.loadSyllabus();
     }
   }
   
+  /**
+   * Theo dõi thay đổi của @Input và tải lại dữ liệu khi cần
+   * Track changes to @Input and reload data when needed
+   * @param changes Các thay đổi của @Input properties
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.courseId && !changes.courseId.firstChange && this.courseId) {
       this.loadSyllabus();
@@ -37,8 +49,8 @@ export class CourseSyllabusComponent extends BaseComponent implements OnInit, On
   }
   
   /**
-   * Tải nội dung chương trình học của khóa học
-   * Load the course syllabus content
+   * Tải dữ liệu chương trình giảng dạy từ API
+   * Load syllabus data from API
    */
   loadSyllabus(): void {
     this.isLoading = true;
@@ -49,98 +61,116 @@ export class CourseSyllabusComponent extends BaseComponent implements OnInit, On
       .subscribe({
         next: (syllabus) => {
           this.syllabus = syllabus;
+          this.calculateCompletionStats();
           
-          // Mở rộng section đầu tiên mặc định
-          if (syllabus.sections.length > 0) {
-            this.expandedSections[syllabus.sections[0].id] = true;
+          // Auto-expand first section
+          if (this.syllabus?.sections?.length > 0) {
+            this.expandedSections.add(this.syllabus.sections[0].id);
           }
           
           this.isLoading = false;
         },
         error: (err) => {
-          console.error('Error loading course syllabus:', err);
-          this.error = 'Không thể tải chương trình học. Vui lòng thử lại sau.';
+          console.error('Error loading syllabus:', err);
+          this.error = 'Không thể tải chương trình giảng dạy. Vui lòng thử lại sau.';
           this.isLoading = false;
         }
       });
   }
   
   /**
-   * Chuyển đổi trạng thái đóng/mở của một section
-   * Toggle the expanded state of a section
-   */
-  toggleSection(sectionId: string): void {
-    this.expandedSections[sectionId] = !this.expandedSections[sectionId];
-  }
-  
-  /**
-   * Kiểm tra xem một section có đang được mở rộng không
-   * Check if a section is expanded
-   */
-  isSectionExpanded(sectionId: string): boolean {
-    return !!this.expandedSections[sectionId];
-  }
-  
-  /**
-   * Tính tổng thời gian (phút) của một section
-   * Calculate the total duration (minutes) of a section
-   */
-  calculateSectionDuration(section: CourseSection): number {
-    return section.lessons.reduce((total, lesson) => total + (lesson.duration || 0), 0);
-  }
-  
-  /**
-   * Chuyển đổi phút thành định dạng giờ:phút
-   * Convert minutes to hours:minutes format
-   */
-  formatDuration(minutes: number): string {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${mins > 0 ? mins + 'm' : ''}`;
-    }
-    
-    return `${mins}m`;
-  }
-  
-  /**
-   * Điều hướng đến bài học được chọn
+   * Chuyển đến bài học đã chọn
    * Navigate to the selected lesson
+   * @param lesson Bài học được chọn
    */
-  goToLesson(section: CourseSection, lesson: Lesson): void {
-    if (lesson.status === 'locked') {
-      return;
+  navigateToLesson(lesson: Lesson): void {
+    if (lesson.isLocked) {
+      return; // Don't navigate to locked lessons
     }
     
     this.router.navigate(['/courses', this.courseId, 'lessons', lesson.id]);
   }
   
   /**
-   * Lấy icon phù hợp với loại bài học
-   * Get the appropriate icon for the lesson type
+   * Mở rộng hoặc thu gọn một phần
+   * Expand or collapse a section
+   * @param sectionId ID của phần cần mở rộng/thu gọn
    */
-  getLessonTypeIcon(lessonType: string): string {
-    switch (lessonType) {
-      case 'video': return 'play-circle';
-      case 'reading': return 'book-open';
-      case 'quiz': return 'help-circle';
-      case 'assignment': return 'clipboard';
-      case 'discussion': return 'message-circle';
-      default: return 'file-text';
+  toggleSection(sectionId: string): void {
+    if (this.expandedSections.has(sectionId)) {
+      this.expandedSections.delete(sectionId);
+    } else {
+      this.expandedSections.add(sectionId);
     }
   }
   
   /**
-   * Lấy màu biểu thị trạng thái của bài học
-   * Get the color representing the lesson status
+   * Kiểm tra trạng thái mở rộng của một phần
+   * Check if a section is expanded
+   * @param sectionId ID của phần cần kiểm tra
+   * @returns True nếu phần đó đang mở rộng
    */
-  getLessonStatusColor(status: string): string {
-    switch (status) {
-      case 'completed': return 'text-green-500';
-      case 'available': return 'text-blue-500';
-      case 'locked': return 'text-gray-400';
-      default: return 'text-gray-500';
+  isSectionExpanded(sectionId: string): boolean {
+    return this.expandedSections.has(sectionId);
+  }
+  
+  /**
+   * Tính toán số liệu thống kê hoàn thành
+   * Calculate completion statistics
+   */
+  calculateCompletionStats(): void {
+    this.totalLessons = 0;
+    this.completedLessons = 0;
+    
+    if (!this.syllabus?.sections) return;
+    
+    this.syllabus.sections.forEach(section => {
+      if (!section.lessons) return;
+      
+      this.totalLessons += section.lessons.length;
+      section.lessons.forEach(lesson => {
+        if (lesson.isCompleted) {
+          this.completedLessons++;
+        }
+      });
+    });
+  }
+  
+  /**
+   * Lấy phần trăm hoàn thành của khóa học
+   * Get completion percentage of the course
+   */
+  getCompletionPercentage(): number {
+    if (this.totalLessons === 0) return 0;
+    return Math.round((this.completedLessons / this.totalLessons) * 100);
+  }
+  
+  /**
+   * Lấy phần trăm hoàn thành của một phần
+   * Get completion percentage of a section
+   * @param section Section cần tính phần trăm hoàn thành
+   */
+  getSectionCompletionPercentage(section: CourseSection): number {
+    if (!section.lessons || section.lessons.length === 0) return 0;
+    
+    const completedInSection = section.lessons.filter(lesson => lesson.isCompleted).length;
+    return Math.round((completedInSection / section.lessons.length) * 100);
+  }
+  
+  /**
+   * Lấy icon phù hợp với loại bài học
+   * Get appropriate icon for lesson type
+   * @param lessonType Loại bài học
+   * @returns Tên icon phù hợp
+   */
+  getLessonTypeIcon(lessonType: string): string {
+    switch (lessonType) {
+      case 'video': return 'video';
+      case 'quiz': return 'check-square';
+      case 'assignment': return 'file-text';
+      case 'reading': return 'book-open';
+      case 'interactive': return 'code';
+      default: return 'circle';
     }
   }
 }

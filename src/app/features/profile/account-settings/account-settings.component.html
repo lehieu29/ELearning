@@ -1,0 +1,546 @@
+<!-- File path: src/app/features/profile/account-settings/account-settings.component.html -->
+<div class="bg-white rounded-lg shadow-sm">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="p-8 flex justify-center">
+    <app-loader message="Đang tải cài đặt tài khoản..."></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && (!accountSettings || !securitySettings)" class="p-8 text-center">
+    <div class="text-red-600 mb-4">
+      <svg class="h-12 w-12 mx-auto text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3 class="text-lg font-medium mt-2">Không thể tải thông tin cài đặt</h3>
+      <p class="text-sm text-gray-600 mt-1">Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.</p>
+    </div>
+    <app-elearning-button 
+      [label]="'Tải lại'" 
+      [type]="'primary'"
+      (click)="loadUserSettings()">
+    </app-elearning-button>
+  </div>
+
+  <!-- Account Settings Content -->
+  <div *ngIf="!isLoading && accountSettings && securitySettings" class="p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Cài đặt tài khoản</h1>
+
+    <!-- Tabs Navigation -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+        <a href="#profile-tab" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Hồ sơ tài khoản
+        </a>
+        <a href="#security-tab" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Bảo mật
+        </a>
+        <a href="#notifications-tab" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Thông báo
+        </a>
+      </nav>
+    </div>
+
+    <!-- Profile Tab Content -->
+    <div id="profile-tab" class="space-y-6">
+      <!-- Basic Profile Information -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin cá nhân</h3>
+          
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <!-- First Name -->
+              <div>
+                <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">Họ</label>
+                <app-elearning-text-box 
+                  formControlName="firstName"
+                  [placeholder]="'Nhập họ của bạn'"
+                  [error]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+                </app-elearning-text-box>
+                <div *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched" class="mt-1 text-sm text-red-600">
+                  Họ là trường bắt buộc
+                </div>
+              </div>
+              
+              <!-- Last Name -->
+              <div>
+                <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Tên</label>
+                <app-elearning-text-box 
+                  formControlName="lastName"
+                  [placeholder]="'Nhập tên của bạn'"
+                  [error]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+                </app-elearning-text-box>
+                <div *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched" class="mt-1 text-sm text-red-600">
+                  Tên là trường bắt buộc
+                </div>
+              </div>
+              
+              <!-- Username -->
+              <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Tên người dùng</label>
+                <app-elearning-text-box 
+                  formControlName="username"
+                  [placeholder]="'Tên người dùng của bạn'"
+                  [error]="profileForm.get('username')?.invalid && profileForm.get('username')?.touched">
+                </app-elearning-text-box>
+                <div *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched" class="mt-1 text-sm text-red-600">
+                  <span *ngIf="profileForm.get('username')?.errors?.required">Tên người dùng là trường bắt buộc</span>
+                  <span *ngIf="profileForm.get('username')?.errors?.minlength">Tên người dùng phải có ít nhất 3 ký tự</span>
+                </div>
+              </div>
+              
+              <!-- Phone -->
+              <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <app-elearning-text-box 
+                  formControlName="phone"
+                  [placeholder]="'Nhập số điện thoại của bạn'"
+                  [error]="profileForm.get('phone')?.invalid && profileForm.get('phone')?.touched">
+                </app-elearning-text-box>
+                <div *ngIf="profileForm.get('phone')?.invalid && profileForm.get('phone')?.touched" class="mt-1 text-sm text-red-600">
+                  Số điện thoại không hợp lệ
+                </div>
+              </div>
+              
+              <!-- Language -->
+              <div>
+                <label for="language" class="block text-sm font-medium text-gray-700 mb-1">Ngôn ngữ</label>
+                <select 
+                  formControlName="language"
+                  class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                  <option *ngFor="let lang of languages" [value]="lang.value">{{ lang.label }}</option>
+                </select>
+                <div *ngIf="profileForm.get('language')?.invalid && profileForm.get('language')?.touched" class="mt-1 text-sm text-red-600">
+                  Vui lòng chọn ngôn ngữ
+                </div>
+              </div>
+              
+              <!-- Timezone -->
+              <div>
+                <label for="timezone" class="block text-sm font-medium text-gray-700 mb-1">Múi giờ</label>
+                <select 
+                  formControlName="timezone"
+                  class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                  <option *ngFor="let tz of timezones" [value]="tz.value">{{ tz.label }}</option>
+                </select>
+                <div *ngIf="profileForm.get('timezone')?.invalid && profileForm.get('timezone')?.touched" class="mt-1 text-sm text-red-600">
+                  Vui lòng chọn múi giờ
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-end mt-4">
+              <app-elearning-button
+                [label]="'Lưu thay đổi'"
+                [type]="'primary'"
+                [loading]="isSaving"
+                [disabled]="profileForm.invalid || isSaving"
+                buttonType="submit">
+              </app-elearning-button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Email Settings -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Email</h3>
+          
+          <div class="flex items-start">
+            <div class="flex-grow">
+              <p class="text-sm text-gray-700">Địa chỉ email hiện tại</p>
+              <p class="font-medium mt-1">{{ accountSettings.email }}</p>
+            </div>
+            <div>
+              <app-elearning-button
+                [label]="'Xác thực email'"
+                [type]="'secondary'"
+                [loading]="isVerifyingEmail"
+                [disabled]="isVerifyingEmail"
+                (click)="sendVerificationEmail()">
+              </app-elearning-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Security Tab Content -->
+    <div id="security-tab" class="space-y-6">
+      <!-- Password Settings -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Mật khẩu</h3>
+              <p *ngIf="securitySettings?.lastPasswordChange" class="mt-1 text-sm text-gray-500">
+                Thay đổi gần đây nhất: {{ securitySettings.lastPasswordChange | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <app-elearning-button
+              [label]="'Đổi mật khẩu'"
+              [type]="'primary'"
+              (click)="openChangePasswordModal()">
+            </app-elearning-button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Two-factor Authentication -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Xác thực hai yếu tố</h3>
+              <p class="mt-1 text-sm text-gray-500">
+                {{ securitySettings.twoFactorEnabled ? 
+                  'Xác thực hai yếu tố đang được bật. Tài khoản của bạn đang được bảo vệ.' : 
+                  'Xác thực hai yếu tố chưa được bật. Bật tính năng này để tăng cường bảo mật cho tài khoản của bạn.' }}
+              </p>
+            </div>
+            <app-elearning-button
+              [label]="securitySettings.twoFactorEnabled ? 'Tắt' : 'Bật'"
+              [type]="securitySettings.twoFactorEnabled ? 'secondary' : 'primary'"
+              (click)="openTwoFactorModal()">
+            </app-elearning-button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Active Sessions -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Phiên đăng nhập</h3>
+            <app-elearning-button
+              [label]="'Tải lại'"
+              [type]="'secondary'"
+              [icon]="'refresh'"
+              [loading]="isLoadingSecurity"
+              [disabled]="isLoadingSecurity"
+              (click)="reloadSecuritySettings()">
+            </app-elearning-button>
+          </div>
+          
+          <div *ngIf="securitySettings.activeSessions.length === 0" class="text-center py-4">
+            <p class="text-gray-500">Không có phiên đăng nhập nào đang hoạt động</p>
+          </div>
+          
+          <div *ngIf="securitySettings.activeSessions.length > 0" class="space-y-4">
+            <div *ngFor="let session of securitySettings.activeSessions" 
+                 class="flex justify-between items-center p-3 border rounded-md"
+                 [ngClass]="{'bg-blue-50 border-blue-200': session.current, 'bg-white border-gray-200': !session.current}">
+              <div>
+                <div class="font-medium flex items-center">
+                  {{ session.browser }} on {{ session.deviceName }}
+                  <span *ngIf="session.current" class="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">Hiện tại</span>
+                </div>
+                <div class="text-sm text-gray-500 mt-1">
+                  <span>{{ session.ipAddress }}</span>
+                  <span *ngIf="session.location"> · {{ session.location }}</span>
+                  <span> · Hoạt động gần nhất: {{ session.lastActive | date:'short' }}</span>
+                </div>
+              </div>
+              <app-elearning-button 
+                *ngIf="!session.current"
+                [label]="'Đóng phiên'"
+                [type]="'danger'"
+                [size]="'sm'"
+                [loading]="isTerminatingSession"
+                [disabled]="isTerminatingSession"
+                (click)="terminateSession(session)">
+              </app-elearning-button>
+            </div>
+            
+            <div class="mt-4 text-right">
+              <app-elearning-button 
+                [label]="'Đóng tất cả phiên khác'"
+                [type]="'danger'"
+                [loading]="isTerminatingSession"
+                [disabled]="isTerminatingSession || securitySettings.activeSessions.length <= 1"
+                (click)="terminateAllOtherSessions()">
+              </app-elearning-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Account Deletion -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6 border-t-4 border-red-500">
+          <h3 class="text-lg font-medium text-gray-900 text-red-600">Xóa tài khoản</h3>
+          <div class="mt-2 max-w-xl text-sm text-gray-500">
+            <p>Khi bạn xóa tài khoản của mình, tất cả dữ liệu và nội dung liên quan sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.</p>
+          </div>
+          <div class="mt-5">
+            <app-elearning-button 
+              [label]="'Xóa tài khoản'"
+              [type]="'danger'"
+              (click)="openDeleteAccountModal()">
+            </app-elearning-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Notifications Tab Content -->
+    <div id="notifications-tab" class="space-y-6">
+      <!-- Email Notification Settings -->
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Cài đặt thông báo qua email</h3>
+          
+          <form [formGroup]="notificationsForm" (ngSubmit)="saveNotifications()">
+            <div class="space-y-4 mb-6">
+              <!-- Course Updates -->
+              <div class="flex items-start">
+                <div class="flex items-center h-5">
+                  <input 
+                    id="courseUpdates" 
+                    formControlName="courseUpdates" 
+                    type="checkbox" 
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="courseUpdates" class="font-medium text-gray-700">Cập nhật khóa học</label>
+                  <p class="text-gray-500">Nhận thông báo về cập nhật nội dung, bài tập, và deadline trong các khóa học của bạn.</p>
+                </div>
+              </div>
+              
+              <!-- Promotions -->
+              <div class="flex items-start">
+                <div class="flex items-center h-5">
+                  <input 
+                    id="promotions" 
+                    formControlName="promotions" 
+                    type="checkbox" 
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="promotions" class="font-medium text-gray-700">Khuyến mãi</label>
+                  <p class="text-gray-500">Nhận thông tin về các khuyến mãi, giảm giá, và ưu đãi đặc biệt.</p>
+                </div>
+              </div>
+              
+              <!-- Account Alerts -->
+              <div class="flex items-start">
+                <div class="flex items-center h-5">
+                  <input 
+                    id="accountAlerts" 
+                    formControlName="accountAlerts" 
+                    type="checkbox" 
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="accountAlerts" class="font-medium text-gray-700">Cảnh báo tài khoản</label>
+                  <p class="text-gray-500">Nhận thông báo về các hoạt động quan trọng liên quan đến tài khoản của bạn (đăng nhập mới, thay đổi mật khẩu, v.v.).</p>
+                </div>
+              </div>
+              
+              <!-- Feedback -->
+              <div class="flex items-start">
+                <div class="flex items-center h-5">
+                  <input 
+                    id="feedback" 
+                    formControlName="feedback" 
+                    type="checkbox" 
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="feedback" class="font-medium text-gray-700">Yêu cầu phản hồi</label>
+                  <p class="text-gray-500">Nhận các yêu cầu phản hồi về trải nghiệm học tập và các khóa học đã hoàn thành.</p>
+                </div>
+              </div>
+              
+              <!-- Newsletters -->
+              <div class="flex items-start">
+                <div class="flex items-center h-5">
+                  <input 
+                    id="newsletters" 
+                    formControlName="newsletters" 
+                    type="checkbox" 
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="newsletters" class="font-medium text-gray-700">Bản tin</label>
+                  <p class="text-gray-500">Nhận bản tin định kỳ với các tin tức, xu hướng, và cơ hội học tập mới.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-end mt-4">
+              <app-elearning-button
+                [label]="'Lưu cài đặt thông báo'"
+                [type]="'primary'"
+                [loading]="isSavingNotifications"
+                [disabled]="isSavingNotifications"
+                buttonType="submit">
+              </app-elearning-button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<app-modal #passwordModal [title]="'Đổi mật khẩu'" [closeOnOutsideClick]="false">
+  <div class="p-6">
+    <form [formGroup]="passwordForm" (ngSubmit)="savePassword()">
+      <div class="space-y-4">
+        <!-- Current Password -->
+        <div>
+          <label for="currentPassword" class="block text-sm font-medium text-gray-700">Mật khẩu hiện tại</label>
+          <app-elearning-text-box 
+            formControlName="currentPassword" 
+            [type]="'password'"
+            [placeholder]="'Nhập mật khẩu hiện tại'"
+            [error]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
+          </app-elearning-text-box>
+          <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched" 
+               class="mt-1 text-sm text-red-600">
+            Vui lòng nhập mật khẩu hiện tại
+          </div>
+        </div>
+        
+        <!-- New Password -->
+        <div>
+          <label for="newPassword" class="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
+          <app-elearning-text-box 
+            formControlName="newPassword" 
+            [type]="'password'"
+            [placeholder]="'Nhập mật khẩu mới'"
+            [error]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+          </app-elearning-text-box>
+          <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched" 
+               class="mt-1 text-sm text-red-600">
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.required">Vui lòng nhập mật khẩu mới</span>
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.minlength">Mật khẩu phải có ít nhất 8 ký tự</span>
+            <span *ngIf="passwordForm.get('newPassword')?.errors?.passwordStrength">Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt</span>
+          </div>
+        </div>
+        
+        <!-- Confirm Password -->
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu</label>
+          <app-elearning-text-box 
+            formControlName="confirmPassword" 
+            [type]="'password'"
+            [placeholder]="'Xác nhận mật khẩu mới'"
+            [error]="(passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched) || passwordForm.errors?.passwordsNotMatch">
+          </app-elearning-text-box>
+          <div *ngIf="(passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched) || passwordForm.errors?.passwordsNotMatch" 
+               class="mt-1 text-sm text-red-600">
+            <span *ngIf="passwordForm.get('confirmPassword')?.errors?.required">Vui lòng xác nhận mật khẩu</span>
+            <span *ngIf="passwordForm.errors?.passwordsNotMatch">Mật khẩu xác nhận không khớp</span>
+          </div>
+        </div>
+        
+        <div class="bg-yellow-50 p-4 rounded-md mt-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-yellow-800">Lưu ý về bảo mật</h3>
+              <div class="mt-2 text-sm text-yellow-700">
+                <p>Mật khẩu nên có ít nhất 8 ký tự và bao gồm:</p>
+                <ul class="list-disc pl-5 space-y-1 mt-2">
+                  <li>Ít nhất một chữ cái viết hoa</li>
+                  <li>Ít nhất một chữ cái viết thường</li>
+                  <li>Ít nhất một chữ số</li>
+                  <li>Ít nhất một ký tự đặc biệt (!@#$%^&*)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 flex justify-end space-x-3">
+        <app-elearning-button
+          [label]="'Hủy'"
+          [type]="'secondary'"
+          [disabled]="isSavingPassword"
+          (click)="passwordModal.close()">
+        </app-elearning-button>
+        
+        <app-elearning-button
+          [label]="'Lưu mật khẩu'"
+          [type]="'primary'"
+          [loading]="isSavingPassword"
+          [disabled]="passwordForm.invalid || isSavingPassword"
+          buttonType="submit">
+        </app-elearning-button>
+      </div>
+    </form>
+  </div>
+</app-modal>
+
+<!-- Two-Factor Authentication Modal -->
+<app-modal #twoFactorModal [title]="'Xác thực hai yếu tố'" [closeOnOutsideClick]="false">
+  <div class="p-6">
+    <div *ngIf="!securitySettings.twoFactorEnabled" class="mb-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Bật xác thực hai yếu tố</h3>
+      <p class="text-gray-600">Xác thực hai yếu tố giúp tăng cường bảo mật cho tài khoản của bạn bằng cách yêu cầu một mã xác thực từ ứng dụng xác thực mỗi khi đăng nhập.</p>
+      
+      <div class="mt-4 bg-blue-50 p-4 rounded-md">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Chuẩn bị</h3>
+            <div class="mt-2 text-sm text-blue-700">
+              <p>Để bật xác thực hai yếu tố, bạn cần:</p>
+              <ol class="list-decimal ml-4 mt-2 space-y-1">
+                <li>Cài đặt một ứng dụng xác thực trên điện thoại của bạn (ví dụ: Google Authenticator, Authy).</li>
+                <li>Quét mã QR hoặc nhập mã thiết lập được cung cấp.</li>
+                <li>Nhập mã xác thực từ ứng dụng để hoàn tất thiết lập.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 flex justify-end space-x-3">
+        <app-elearning-button
+          [label]="'Hủy'"
+          [type]="'secondary'"
+          (click)="twoFactorModal.close()">
+        </app-elearning-button>
+        
+        <app-elearning-button
+          [label]="'Bật xác thực hai yếu tố'"
+          [type]="'primary'"
+          (click)="enableTwoFactorAuthentication()">
+        </app-elearning-button>
+      </div>
+    </div>
+    
+    <div *ngIf="securitySettings.twoFactorEnabled" class="mb-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-2">Tắt xác thực hai yếu tố</h3>
+      <p class="text-gray-600">Bạn có chắc chắn muốn tắt xác thực hai yếu tố? Điều này sẽ làm giảm mức độ bảo mật của tài khoản của bạn.</p>
+      
+      <div class="mt-6 flex justify-end space-x-3">
+        <app-elearning-button
+          [label]="'Hủy'"
+          [type]="'secondary'"
+          (click)="twoFactorModal.close()">
+        </app-elearning-button>
+        
+        <app-elearning-button
+          [label]="'Tắt xác thực hai yếu tố'"
+          [type]="'danger'"
+          (click)="disableTwoFactorAuthentication()">
+        </app-elearning-button>
+      </div>
+    </div>
+  </div>
+</app-modal>

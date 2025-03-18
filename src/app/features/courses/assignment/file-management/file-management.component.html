@@ -2,86 +2,124 @@
 <div>
   <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center py-4">
-    <app-loader size="sm"></app-loader>
+    <app-loader size="sm" message="Đang tải dữ liệu..."></app-loader>
   </div>
   
   <!-- Error State -->
-  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-    {{ error }}
-    <button 
-      class="absolute top-0 right-0 px-4 py-3" 
-      (click)="error = ''">
-      <span class="text-xl">&times;</span>
+  <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded relative mb-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm">{{ error }}</p>
+        <button class="mt-2 text-sm font-medium text-red-600 hover:text-red-800" (click)="loadFiles()">
+          Thử lại
+        </button>
+      </div>
+    </div>
+    <button (click)="clearError()" class="absolute top-0 right-0 p-4" aria-label="Đóng">
+      <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
     </button>
   </div>
 
   <!-- File List -->
-  <div *ngIf="!isLoading && files.length > 0" class="mb-4">
-    <h3 class="text-sm font-medium text-gray-700 mb-2">Current Files</h3>
-    <div class="bg-gray-50 rounded-lg p-3">
-      <div *ngFor="let file of files" class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-        <div class="flex items-center">
-          <svg class="h-5 w-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-          </svg>
-          <div>
-            <div class="text-sm font-medium text-gray-900">{{ file.name }}</div>
-            <div class="text-xs text-gray-500">{{ formatFileSize(file.size) }} • {{ file.uploadedAt | date:'short' }}</div>
+  <div *ngIf="!isLoading && files.length > 0" class="mb-6">
+    <h3 class="text-sm font-medium text-gray-700 mb-2">Tập tin hiện tại</h3>
+    <div class="bg-gray-50 rounded-lg border border-gray-200">
+      <div *ngFor="let file of files" class="flex justify-between items-center py-3 px-4 border-b border-gray-200 last:border-b-0">
+        <div class="flex items-center flex-1 min-w-0">
+          <div class="flex-shrink-0 text-gray-400 mr-3">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-gray-900 truncate">
+              {{ file.name }}
+            </div>
+            <div class="flex items-center text-xs text-gray-500 mt-0.5">
+              <span>{{ formatFileSize(file.size) }}</span>
+              <span class="mx-1">•</span>
+              <span>{{ file.uploadedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
           </div>
         </div>
-        <div class="flex space-x-2">
-          <a 
-            [href]="file.url" 
-            target="_blank" 
-            download 
-            class="text-blue-600 hover:text-blue-800">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        <div class="flex space-x-2 ml-4">
+          <a [href]="file.url" 
+             target="_blank" 
+             download 
+             class="text-blue-600 hover:text-blue-800 p-1">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
           </a>
-          <button 
-            *ngIf="submissionStatus !== 'graded'" 
-            (click)="deleteFile(file.id)" 
-            class="text-red-600 hover:text-red-800">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          <button *ngIf="submissionStatus !== 'graded' && submissionStatus !== 'submitted'"
+                  (click)="deleteFile(file.id)" 
+                  [disabled]="isDeleting"
+                  class="text-red-600 hover:text-red-800 p-1">
+            <svg *ngIf="!isDeleting" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
+            <div *ngIf="isDeleting" class="h-5 w-5 animate-spin border-2 border-red-600 border-t-transparent rounded-full"></div>
           </button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && files.length === 0 && !error" class="mb-6 bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">Chưa có tập tin nào</h3>
+    <p class="mt-1 text-sm text-gray-500">Bắt đầu bằng cách tải lên tập tin đầu tiên của bạn.</p>
+  </div>
+
   <!-- File Upload -->
-  <div *ngIf="submissionStatus !== 'graded'" class="mb-4">
-    <h3 class="text-sm font-medium text-gray-700 mb-2">Upload Files</h3>
-    <div class="flex items-center space-x-2">
-      <label class="flex items-center px-4 py-2 bg-white text-blue-600 rounded-md border border-blue-600 cursor-pointer hover:bg-blue-50">
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-        </svg>
-        Choose Files
-        <input 
-          type="file" 
-          class="hidden" 
-          multiple 
-          (change)="onFileSelected($event)">
+  <div *ngIf="submissionStatus !== 'graded' && submissionStatus !== 'submitted'" class="mb-6">
+    <h3 class="text-sm font-medium text-gray-700 mb-2">Tải tập tin lên</h3>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+      <label class="flex-none cursor-pointer bg-white border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors">
+        <div class="flex items-center">
+          <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          Chọn tập tin
+          <input type="file" 
+                 class="hidden" 
+                 multiple 
+                 [accept]="fileConfig.acceptedTypes.join(',')"
+                 (change)="onFileSelected($event)"
+                 [disabled]="isUploading">
+        </div>
       </label>
-      <button 
-        *ngIf="selectedFiles.length > 0" 
-        [disabled]="isUploading"
-        (click)="uploadFiles()" 
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400">
-        {{ isUploading ? 'Uploading...' : 'Upload' }}
-      </button>
+      
+      <div class="mt-2 sm:mt-0 flex-1 text-xs text-gray-500">
+        Định dạng được chấp nhận: {{ fileConfig.acceptedTypes.join(', ') }} <br>
+        Kích thước tối đa: {{ fileConfig.maxSizeInMB }}MB
+      </div>
     </div>
+    
+    <!-- Selected Files -->
     <div *ngIf="selectedFiles.length > 0" class="mt-2">
-      <div class="text-sm text-gray-600">Selected files: {{ selectedFiles.length }}</div>
-      <div *ngFor="let file of selectedFiles" class="text-xs text-gray-500">{{ file.name }} ({{ formatFileSize(file.size) }})</div>
+      <div class="text-sm text-gray-600">Đã chọn {{ selectedFiles.length }} tập tin</div>
+      <div class="mt-1 max-h-28 overflow-y-auto">
+        <div *ngFor="let file of selectedFiles" class="text-xs text-gray-500 py-1">
+          {{ file.name }} ({{ formatFileSize(file.size) }})
+        </div>
+      </div>
     </div>
-    <div *ngIf="isUploading" class="mt-2">
+    
+    <!-- Upload Progress -->
+    <div *ngIf="isUploading" class="mt-4">
       <div class="flex justify-between text-xs text-gray-600 mb-1">
-        <span>Uploading...</span>
+        <span>Đang tải lên...</span>
         <span>{{ progress }}%</span>
       </div>
       <div class="w-full bg-gray-200 rounded-full h-2">
@@ -92,13 +130,51 @@
 
   <!-- Submit Button -->
   <div *ngIf="submissionStatus !== 'graded' && submissionStatus !== 'submitted' && files.length > 0" class="mt-6">
-    <app-elearning-button 
-      buttonType="primary" 
-      (click)="submitAssignment()">
-      Submit Assignment
-    </app-elearning-button>
+    <button 
+      [disabled]="isSubmitting"
+      (click)="submitAssignment()"
+      class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed">
+      <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <svg *ngIf="!isSubmitting" class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {{ isSubmitting ? 'Đang nộp bài...' : 'Nộp bài tập' }}
+    </button>
     <p class="text-xs text-gray-500 mt-2">
-      Once submitted, you will not be able to make changes to your files.
+      Sau khi nộp bài, bạn sẽ không thể chỉnh sửa các tập tin của mình nữa.
     </p>
+  </div>
+  
+  <!-- Already Submitted State -->
+  <div *ngIf="submissionStatus === 'submitted'" class="mt-4 p-4 bg-blue-50 text-blue-800 rounded-md">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium">Bài tập đã được nộp</p>
+        <p class="mt-1 text-sm">Bạn đã nộp bài tập này và không thể chỉnh sửa tập tin. Giáo viên sẽ xem xét và cho điểm.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Graded State -->
+  <div *ngIf="submissionStatus === 'graded'" class="mt-4 p-4 bg-green-50 text-green-800 rounded-md">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium">Bài tập đã được chấm điểm</p>
+        <p class="mt-1 text-sm">Bài tập này đã được chấm điểm. Vui lòng kiểm tra phần đánh giá để xem điểm và nhận xét.</p>
+      </div>
+    </div>
   </div>
 </div>

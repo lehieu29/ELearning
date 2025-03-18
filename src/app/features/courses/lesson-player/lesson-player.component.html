@@ -1,115 +1,207 @@
 <div class="bg-gray-50 min-h-screen">
+  <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
     <app-loader></app-loader>
   </div>
 
-  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-    {{ error }}
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+    <div class="flex items-center">
+      <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p>{{ error }}</p>
+    </div>
+    <button class="mt-2 text-sm text-red-700 underline" (click)="returnToCourse()">Quay lại khóa học</button>
   </div>
 
-  <div *ngIf="!isLoading && !error && lesson" class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Lesson Title and Navigation -->
-    <div class="mb-4">
-      <h1 class="text-2xl font-bold text-gray-900">{{ lesson.title }}</h1>
-      <div class="flex items-center text-sm text-gray-500 mt-1">
-        <span>{{ lesson.durationMinutes }} min</span>
-        <span class="mx-2">•</span>
-        <span *ngIf="lesson.isCompleted" class="text-green-600 flex items-center">
-          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+  <!-- Lesson Player -->
+  <div *ngIf="!isLoading && !error && lesson" class="max-w-5xl mx-auto px-4 pb-16">
+    <!-- Lesson Header -->
+    <div class="mb-6">
+      <div class="flex items-center text-sm text-gray-500 mb-2">
+        <button (click)="returnToCourse()" class="flex items-center hover:text-blue-600">
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Completed
-        </span>
-        <span *ngIf="!lesson.isCompleted">Not completed</span>
+          Quay lại khóa học
+        </button>
       </div>
+
+      <h1 class="text-2xl font-bold text-gray-900">{{ lesson.title }}</h1>
+      <p class="text-gray-600 mt-1">{{ lesson.description }}</p>
     </div>
 
     <!-- Video Player -->
-    <div class="relative bg-black rounded-lg overflow-hidden shadow-lg mb-6">
-      <video 
-        #videoPlayer
-        [src]="lesson.videoUrl" 
-        class="w-full h-auto" 
-        controls
-        [playbackRate]="playbackSpeed"
-        (ended)="onVideoEnded()"
-        controlsList="nodownload"
-        preload="metadata">
+    <div class="relative bg-black rounded-lg shadow-lg overflow-hidden mb-6">
+      <!-- Video Element -->
+      <video #videoPlayer [src]="videoUrl" class="w-full aspect-video" [poster]="lesson.thumbnailUrl"
+        (click)="togglePlay()">
       </video>
-      
-      <!-- Video Controls Overlay -->
-      <div class="absolute bottom-16 right-4 flex space-x-2">
-        <app-speed-control 
-          [currentSpeed]="playbackSpeed" 
-          (speedChanged)="onSpeedChange($event)">
-        </app-speed-control>
-        
-        <app-picture-in-picture 
-          [isActive]="isPictureInPictureActive"
-          (togglePiP)="togglePictureInPicture()">
-        </app-picture-in-picture>
-        
-        <app-download-options 
-          *ngIf="lesson.resources?.length"
-          [resources]="lesson.resources">
-        </app-download-options>
+
+      <!-- Video Controls -->
+      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
+        <!-- Progress Bar -->
+        <div class="relative h-1.5 bg-gray-500 rounded-full mb-3 cursor-pointer"
+          (click)="seekTo($event.offsetX / $event.target.offsetWidth * duration)">
+          <div class="absolute h-full bg-blue-500 rounded-full" [style.width.%]="(currentTime / duration) * 100"></div>
+          <!-- Hover Preview (will be implemented with advanced JS) -->
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <!-- Play/Pause -->
+            <button (click)="togglePlay()" class="focus:outline-none">
+              <svg *ngIf="!isPlaying" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              </svg>
+              <svg *ngIf="isPlaying" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+
+            <!-- Volume -->
+            <div class="flex items-center">
+              <button (click)="toggleMute()" class="focus:outline-none">
+                <svg *ngIf="!isMuted" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+                <svg *ngIf="isMuted" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              </button>
+              <input type="range" min="0" max="1" step="0.1" [value]="volume" (input)="setVolume($event.target.value)"
+                class="w-16 ml-2 accent-blue-500 hidden sm:block">
+            </div>
+
+            <!-- Time Display -->
+            <div class="text-sm">
+              {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <!-- Speed Control -->
+            <app-speed-control [currentSpeed]="playbackRate" (speedChanged)="setPlaybackRate($event)">
+            </app-speed-control>
+
+            <!-- Transcript Toggle -->
+            <button (click)="toggleTranscript()" [ngClass]="{'text-blue-400': showTranscript}"
+              class="focus:outline-none hidden sm:flex items-center text-sm">
+              <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span class="hidden md:inline">Phụ đề</span>
+            </button>
+
+            <!-- Annotations Toggle -->
+            <button (click)="toggleAnnotationTools()" [ngClass]="{'text-blue-400': showAnnotations}"
+              class="focus:outline-none hidden sm:flex items-center text-sm">
+              <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <span class="hidden md:inline">Ghi chú</span>
+            </button>
+
+            <!-- Picture in Picture -->
+            <button (click)="togglePictureInPicture()" class="focus:outline-none hidden sm:block">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 9h.01M12 9h.01M16 9h.01M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01" />
+              </svg>
+            </button>
+
+            <!-- Fullscreen Toggle -->
+            <button (click)="toggleFullscreen()" class="focus:outline-none">
+              <svg *ngIf="!isFullscreen" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+              </svg>
+              <svg *ngIf="isFullscreen" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Interactive Timeline -->
-    <app-interactive-timestamp 
-      *ngIf="lesson.timestamps?.length" 
-      [timestamps]="lesson.timestamps"
-      [videoElement]="videoPlayer?.nativeElement">
-    </app-interactive-timestamp>
+    <!-- Main Content Area -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Left Side: Content -->
+      <div class="md:col-span-2">
+        <!-- Topic Content -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 class="text-xl font-medium text-gray-900 mb-4">{{ lesson.topic || 'Tổng quan' }}</h2>
+          <div class="prose max-w-none" [innerHTML]="lesson.content"></div>
 
-    <!-- Lesson Controls -->
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-      <div class="flex items-center space-x-2">
-        <app-elearning-button 
-          [buttonType]="showTranscript ? 'primary' : 'secondary'"
-          (click)="toggleTranscript()">
-          {{ showTranscript ? 'Hide Transcript' : 'Show Transcript' }}
-        </app-elearning-button>
-        
-        <app-elearning-button 
-          [buttonType]="showAnnotationTools ? 'primary' : 'secondary'"
-          (click)="toggleAnnotationTools()">
-          {{ showAnnotationTools ? 'Hide Annotations' : 'Annotate' }}
-        </app-elearning-button>
+          <!-- Downloads Section -->
+          <div *ngIf="lesson.attachments?.length" class="mt-6 pt-6 border-t border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900 mb-3">Tài liệu đính kèm</h3>
+            <ul class="space-y-2">
+              <li *ngFor="let attachment of lesson.attachments"
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                <div class="flex items-center">
+                  <svg class="h-5 w-5 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>{{ attachment.title }}</span>
+                </div>
+                <button (click)="downloadAttachment(attachment)" class="text-blue-600 hover:text-blue-800">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-      
-      <div class="flex items-center space-x-2">
-        <app-elearning-button 
-          *ngIf="lesson.previousLessonId"
-          buttonType="secondary"
-          [routerLink]="['/course', courseId, 'lesson', lesson.previousLessonId]">
-          Previous
-        </app-elearning-button>
-        
-        <app-elearning-button 
-          *ngIf="lesson.nextLessonId"
-          buttonType="primary"
-          [routerLink]="['/course', courseId, 'lesson', lesson.nextLessonId]">
-          Next Lesson
-        </app-elearning-button>
+
+      <!-- Right Side: Transcript and Annotations -->
+      <div class="md:col-span-1 space-y-6">
+        <!-- Transcript (Conditionally Displayed) -->
+        <div *ngIf="showTranscript" class="bg-white rounded-lg shadow-sm p-6">
+          <app-transcript [lessonId]="lessonId" [courseId]="courseId" [currentTime]="currentTime"
+            (timeClick)="seekTo($event)">
+          </app-transcript>
+        </div>
+
+        <!-- Annotations Panel (Conditionally Displayed) -->
+        <div *ngIf="showAnnotations" class="bg-white rounded-lg shadow-sm p-6">
+          <app-annotation-tools [lessonId]="lessonId" [courseId]="courseId" [currentTime]="currentTime">
+          </app-annotation-tools>
+        </div>
       </div>
     </div>
 
-    <!-- Transcript Area -->
-    <div *ngIf="showTranscript" class="mb-6">
-      <app-transcript [text]="lesson.transcript"></app-transcript>
-    </div>
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between mt-6">
+      <button *ngIf="prevLessonId" (click)="goToPrevLesson()"
+        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg flex items-center transition-colors">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Bài trước
+      </button>
+      <div *ngIf="!prevLessonId" class="invisible"></div>
 
-    <!-- Annotation Tools -->
-    <div *ngIf="showAnnotationTools" class="mb-6">
-      <app-annotation-tools [lessonId]="lessonId"></app-annotation-tools>
-    </div>
-
-    <!-- Lesson Description -->
-    <div class="bg-white p-6 rounded-lg shadow mb-6">
-      <h2 class="text-xl font-bold mb-4">About this lesson</h2>
-      <p class="text-gray-700">{{ lesson.description }}</p>
+      <button *ngIf="nextLessonId" (click)="goToNextLesson()"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors">
+        Bài tiếp theo
+        <i class="fas fa-arrow-right ml-2"></i>
+      </button>
+      <div *ngIf="!nextLessonId" class="invisible"></div>
     </div>
   </div>
 </div>

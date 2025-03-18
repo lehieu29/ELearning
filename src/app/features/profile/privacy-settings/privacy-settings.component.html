@@ -1,0 +1,405 @@
+<!-- File path: src/app/features/profile/privacy-settings/privacy-settings.component.html -->
+
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Cài đặt quyền riêng tư</h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Quản lý cách dữ liệu của bạn được chia sẻ và hiển thị trên nền tảng
+            </p>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="bg-white shadow rounded-lg p-8">
+            <div class="flex justify-center items-center h-24">
+                <app-loader size="md"></app-loader>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div *ngIf="error && !isLoading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+                    <div class="mt-2">
+                        <app-elearning-button type="danger" size="sm" (click)="loadPrivacySettings()">
+                            Thử lại
+                        </app-elearning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div *ngIf="!isLoading && !error" [formGroup]="privacyForm">
+            <!-- Last updated info -->
+            <div *ngIf="privacySettings" class="text-sm text-gray-500 mb-6">
+                Cập nhật lần cuối: {{ formatDate(privacySettings.lastUpdated) }}
+            </div>
+
+            <!-- Profile Visibility Section -->
+            <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Quyền riêng tư hồ sơ</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Kiểm soát ai có thể xem hồ sơ và thông tin cá nhân của bạn
+                    </p>
+                </div>
+
+                <div class="p-6" formGroupName="profileVisibility">
+                    <div class="space-y-5">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="public-visibility" type="radio" formControlName="profileVisibility"
+                                    [value]="profileVisibilityLevels.PUBLIC"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="public-visibility" class="font-medium text-gray-700">Công khai</label>
+                                <p class="text-gray-500">{{ getVisibilityDescription(profileVisibilityLevels.PUBLIC) }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="connections-visibility" type="radio" formControlName="profileVisibility"
+                                    [value]="profileVisibilityLevels.CONNECTIONS"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="connections-visibility" class="font-medium text-gray-700">Chỉ kết
+                                    nối</label>
+                                <p class="text-gray-500">{{
+                                    getVisibilityDescription(profileVisibilityLevels.CONNECTIONS) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="private-visibility" type="radio" formControlName="profileVisibility"
+                                    [value]="profileVisibilityLevels.PRIVATE"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="private-visibility" class="font-medium text-gray-700">Riêng tư</label>
+                                <p class="text-gray-500">{{ getVisibilityDescription(profileVisibilityLevels.PRIVATE) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Activity Sharing -->
+            <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Chia sẻ hoạt động học tập</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Quản lý cách hoạt động học tập của bạn được chia sẻ với người khác
+                    </p>
+                </div>
+
+                <div class="p-6" formGroupName="learningActivitySharing">
+                    <div class="space-y-5">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-all" type="radio" formControlName="learningActivitySharing"
+                                    [value]="learningActivitySharingLevels.ALL"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-all" class="font-medium text-gray-700">Tất cả</label>
+                                <p class="text-gray-500">{{ getSharingDescription(learningActivitySharingLevels.ALL) }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-achievements" type="radio" formControlName="learningActivitySharing"
+                                    [value]="learningActivitySharingLevels.ACHIEVEMENTS_ONLY"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-achievements" class="font-medium text-gray-700">Chỉ thành tích</label>
+                                <p class="text-gray-500">{{
+                                    getSharingDescription(learningActivitySharingLevels.ACHIEVEMENTS_ONLY) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-none" type="radio" formControlName="learningActivitySharing"
+                                    [value]="learningActivitySharingLevels.NONE"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-none" class="font-medium text-gray-700">Không chia sẻ</label>
+                                <p class="text-gray-500">{{ getSharingDescription(learningActivitySharingLevels.NONE) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Sharing Preferences -->
+            <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Tùy chọn chia sẻ dữ liệu</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Quản lý cách dữ liệu của bạn được sử dụng và chia sẻ
+                    </p>
+                </div>
+
+                <div class="p-6" formGroupName="dataSharing">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-partners" type="checkbox" formControlName="shareWithPartners"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-partners" class="font-medium text-gray-700">Chia sẻ với đối tác giáo
+                                    dục</label>
+                                <p class="text-gray-500">Cho phép chia sẻ thành tích học tập với đối tác giáo dục của
+                                    chúng tôi</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-employers" type="checkbox" formControlName="shareWithEmployers"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-employers" class="font-medium text-gray-700">Chia sẻ với nhà tuyển
+                                    dụng tiềm năng</label>
+                                <p class="text-gray-500">Cho phép chia sẻ hồ sơ của bạn với các nhà tuyển dụng đang tìm
+                                    ứng viên</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-research" type="checkbox" formControlName="shareForResearch"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-research" class="font-medium text-gray-700">Chia sẻ cho nghiên cứu
+                                    giáo dục</label>
+                                <p class="text-gray-500">Đóng góp dữ liệu ẩn danh vào nghiên cứu để cải thiện trải
+                                    nghiệm học tập</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="share-personalization" type="checkbox"
+                                    formControlName="shareForPersonalization"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="share-personalization" class="font-medium text-gray-700">Chia sẻ để cá nhân
+                                    hóa</label>
+                                <p class="text-gray-500">Cho phép chúng tôi sử dụng dữ liệu để cá nhân hóa trải nghiệm
+                                    học tập của bạn</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cookie Preferences -->
+            <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Tùy chọn cookie</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Quản lý cách chúng tôi sử dụng cookie trên thiết bị của bạn
+                    </p>
+                </div>
+
+                <div class="p-6" formGroupName="cookiePreferences">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="allow-essential" type="checkbox" formControlName="allowEssential"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded cursor-not-allowed bg-gray-100">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="allow-essential" class="font-medium text-gray-700">Cookie thiết yếu</label>
+                                <p class="text-gray-500">Cookie cần thiết để trang web hoạt động (không thể tắt)</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="allow-analytics" type="checkbox" formControlName="allowAnalytics"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="allow-analytics" class="font-medium text-gray-700">Cookie phân tích</label>
+                                <p class="text-gray-500">Giúp chúng tôi hiểu cách bạn sử dụng trang web để cải thiện
+                                    trải nghiệm</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="allow-functional" type="checkbox" formControlName="allowFunctional"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="allow-functional" class="font-medium text-gray-700">Cookie chức năng</label>
+                                <p class="text-gray-500">Cho phép các tính năng nâng cao như lưu cài đặt và tùy chọn cá
+                                    nhân</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="allow-advertising" type="checkbox" formControlName="allowAdvertising"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="allow-advertising" class="font-medium text-gray-700">Cookie quảng
+                                    cáo</label>
+                                <p class="text-gray-500">Cho phép hiển thị quảng cáo phù hợp với sở thích của bạn</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <app-elearning-button type="secondary" size="sm" (click)="updateCookiePreferences()">
+                                Cập nhật tùy chọn cookie
+                            </app-elearning-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketing Preferences -->
+            <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Tùy chọn tiếp thị</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Quản lý các liên lạc tiếp thị bạn nhận được từ chúng tôi
+                    </p>
+                </div>
+
+                <div class="p-6">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="marketing-consent" type="checkbox" formControlName="marketingConsent"
+                                (change)="updateMarketingConsent($event.target.checked)"
+                                class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="marketing-consent" class="font-medium text-gray-700">Đồng ý nhận thông tin tiếp
+                                thị</label>
+                            <p class="text-gray-500">Nhận thông tin về khóa học mới, ưu đãi và cơ hội học tập</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Export and Deletion -->
+            <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Dữ liệu của bạn</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Yêu cầu xuất hoặc xóa dữ liệu cá nhân của bạn
+                    </p>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <div>
+                        <h3 class="text-md font-medium text-gray-900 mb-2">Xuất dữ liệu</h3>
+                        <p class="text-sm text-gray-500 mb-4">
+                            Tải xuống bản sao dữ liệu cá nhân của bạn. Quá trình này có thể mất đến 48 giờ.
+                        </p>
+
+                        <app-elearning-button type="secondary" (click)="openDataExportModal()">
+                            Yêu cầu xuất dữ liệu
+                        </app-elearning-button>
+
+                        <div *ngIf="dataExportRequest" class="mt-4 bg-blue-50 p-3 rounded-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1 md:flex md:justify-between">
+                                    <p class="text-sm text-blue-700">
+                                        Yêu cầu xuất dữ liệu đang {{ dataExportRequest.status === 'completed' ? 'hoàn
+                                        tất' : 'xử lý' }}
+                                    </p>
+                                    <p *ngIf="dataExportRequest.status === 'completed'"
+                                        class="mt-3 text-sm md:mt-0 md:ml-6">
+                                        <a [href]="dataExportRequest.dataUrl" target="_blank"
+                                            class="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600">
+                                            Tải xuống
+                                            <span>&rarr;</span>
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200">
+                        <h3 class="text-md font-medium text-gray-900 mb-2">Xóa dữ liệu</h3>
+                        <p class="text-sm text-gray-500 mb-4">
+                            Yêu cầu xóa tài khoản và dữ liệu cá nhân của bạn. Hành động này không thể hoàn tác.
+                        </p>
+
+                        <app-elearning-button type="danger" (click)="openDataDeletionModal()">
+                            Yêu cầu xóa dữ liệu
+                        </app-elearning-button>
+
+                        <div *ngIf="dataDeletionRequest" class="mt-4 bg-red-50 p-3 rounded-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                        Yêu cầu xóa dữ liệu của bạn đang {{ dataDeletionRequest.status }}
+                                    </p>
+                                    <p *ngIf="dataDeletionRequest.rejectionReason" class="text-sm text-red-700 mt-1">
+                                        Lý do từ chối: {{ dataDeletionRequest.rejectionReason }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Changes Button -->
+            <div class="flex justify-end mb-8">
+                <app-elearning-button type="primary" [isLoading]="isSaving" (click)="savePrivacySettings()">
+                    Lưu thay đổi
+                </app-elearning-button>
+            </div>
+        </div>
+    </div>
+</div>

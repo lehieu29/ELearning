@@ -4,9 +4,9 @@
     <div class="bg-white rounded-lg shadow-sm">
       <!-- Header -->
       <div class="p-6 border-b border-gray-200">
-        <h1 class="text-2xl font-bold text-gray-900">Accessibility Settings</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Cài đặt trợ năng</h1>
         <p class="mt-1 text-sm text-gray-500">
-          Customize your learning experience to meet your accessibility needs
+          Tùy chỉnh trải nghiệm học tập để phù hợp với nhu cầu trợ năng của bạn
         </p>
       </div>
 
@@ -16,8 +16,13 @@
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error" class="p-4 bg-red-50 text-red-700 border-l-4 border-red-500">
+      <div *ngIf="error" class="p-4 bg-red-50 text-red-700 border-l-4 border-red-500 relative">
         {{ error }}
+        <button (click)="clearError()" class="absolute top-2 right-2 text-red-500 hover:text-red-700" aria-label="Đóng thông báo">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 011.414 1.414L11.414 10l4.293 4.293a1 1 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 01-1.414-1.414L8.586 10 4.293 5.707a1 1 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </button>
       </div>
 
       <!-- Form -->
@@ -25,11 +30,11 @@
         <form [formGroup]="accessibilityForm" (ngSubmit)="savePreferences()">
           <!-- Visual Settings Section -->
           <div class="mb-8">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Visual Settings</h2>
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Cài đặt hiển thị</h2>
 
             <!-- Font Size -->
             <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Cỡ chữ</label>
               <div class="flex flex-wrap gap-3">
                 <ng-container *ngFor="let option of fontSizeOptions">
                   <label class="relative cursor-pointer">
@@ -48,7 +53,7 @@
 
             <!-- Contrast -->
             <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Contrast</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Độ tương phản</label>
               <div class="flex flex-wrap gap-3">
                 <ng-container *ngFor="let option of contrastOptions">
                   <label class="relative cursor-pointer">
@@ -67,7 +72,7 @@
 
             <!-- Animations -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Animation Preferences</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Hiệu ứng chuyển động</label>
               <div class="flex flex-wrap gap-3">
                 <ng-container *ngFor="let option of animationOptions">
                   <label class="relative cursor-pointer">
@@ -87,44 +92,40 @@
 
           <!-- Screen Reader Settings -->
           <div class="mb-8">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Screen Reader Settings</h2>
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Cài đặt trình đọc màn hình</h2>
             
             <div class="space-y-4">
               <div class="flex items-center">
                 <input type="checkbox" id="screenReaderOptimized" formControlName="screenReaderOptimized"
                        class="h-4 w-4 text-blue-600 focus:ring-blue-500">
                 <label for="screenReaderOptimized" class="ml-2 text-sm text-gray-700">
-                  Optimize content for screen readers
+                  Tối ưu hóa nội dung cho trình đọc màn hình
                 </label>
               </div>
               <p class="text-xs text-gray-500 ml-6">
-                Improves navigation and description of UI elements for screen readers
+                Cải thiện điều hướng và mô tả các phần tử giao diện người dùng cho trình đọc màn hình
               </p>
               
               <div class="flex items-center">
                 <input type="checkbox" id="useKeyboardShortcuts" formControlName="useKeyboardShortcuts"
                        class="h-4 w-4 text-blue-600 focus:ring-blue-500">
                 <label for="useKeyboardShortcuts" class="ml-2 text-sm text-gray-700">
-                  Enable keyboard shortcuts
+                  Sử dụng phím tắt bàn phím
                 </label>
-              </div>
-              <div class="ml-6 text-xs text-gray-500">
-                <p class="mb-1">Navigation: J (previous), K (next), H (home)</p>
-                <p>Video controls: Space (play/pause), M (mute), F (fullscreen)</p>
               </div>
             </div>
           </div>
 
-          <!-- Audio & Video Settings -->
+          <!-- Media Settings -->
           <div class="mb-8">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Audio & Video Settings</h2>
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Cài đặt phương tiện</h2>
             
             <div class="space-y-4">
               <div class="flex items-center">
                 <input type="checkbox" id="autoGenerateTranscripts" formControlName="autoGenerateTranscripts"
                        class="h-4 w-4 text-blue-600 focus:ring-blue-500">
                 <label for="autoGenerateTranscripts" class="ml-2 text-sm text-gray-700">
-                  Auto-generate transcripts for videos
+                  Tự động tạo bản ghi cho video
                 </label>
               </div>
               
@@ -132,7 +133,7 @@
                 <input type="checkbox" id="showCaptions" formControlName="showCaptions"
                        class="h-4 w-4 text-blue-600 focus:ring-blue-500">
                 <label for="showCaptions" class="ml-2 text-sm text-gray-700">
-                  Show captions by default
+                  Hiển thị phụ đề mặc định
                 </label>
               </div>
               
@@ -140,17 +141,18 @@
                 <input type="checkbox" id="textToSpeech" formControlName="textToSpeech"
                        class="h-4 w-4 text-blue-600 focus:ring-blue-500">
                 <label for="textToSpeech" class="ml-2 text-sm text-gray-700">
-                  Enable text-to-speech for articles and transcripts
+                  Bật chuyển văn bản thành giọng nói cho bài viết và bản ghi
                 </label>
               </div>
               
               <div *ngIf="accessibilityForm.value.textToSpeech" class="ml-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Reading Speed</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tốc độ đọc</label>
                 <div class="flex items-center space-x-2">
                   <input type="range" formControlName="readingSpeed" min="0.5" max="2" step="0.1"
                          class="w-48 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
                   <span class="text-sm text-gray-700">{{ accessibilityForm.value.readingSpeed }}x</span>
                 </div>
+                <p class="text-xs text-gray-500 mt-1">{{ getReadingSpeedDisplay() }}</p>
               </div>
             </div>
           </div>
@@ -160,17 +162,24 @@
             <button type="button" 
                     (click)="resetToDefaults()"
                     class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-              Reset to Defaults
+              Khôi phục mặc định
             </button>
             <div class="space-x-3">
               <button type="button"
                       (click)="testSettings()"
                       class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                Preview
+                Xem trước
               </button>
               <button type="submit"
-                      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Save Preferences
+                      [disabled]="isSaving"
+                      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center">
+                <span *ngIf="isSaving" class="mr-2">
+                  <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
+                {{ isSaving ? 'Đang lưu...' : 'Lưu tùy chọn' }}
               </button>
             </div>
           </div>
@@ -180,27 +189,17 @@
 
     <!-- Accessibility Resources -->
     <div class="mt-6 bg-white rounded-lg shadow-sm p-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">Accessibility Resources</h2>
+      <h2 class="text-lg font-medium text-gray-900 mb-4">Tài nguyên trợ năng</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="border border-gray-200 rounded-md p-4">
-          <h3 class="text-md font-medium text-gray-800 mb-2">Keyboard Navigation Guide</h3>
-          <p class="text-sm text-gray-600 mb-3">Learn how to navigate our platform using only keyboard shortcuts.</p>
-          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">View Guide</a>
+          <h3 class="text-md font-medium text-gray-800 mb-2">Hỗ trợ trợ năng</h3>
+          <p class="text-sm text-gray-600 mb-3">Cần trợ giúp với các tính năng trợ năng? Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn.</p>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Liên hệ hỗ trợ</a>
         </div>
         <div class="border border-gray-200 rounded-md p-4">
-          <h3 class="text-md font-medium text-gray-800 mb-2">Screen Reader Compatibility</h3>
-          <p class="text-sm text-gray-600 mb-3">Information about our platform's compatibility with popular screen readers.</p>
-          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Learn More</a>
-        </div>
-        <div class="border border-gray-200 rounded-md p-4">
-          <h3 class="text-md font-medium text-gray-800 mb-2">Request Assistance</h3>
-          <p class="text-sm text-gray-600 mb-3">Need help with accessibility features? Our team is here to assist.</p>
-          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Contact Support</a>
-        </div>
-        <div class="border border-gray-200 rounded-md p-4">
-          <h3 class="text-md font-medium text-gray-800 mb-2">Accessibility Statement</h3>
-          <p class="text-sm text-gray-600 mb-3">Review our commitment to creating an accessible learning environment.</p>
-          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Read Statement</a>
+          <h3 class="text-md font-medium text-gray-800 mb-2">Tuyên bố trợ năng</h3>
+          <p class="text-sm text-gray-600 mb-3">Xem cam kết của chúng tôi về việc tạo ra môi trường học tập trợ năng.</p>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Đọc tuyên bố</a>
         </div>
       </div>
     </div>

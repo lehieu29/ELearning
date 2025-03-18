@@ -12,6 +12,10 @@ import { ApiResponse, PaginationInfo } from '../models/api.model';
 export class DiscussionService {
   constructor(private http: HttpService) {}
   
+  getTopics(courseId: string): Observable<Discussion[]> {
+    return this.http.get(`/courses/${courseId}/discussions`);
+  }
+  
   /**
    * Lấy danh sách thảo luận của khóa học
    * @param courseId ID khóa học

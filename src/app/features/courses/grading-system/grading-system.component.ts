@@ -4,9 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '@app/shared/components/base/base-component';
 import { CourseService } from '@app/shared/services/course.service';
 import { NotificationService } from '@app/shared/services/notification.service';
-import { Submission } from '@app/shared/models/submission.model';
-import { Rubric, RubricCriterion } from '@app/shared/models/rubric.model';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, finalize, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 interface GradingItem {
   id: string;
@@ -42,33 +41,43 @@ interface RubricCriteria {
 })
 export class GradingSystemComponent extends BaseComponent implements OnInit {
   courseId: string;
-  assignmentId: string;
-  submissionId: string;
   
+  // Trạng thái loading và lỗi
+  // Loading and error states
   isLoading = true;
   isSubmitting = false;
   error: string = '';
+  successMessage: string = '';
   
-  submission: Submission;
-  rubric: Rubric;
-  
-  gradingForm: FormGroup;
-  maxPoints: number = 0;
-  totalEarned: number = 0;
-
+  // Danh sách các mục cần chấm điểm và mục đang chọn
+  // List of items to grade and selected item
   gradingItems: GradingItem[] = [];
   filteredItems: GradingItem[] = [];
   selectedItem: GradingItem | null = null;
   
+  // Thông tin rubric cho mục đang chọn
+  // Rubric information for selected item
   rubricCriteria: RubricCriteria[] = [];
   
-  successMessage: string = '';
+  // Form chấm điểm
+  // Grading form
+  gradingForm: FormGroup;
   
+  // Các bộ lọc
   // Filters
   selectedStatus: 'all' | 'pending' | 'graded' | 'late' | 'resubmitted' = 'all';
   selectedType: 'all' | 'assignment' | 'quiz' | 'project' | 'discussion' = 'all';
   searchTerm: string = '';
   
+  /**
+   * Khởi tạo component với các service cần thiết
+   * Initialize component with required services
+   * @param route Service để truy cập thông tin route
+   * @param router Service để điều hướng
+   * @param fb FormBuilder để tạo forms
+   * @param courseService Service để truy cập dữ liệu khóa học
+   * @param notificationService Service để hiển thị thông báo
+   */
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -78,6 +87,8 @@ export class GradingSystemComponent extends BaseComponent implements OnInit {
   ) {
     super();
     
+    // Khởi tạo form chấm điểm
+    // Initialize grading form
     this.gradingForm = this.fb.group({
       grade: [null, [Validators.required, Validators.min(0)]],
       feedback: ['', [Validators.required, Validators.minLength(10)]],
@@ -85,109 +96,125 @@ export class GradingSystemComponent extends BaseComponent implements OnInit {
     });
   }
   
+  /**
+   * Khởi tạo component, lấy các tham số từ route và tải dữ liệu
+   * Initialize component, get parameters from route and load data
+   */
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe(params => {
-        this.courseId = params.get('courseId');
-        this.assignmentId = params.get('assignmentId');
-        this.submissionId = params.get('submissionId');
-        
-        if (this.courseId && this.assignmentId && this.submissionId) {
-          this.loadSubmissionDetails();
-        }
-      });
-
+    // Lấy ID khóa học từ route cha
+    // Get course ID from parent route
     this.route.parent.paramMap
       .pipe(takeUntil(this._onDestroySub))
-      .subscribe(params => {
-        this.courseId = params.get('courseId');
-        if (this.courseId) {
-          this.loadGradingItems();
-        }
-      });
-  }
-  
-  loadSubmissionDetails(): void {
-    this.isLoading = true;
-    this.error = '';
-    
-    this.courseService.getSubmissionDetails(this.courseId, this.assignmentId, this.submissionId)
-      .pipe(takeUntil(this._onDestroySub))
       .subscribe({
-        next: (submission) => {
-          this.submission = submission;
-          
-          // Load the rubric for this assignment
-          this.courseService.getAssignmentRubric(this.courseId, this.assignmentId)
-            .pipe(takeUntil(this._onDestroySub))
-            .subscribe({
-              next: (rubric) => {
-                this.rubric = rubric;
-                this.initGradingForm();
-                this.isLoading = false;
-              },
-              error: (err) => {
-                console.error('Error loading rubric:', err);
-                this.error = 'Failed to load grading rubric. Please try again.';
-                this.isLoading = false;
-              }
-            });
+        next: params => {
+          this.courseId = params.get('courseId');
+          if (this.courseId) {
+            this.loadGradingItems();
+          } else {
+            this.error = 'Không tìm thấy ID khóa học';
+            this.isLoading = false;
+          }
         },
-        error: (err) => {
-          console.error('Error loading submission details:', err);
-          this.error = 'Failed to load submission details. Please try again.';
+        error: err => {
+          console.error('Lỗi khi đọc tham số route:', err);
+          this.error = 'Đã xảy ra lỗi khi tải thông tin khóa học';
           this.isLoading = false;
         }
       });
   }
   
-  initGradingForm(): void {
-    const criteriaControls = {};
+  /**
+   * Tải danh sách các mục cần chấm điểm
+   * Load list of items to grade
+   */
+  loadGradingItems(): void {
+    this.isLoading = true;
+    this.error = '';
     
-    // Create form controls for each rubric criterion
-    this.rubric.criteria.forEach(criterion => {
-      criteriaControls[criterion.id] = [null, Validators.required];
-      this.maxPoints += criterion.maxPoints;
-    });
-    
-    this.gradingForm = this.fb.group({
-      criteria: this.fb.group(criteriaControls),
-      feedback: ['', [Validators.required, Validators.minLength(20)]],
-      privateNotes: [''],
-    });
-    
-    // If submission has already been graded, populate the form
-    if (this.submission.grade) {
-      const criteriaValues = {};
-      
-      this.submission.gradingDetails?.forEach(detail => {
-        criteriaValues[detail.criterionId] = detail.points;
-        this.totalEarned += detail.points;
-      });
-      
-      this.gradingForm.patchValue({
-        criteria: criteriaValues,
-        feedback: this.submission.feedback || '',
-        privateNotes: this.submission.privateNotes || ''
-      });
-    }
-    
-    // Listen for changes to criteria to update total earned points
-    this.gradingForm.get('criteria').valueChanges
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe(values => {
-        this.totalEarned = 0;
-        Object.keys(values).forEach(criterionId => {
-          if (values[criterionId] !== null) {
-            this.totalEarned += Number(values[criterionId]);
-          }
-        });
+    this.courseService.getGradingItems(this.courseId)
+      .pipe(
+        takeUntil(this._onDestroySub),
+        finalize(() => {
+          this.isLoading = false;
+        }),
+        catchError(err => {
+          console.error('Lỗi khi tải danh sách bài cần chấm điểm:', err);
+          this.error = 'Không thể tải danh sách bài cần chấm điểm. Vui lòng thử lại sau.';
+          return of([]);
+        })
+      )
+      .subscribe(items => {
+        this.gradingItems = items;
+        this.applyFilters();
       });
   }
   
+  /**
+   * Chọn một mục để chấm điểm
+   * Select an item to grade
+   * @param item Mục cần chấm điểm
+   */
+  selectItem(item: GradingItem): void {
+    this.selectedItem = item;
+    this.error = '';
+    this.successMessage = '';
+    
+    // Cập nhật form với dữ liệu từ mục đã chọn
+    // Update form with data from selected item
+    this.gradingForm.patchValue({
+      grade: item.grade || null,
+      feedback: item.feedback || '',
+      rubricScores: item.rubricScores || {}
+    });
+    
+    // Tải rubric nếu có
+    // Load rubric if available
+    this.loadRubric(item);
+  }
+  
+  /**
+   * Tải thông tin rubric cho mục đã chọn
+   * Load rubric information for selected item
+   * @param item Mục đã chọn
+   */
+  loadRubric(item: GradingItem): void {
+    if (!item) return;
+    
+    this.courseService.getSubmissionRubric(this.courseId, item.submissionType, item.id)
+      .pipe(
+        takeUntil(this._onDestroySub),
+        catchError(err => {
+          console.error('Lỗi khi tải rubric:', err);
+          this.rubricCriteria = [];
+          // Đặt lại form group của rubric scores
+          // Reset rubric scores form group
+          this.gradingForm.setControl('rubricScores', this.fb.group({}));
+          return of([]);
+        })
+      )
+      .subscribe(criteria => {
+        this.rubricCriteria = criteria;
+        
+        // Xây dựng form controls động cho rubric
+        // Build dynamic form controls for rubric
+        const rubricFormGroup = this.fb.group({});
+        
+        criteria.forEach(criterion => {
+          const existingScore = this.selectedItem?.rubricScores?.[criterion.id];
+          rubricFormGroup.addControl(criterion.id, this.fb.control(existingScore || 0));
+        });
+        
+        this.gradingForm.setControl('rubricScores', rubricFormGroup);
+      });
+  }
+  
+  /**
+   * Gửi điểm số và phản hồi cho bài nộp
+   * Submit grade and feedback for submission
+   */
   submitGrade(): void {
     if (this.gradingForm.invalid) {
+      // Đánh dấu tất cả các trường là đã chạm vào để hiển thị thông báo lỗi
       // Mark all fields as touched to show validation errors
       Object.keys(this.gradingForm.controls).forEach(key => {
         const control = this.gradingForm.get(key);
@@ -196,141 +223,92 @@ export class GradingSystemComponent extends BaseComponent implements OnInit {
         }
       });
       
-      const criteriaControl = this.gradingForm.get('criteria');
-      Object.keys(criteriaControl.controls).forEach(key => {
-        criteriaControl.get(key).markAsTouched();
-      });
+      // Nếu có form group rubricScores, đánh dấu tất cả các controls con
+      // If there's a rubricScores form group, mark all child controls
+      const rubricScores = this.gradingForm.get('rubricScores');
+      if (rubricScores) {
+        Object.keys(rubricScores.value).forEach(key => {
+          rubricScores.get(key).markAsTouched();
+        });
+      }
       
-      this.notificationService.warning('Please complete all required fields before submitting.');
+      this.notificationService.warning('Vui lòng điền đầy đủ thông tin trước khi gửi.');
+      return;
+    }
+    
+    if (!this.selectedItem) {
+      this.error = 'Không có bài nộp nào được chọn để chấm điểm';
       return;
     }
     
     const formValues = this.gradingForm.value;
     
-    // Format the grading details
-    const gradingDetails = Object.keys(formValues.criteria).map(criterionId => {
-      const criterion = this.rubric.criteria.find(c => c.id === criterionId);
-      return {
-        criterionId,
-        criterion: criterion.name,
-        points: formValues.criteria[criterionId]
-      };
-    });
-    
-    const gradePayload = {
+    const gradeData = {
       courseId: this.courseId,
-      assignmentId: this.assignmentId,
-      submissionId: this.submissionId,
-      gradingDetails,
+      submissionId: this.selectedItem.id,
+      submissionType: this.selectedItem.submissionType,
+      grade: formValues.grade,
       feedback: formValues.feedback,
-      privateNotes: formValues.privateNotes
+      rubricScores: formValues.rubricScores
     };
     
     this.isSubmitting = true;
-    this.courseService.submitGrade(gradePayload)
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe({
-        next: () => {
-          this.notificationService.success('Grade submitted successfully.');
-          this.router.navigate(['/courses', this.courseId, 'assignments', this.assignmentId, 'submissions']);
-        },
-        error: (err) => {
-          console.error('Error submitting grade:', err);
-          this.error = 'Failed to submit grade. Please try again.';
-          this.isSubmitting = false;
-        }
-      });
-  }
-
-  loadGradingItems(): void {
-    this.isLoading = true;
-    
-    this.courseService.getGradingItems(this.courseId)
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe({
-        next: (items) => {
-          this.gradingItems = items;
-          this.applyFilters();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error loading grading items:', err);
-          this.error = 'Failed to load items for grading. Please try again.';
-          this.isLoading = false;
-        }
-      });
-  }
-  
-  selectItem(item: GradingItem): void {
-    this.selectedItem = item;
     this.error = '';
     this.successMessage = '';
     
-    // Reset form with current values
-    this.gradingForm.patchValue({
-      grade: item.grade || null,
-      feedback: item.feedback || '',
-      rubricScores: item.rubricScores || {}
-    });
-    
-    // Load rubric if available
-    this.loadRubric(item);
-  }
-  
-  loadRubric(item: GradingItem): void {
-    if (!item) return;
-    
-    this.courseService.getSubmissionRubric(this.courseId, item.submissionType, item.id)
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe({
-        next: (criteria) => {
-          this.rubricCriteria = criteria;
+    this.courseService.submitGrade(gradeData)
+      .pipe(
+        takeUntil(this._onDestroySub),
+        finalize(() => {
+          this.isSubmitting = false;
+        }),
+        catchError(err => {
+          console.error('Lỗi khi gửi điểm:', err);
+          this.error = 'Không thể gửi điểm. Vui lòng thử lại sau.';
+          return of(null);
+        })
+      )
+      .subscribe(result => {
+        if (result !== null) {
+          // Cập nhật thông tin mục đã chọn
+          // Update selected item information
+          this.selectedItem.status = 'graded';
+          this.selectedItem.grade = formValues.grade;
+          this.selectedItem.feedback = formValues.feedback;
+          this.selectedItem.rubricScores = formValues.rubricScores;
           
-          // Build dynamic form controls for rubric
-          const rubricFormGroup = this.fb.group({});
+          // Áp dụng bộ lọc để cập nhật danh sách
+          // Apply filters to update list
+          this.applyFilters();
           
-          criteria.forEach(criterion => {
-            const existingScore = this.selectedItem?.rubricScores?.[criterion.id];
-            rubricFormGroup.addControl(criterion.id, this.fb.control(existingScore || 0));
-          });
-          
-          this.gradingForm.setControl('rubricScores', rubricFormGroup);
-        },
-        error: (err) => {
-          console.error('Error loading rubric:', err);
-          this.rubricCriteria = [];
-          
-          // Reset rubric scores form group
-          this.gradingForm.setControl('rubricScores', this.fb.group({}));
+          this.successMessage = 'Đã chấm điểm thành công!';
+          this.notificationService.success('Đã chấm điểm thành công!');
         }
       });
   }
   
-  calculateTotalRubricScore(): number {
-    if (!this.rubricCriteria.length) return 0;
-    
-    const rubricScores = this.gradingForm.get('rubricScores').value;
-    return Object.values<number>(rubricScores).reduce((sum, score) => sum + score, 0);
-  }
-  
-  calculateMaxRubricScore(): number {
-    return this.rubricCriteria.reduce((sum, criteria) => sum + criteria.maxPoints, 0);
-  }
-  
+  /**
+   * Áp dụng tất cả các bộ lọc vào danh sách
+   * Apply all filters to the list
+   */
   applyFilters(): void {
+    // Bắt đầu với tất cả các mục
     // Start with all items
     let filtered = [...this.gradingItems];
     
+    // Áp dụng bộ lọc trạng thái
     // Apply status filter
     if (this.selectedStatus !== 'all') {
       filtered = filtered.filter(item => item.status === this.selectedStatus);
     }
     
+    // Áp dụng bộ lọc loại
     // Apply type filter
     if (this.selectedType !== 'all') {
       filtered = filtered.filter(item => item.submissionType === this.selectedType);
     }
     
+    // Áp dụng bộ lọc tìm kiếm
     // Apply search filter
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase();
@@ -343,31 +321,42 @@ export class GradingSystemComponent extends BaseComponent implements OnInit {
     this.filteredItems = filtered;
   }
   
+  /**
+   * Lọc theo trạng thái
+   * Filter by status
+   * @param status Trạng thái để lọc
+   */
   filterByStatus(status: 'all' | 'pending' | 'graded' | 'late' | 'resubmitted'): void {
     this.selectedStatus = status;
     this.applyFilters();
   }
   
+  /**
+   * Lọc theo loại bài nộp
+   * Filter by submission type
+   * @param type Loại bài nộp để lọc
+   */
   filterByType(type: 'all' | 'assignment' | 'quiz' | 'project' | 'discussion'): void {
     this.selectedType = type;
     this.applyFilters();
   }
   
+  /**
+   * Xử lý khi từ khóa tìm kiếm thay đổi
+   * Handle search term change
+   * @param term Từ khóa tìm kiếm
+   */
   onSearch(term: string): void {
     this.searchTerm = term;
     this.applyFilters();
   }
   
-  getTypeIcon(type: string): string {
-    switch(type) {
-      case 'assignment': return 'file-text';
-      case 'quiz': return 'check-square';
-      case 'project': return 'briefcase';
-      case 'discussion': return 'message-circle';
-      default: return 'file';
-    }
-  }
-  
+  /**
+   * Lấy lớp CSS tương ứng với trạng thái
+   * Get CSS class corresponding to status
+   * @param status Trạng thái của bài nộp
+   * @returns Tên lớp CSS
+   */
   getStatusClass(status: string): string {
     switch(status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -376,5 +365,52 @@ export class GradingSystemComponent extends BaseComponent implements OnInit {
       case 'resubmitted': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  }
+  
+  /**
+   * Tính tổng điểm từ các tiêu chí rubric
+   * Calculate total score from rubric criteria
+   * @returns Tổng điểm
+   */
+  calculateTotalRubricScore(): number {
+    if (!this.rubricCriteria.length) return 0;
+    
+    const rubricScores = this.gradingForm.get('rubricScores')?.value;
+    if (!rubricScores) return 0;
+    
+    return Object.values<number>(rubricScores).reduce((sum, score) => sum + score, 0);
+  }
+  
+  /**
+   * Tính điểm tối đa từ các tiêu chí rubric
+   * Calculate maximum score from rubric criteria
+   * @returns Điểm tối đa
+   */
+  calculateMaxRubricScore(): number {
+    return this.rubricCriteria.reduce((sum, criteria) => sum + criteria.maxPoints, 0);
+  }
+  
+  /**
+   * Làm mới dữ liệu
+   * Refresh data
+   */
+  refreshData(): void {
+    this.loadGradingItems();
+  }
+  
+  /**
+   * Xóa thông báo thành công
+   * Clear success message
+   */
+  clearSuccessMessage(): void {
+    this.successMessage = '';
+  }
+  
+  /**
+   * Xóa thông báo lỗi
+   * Clear error message
+   */
+  clearError(): void {
+    this.error = '';
   }
 }

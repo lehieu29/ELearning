@@ -14,18 +14,18 @@
     </div>
     
     <h2 class="text-xl font-bold mt-4">
-      {{ lastScore >= passingScore ? 'Quiz Passed!' : 'You can try again' }}
+      {{ lastScore >= passingScore ? 'Bài Kiểm Tra Đạt!' : 'Bạn có thể thử lại' }}
     </h2>
   </div>
   
   <div class="mb-6">
     <div class="flex justify-between text-sm text-gray-600 mb-1">
-      <span>Your last score</span>
+      <span>Điểm số của bạn</span>
       <span>{{ lastScore }}%</span>
     </div>
     
     <div class="w-full bg-gray-200 rounded-full h-2">
-      <div class="h-2 rounded-full"
+      <div class="h-2 rounded-full transition-all duration-300"
         [style.width.%]="lastScore"
         [ngClass]="{
           'bg-green-500': lastScore >= passingScore,
@@ -36,14 +36,14 @@
     </div>
     
     <div class="mt-1">
-      <span class="text-xs text-gray-500">Passing score: {{ passingScore }}%</span>
+      <span class="text-xs text-gray-500">Điểm đạt: {{ passingScore }}%</span>
     </div>
   </div>
   
   <div class="mb-6">
     <div class="flex justify-between">
-      <span class="text-sm">Attempt</span>
-      <span class="text-sm">{{ currentAttempt }} of {{ maxAttempts || '∞' }}</span>
+      <span class="text-sm">Số lần thử</span>
+      <span class="text-sm">{{ currentAttempt }} / {{ maxAttempts || '∞' }}</span>
     </div>
     
     <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
@@ -55,31 +55,31 @@
   
   <div class="text-center" *ngIf="lastScore < passingScore">
     <p class="text-gray-600 mb-4">
-      You didn't reach the passing score yet. You have {{ attemptsText }}.
+      Bạn chưa đạt điểm đủ điểm để vượt qua. Bạn {{ attemptsText }}.
     </p>
     
     <app-elearning-button
       buttonType="primary"
       [disabled]="!canRetry"
       (click)="onRetryClick()">
-      Retry Quiz
+      Thử Lại
     </app-elearning-button>
     
     <p *ngIf="!canRetry" class="text-red-600 mt-4 text-sm">
-      You've used all your available attempts for this quiz.
+      Bạn đã sử dụng hết số lần thử cho bài kiểm tra này.
     </p>
   </div>
   
   <div class="text-center" *ngIf="lastScore >= passingScore">
     <p class="text-gray-600 mb-4">
-      Congratulations! You've passed this quiz. You can still retry to improve your score if you want.
+      Chúc mừng! Bạn đã vượt qua bài kiểm tra này. Bạn có thể thử lại để cải thiện điểm nếu muốn.
     </p>
     
     <app-elearning-button
       buttonType="secondary"
       [disabled]="!canRetry"
       (click)="onRetryClick()">
-      Try to improve score
+      Cải Thiện Điểm Số
     </app-elearning-button>
   </div>
 </div>

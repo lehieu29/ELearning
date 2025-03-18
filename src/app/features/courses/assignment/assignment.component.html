@@ -2,12 +2,27 @@
 <div class="bg-gray-50 min-h-screen">
   <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
-    <app-loader></app-loader>
+    <app-loader message="Đang tải thông tin bài tập..."></app-loader>
   </div>
   
   <!-- Error State -->
-  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-    {{ error }}
+  <div *ngIf="error" class="max-w-4xl mx-auto px-4 py-6">
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded relative mb-4">
+      <p>{{ error }}</p>
+      <button class="absolute top-0 right-0 px-4 py-3" (click)="clearError()">
+        <span class="text-xl">&times;</span>
+      </button>
+    </div>
+    <div class="text-center">
+      <button 
+        (click)="refreshAssignment()" 
+        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Thử lại
+      </button>
+    </div>
   </div>
   
   <div *ngIf="!isLoading && !error && assignment" class="max-w-4xl mx-auto px-4 py-6">
@@ -15,19 +30,23 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
       <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ assignment.title }}</h1>
       
-      <div class="flex items-center text-sm text-gray-500 mb-4">
-        <span class="flex items-center mr-4">
+      <div class="flex flex-wrap items-center text-sm text-gray-500 mb-4">
+        <span class="flex items-center mr-4 mb-2">
           <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          Due: {{ assignment.dueDate | date:'medium' }}
+          Hạn nộp: {{ assignment.dueDate | date:'medium' }}
+          <span *ngIf="assignment.dueDate" class="ml-2 px-2 py-0.5 rounded-full text-xs" 
+                [ngClass]="{'bg-red-100 text-red-800': isPastDue(), 'bg-green-100 text-green-800': !isPastDue()}">
+            {{ getTimeMessage() }}
+          </span>
         </span>
         
         <span class="flex items-center">
           <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          Points: {{ assignment.points }}
+          Điểm: {{ assignment.totalPoints }}
         </span>
       </div>
       
@@ -36,45 +55,107 @@
       <!-- Submission Status -->
       <div class="mb-6">
         <div class="flex items-center mb-2">
-          <h3 class="font-semibold text-gray-800">Submission Status</h3>
+          <h3 class="font-semibold text-gray-800">Trạng thái nộp bài</h3>
+          <div *ngIf="isLoadingStatus" class="ml-2 h-4 w-4 border-2 border-b-transparent border-gray-300 rounded-full animate-spin"></div>
           <span 
+            *ngIf="!isLoadingStatus"
             class="ml-2 px-2 py-1 text-xs rounded-full"
             [ngClass]="{
-              'bg-green-100 text-green-800': submissionStatus === 'graded' || submissionStatus === 'submitted',
+              'bg-green-100 text-green-800': submissionStatus === 'graded',
+              'bg-blue-100 text-blue-800': submissionStatus === 'submitted',
               'bg-yellow-100 text-yellow-800': submissionStatus === 'late',
               'bg-red-100 text-red-800': submissionStatus === 'missing',
               'bg-gray-100 text-gray-800': submissionStatus === 'not-submitted'
             }">
-            {{ submissionStatus === 'graded' ? 'Graded' : 
-               submissionStatus === 'submitted' ? 'Submitted' :
-               submissionStatus === 'late' ? 'Late' :
-               submissionStatus === 'missing' ? 'Missing' : 'Not Submitted' }}
+            {{ submissionStatus === 'graded' ? 'Đã chấm điểm' : 
+               submissionStatus === 'submitted' ? 'Đã nộp' :
+               submissionStatus === 'late' ? 'Nộp muộn' :
+               submissionStatus === 'missing' ? 'Thiếu' : 'Chưa nộp' }}
           </span>
         </div>
         
         <div *ngIf="submissionStatus === 'graded'" class="text-green-600 text-sm mb-2">
-          Your submission has been graded. Check your grade below.
+          Bài tập của bạn đã được chấm điểm. Xem điểm bên dưới.
         </div>
         
         <div *ngIf="submissionStatus === 'submitted'" class="text-blue-600 text-sm mb-2">
-          Your submission is being reviewed.
+          Bài tập của bạn đang được xem xét.
         </div>
         
         <div *ngIf="submissionStatus === 'late'" class="text-yellow-600 text-sm mb-2">
-          Your submission was submitted after the deadline.
+          Bài tập của bạn đã được nộp sau thời hạn.
         </div>
         
         <div *ngIf="submissionStatus === 'not-submitted' || submissionStatus === 'missing'">
           <div class="text-gray-600 text-sm mb-2">
-            You have not submitted this assignment yet.
+            Bạn chưa nộp bài tập này.
+            <span *ngIf="isPastDue()" class="text-red-600">Đã quá hạn nộp.</span>
           </div>
+        </div>
+      </div>
+      
+      <!-- Attachments Section -->
+      <div *ngIf="assignment.attachments && assignment.attachments.length > 0" class="mb-6">
+        <h3 class="font-semibold text-gray-800 mb-2">Tài liệu đính kèm</h3>
+        <div class="bg-gray-50 rounded-md p-3">
+          <ul class="divide-y divide-gray-200">
+            <li *ngFor="let attachment of assignment.attachments" class="py-2 flex items-center justify-between">
+              <div class="flex items-center">
+                <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                <span class="text-sm text-gray-700">{{ attachment.fileName }}</span>
+              </div>
+              <a 
+                href="{{ attachment.fileUrl }}" 
+                download 
+                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                Tải xuống
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Rubric Section -->
+      <div *ngIf="assignment.rubric && assignment.rubric.length > 0" class="mb-6">
+        <h3 class="font-semibold text-gray-800 mb-2">Tiêu chí đánh giá</h3>
+        <div class="overflow-hidden border border-gray-200 rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tiêu chí
+                </th>
+                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Mô tả
+                </th>
+                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Điểm tối đa
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let item of assignment.rubric">
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ item.criterion }}
+                </td>
+                <td class="px-3 py-2 text-sm text-gray-500">
+                  {{ item.description }}
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                  {{ item.maxPoints }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
     
-    <!-- File Management Component -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">Submit Your Assignment</h2>
+    <!-- File Management Component (Only if student can submit) -->
+    <div *ngIf="canSubmit()" class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Nộp bài tập của bạn</h2>
       <app-file-management 
         [courseId]="courseId" 
         [assignmentId]="assignmentId"
@@ -86,7 +167,7 @@
     
     <!-- Plagiarism Checker -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">Plagiarism Check</h2>
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Kiểm tra đạo văn</h2>
       <app-plagiarism-checker 
         [courseId]="courseId" 
         [assignmentId]="assignmentId">
@@ -95,7 +176,7 @@
     
     <!-- Submission History Component -->
     <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">Submission History</h2>
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Lịch sử nộp bài</h2>
       <app-submission-history 
         [courseId]="courseId" 
         [assignmentId]="assignmentId">

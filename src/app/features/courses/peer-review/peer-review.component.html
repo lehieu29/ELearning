@@ -2,27 +2,48 @@
 <div class="bg-gray-50 min-h-screen">
   <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
-    <app-loader></app-loader>
+    <app-loader message="Đang tải dữ liệu đánh giá đồng đẳng..."></app-loader>
   </div>
 
   <!-- Error State -->
-  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-    {{ error }}
-    <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
-      <span class="text-xl">&times;</span>
-    </button>
+  <div *ngIf="error" class="max-w-7xl mx-auto px-4 py-6">
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded relative mb-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p>{{ error }}</p>
+          <button class="mt-2 text-sm text-red-600 hover:text-red-800 font-medium" (click)="refreshAssignments()">
+            Thử lại
+          </button>
+        </div>
+      </div>
+      <button class="absolute top-0 right-0 px-4 py-3" (click)="clearError()">
+        <span class="sr-only">Đóng</span>
+        <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div *ngIf="!isLoading" class="max-w-7xl mx-auto px-4 py-6">
-    <h1 class="text-2xl font-bold text-gray-900 mb-2">Peer Reviews</h1>
-    <p class="text-gray-600 mb-6">Review submissions from your peers and get feedback on your own work</p>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Đánh Giá Đồng Đẳng</h1>
+    <p class="text-gray-600 mb-6">Đánh giá bài nộp từ các bạn cùng học và nhận phản hồi về bài nộp của bạn</p>
 
     <!-- No assignments message -->
     <div *ngIf="assignments.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <p class="mt-3 text-gray-600">No peer review assignments available for this course</p>
+      <p class="mt-3 text-gray-600">Không có bài tập đánh giá đồng đẳng cho khóa học này</p>
     </div>
 
     <!-- Assignments and Reviews Container -->
@@ -30,30 +51,29 @@
       <!-- Left Column: Assignment List -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="p-4 bg-gray-50 border-b border-gray-200">
-          <h2 class="font-medium text-gray-900">Assignments to Review</h2>
+          <h2 class="font-medium text-gray-900">Bài Tập Cần Đánh Giá</h2>
         </div>
-        
+
         <ul class="divide-y divide-gray-200">
-          <li *ngFor="let assignment of assignments" 
-              class="p-4 hover:bg-gray-50 cursor-pointer transition"
-              [class.bg-blue-50]="selectedAssignment?.id === assignment.id"
-              (click)="selectAssignment(assignment)">
+          <li *ngFor="let assignment of assignments" class="p-4 hover:bg-gray-50 cursor-pointer transition"
+            [class.bg-blue-50]="selectedAssignment?.id === assignment.id" (click)="selectAssignment(assignment)">
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="font-medium text-gray-900">{{ assignment.title }}</h3>
                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ assignment.description }}</p>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full text-center whitespace-nowrap" 
-                    [ngClass]="getStatusClass(assignment.status)">
-                {{ assignment.status === 'pending' ? 'Pending' : 
-                   assignment.status === 'in_progress' ? 'In Progress' : 'Completed' }}
+              <span class="text-xs px-2 py-1 rounded-full text-center whitespace-nowrap"
+                [ngClass]="getStatusClass(assignment.status)">
+                {{ getStatusDisplayName(assignment.status) }}
               </span>
             </div>
             <div class="mt-2 flex items-center text-xs text-gray-500">
-              <svg class="flex-shrink-0 mr-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg class="flex-shrink-0 mr-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>Due: {{ assignment.dueDate | date:'mediumDate' }}</span>
+              <span>Hạn nộp: {{ assignment.dueDate | date:'dd/MM/yyyy' }}</span>
             </div>
           </li>
         </ul>
@@ -62,58 +82,66 @@
       <!-- Middle Column: Assigned Submissions -->
       <div *ngIf="selectedAssignment" class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="p-4 bg-gray-50 border-b border-gray-200">
-          <h2 class="font-medium text-gray-900">Assigned Submissions</h2>
+          <h2 class="font-medium text-gray-900">Bài Nộp Được Giao</h2>
           <p class="text-sm text-gray-500 mt-1">{{ selectedAssignment.title }}</p>
         </div>
-        
-        <div *ngIf="selectedAssignment.assignedSubmissions && selectedAssignment.assignedSubmissions.length > 0" class="divide-y divide-gray-200">
+
+        <!-- Loading submissions -->
+        <div *ngIf="isLoadingSubmissions" class="p-8 flex justify-center">
+          <app-loader size="sm" message="Đang tải bài nộp..."></app-loader>
+        </div>
+
+        <div
+          *ngIf="!isLoadingSubmissions && selectedAssignment.assignedSubmissions && selectedAssignment.assignedSubmissions.length > 0"
+          class="divide-y divide-gray-200">
           <div *ngFor="let submission of selectedAssignment.assignedSubmissions"
-               class="p-4 hover:bg-gray-50 cursor-pointer transition"
-               [class.bg-blue-50]="selectedSubmission?.id === submission.id"
-               (click)="selectSubmission(submission)">
+            class="p-4 hover:bg-gray-50 cursor-pointer transition"
+            [class.bg-blue-50]="selectedSubmission?.id === submission.id" (click)="selectSubmission(submission)">
             <div class="flex justify-between items-center">
               <div>
                 <h3 class="font-medium text-gray-900">{{ submission.studentName }}</h3>
-                <p class="text-xs text-gray-500 mt-1">Submitted: {{ submission.submissionDate | date:'shortDate' }}</p>
+                <p class="text-xs text-gray-500 mt-1">Nộp: {{ submission.submissionDate | date:'dd/MM/yyyy' }}</p>
               </div>
               <span *ngIf="submission.reviewed" class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                Reviewed
+                Đã đánh giá
               </span>
               <span *ngIf="!submission.reviewed" class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                Needs Review
+                Cần đánh giá
               </span>
             </div>
-            
+
             <div *ngIf="!submission.reviewed" class="mt-2 text-xs text-red-600 flex items-center">
               <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {{ getRemainingDays(submission.reviewDue) }} days left to review
+              {{ getRemainingDays(submission.reviewDue) }} ngày còn lại để đánh giá
             </div>
           </div>
         </div>
-        
-        <div *ngIf="!selectedAssignment.assignedSubmissions || selectedAssignment.assignedSubmissions.length === 0" class="p-6 text-center">
-          <p class="text-gray-500">No submissions have been assigned to you for this assignment</p>
+
+        <div
+          *ngIf="!isLoadingSubmissions && (!selectedAssignment.assignedSubmissions || selectedAssignment.assignedSubmissions.length === 0)"
+          class="p-6 text-center">
+          <p class="text-gray-500">Không có bài nộp nào được giao cho bạn để đánh giá</p>
         </div>
       </div>
 
       <!-- Right Column: Submission Details and Review Form -->
       <div *ngIf="selectedSubmission" class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="p-4 bg-gray-50 border-b border-gray-200">
-          <h2 class="font-medium text-gray-900">Submission Details</h2>
+          <h2 class="font-medium text-gray-900">Chi Tiết Bài Nộp</h2>
           <p class="text-sm text-gray-500 mt-1">{{ selectedSubmission.studentName }}</p>
         </div>
-        
+
         <div class="p-4">
           <div *ngIf="selectedSubmission.files && selectedSubmission.files.length > 0" class="space-y-3 mb-4">
-            <h3 class="text-sm font-medium text-gray-700">Submitted Files</h3>
+            <h3 class="text-sm font-medium text-gray-700">Tệp Đã Nộp</h3>
             <div *ngFor="let file of selectedSubmission.files" class="border border-gray-200 rounded-md p-3">
               <div class="flex items-center">
                 <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-900 truncate">{{ file.fileName }}</p>
@@ -121,33 +149,32 @@
                 </div>
                 <a href="{{ file.fileUrl }}" download class="text-blue-600 hover:text-blue-800">
                   <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                 </a>
               </div>
             </div>
           </div>
-          
-          <div *ngIf="selectedSubmission.reviewed" class="bg-green-50 border border-green-200 rounded-md p-4 text-center">
+
+          <div *ngIf="selectedSubmission.reviewed"
+            class="bg-green-50 border border-green-200 rounded-md p-4 text-center">
             <svg class="w-6 h-6 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             <p class="mt-2 text-sm text-green-700">You've already reviewed this submission. Thank you!</p>
           </div>
-          
+
           <div *ngIf="!selectedSubmission.reviewed && !isReviewFormVisible" class="text-center mt-4">
-            <app-elearning-button
-              buttonType="primary"
-              (click)="startReview()">
+            <app-elearning-button buttonType="primary" (click)="startReview()">
               Start Review
             </app-elearning-button>
           </div>
-          
+
           <!-- Review Form -->
           <div *ngIf="!selectedSubmission.reviewed && isReviewFormVisible" class="mt-4">
             <h3 class="text-lg font-medium text-gray-900 mb-3">Your Review</h3>
-            
+
             <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
               <!-- Overall Rating -->
               <div class="mb-4">
@@ -155,9 +182,10 @@
                 <div class="flex items-center">
                   <div class="flex items-center">
                     <ng-container *ngFor="let i of [1,2,3,4,5]">
-                      <button type="button" (click)="reviewForm.get('overallRating').setValue(i)" class="text-2xl focus:outline-none">
+                      <button type="button" (click)="reviewForm.get('overallRating').setValue(i)"
+                        class="text-2xl focus:outline-none">
                         <span [class.text-yellow-400]="i <= reviewForm.get('overallRating').value"
-                              [class.text-gray-300]="i > reviewForm.get('overallRating').value">★</span>
+                          [class.text-gray-300]="i > reviewForm.get('overallRating').value">★</span>
                       </button>
                     </ng-container>
                   </div>
@@ -166,17 +194,16 @@
                   </span>
                 </div>
                 <div *ngIf="reviewForm.get('overallRating').touched && reviewForm.get('overallRating').errors?.required"
-                     class="text-red-600 text-sm mt-1">
+                  class="text-red-600 text-sm mt-1">
                   Please provide an overall rating
                 </div>
               </div>
-              
+
               <!-- Detailed Criteria -->
               <div class="mb-4 space-y-4">
                 <label class="block text-sm font-medium text-gray-700">Detailed Ratings</label>
-                
-                <div *ngFor="let criterion of reviewCriteria" 
-                     class="bg-gray-50 p-3 rounded-md">
+
+                <div *ngFor="let criterion of reviewCriteria" class="bg-gray-50 p-3 rounded-md">
                   <div class="flex items-center justify-between mb-2">
                     <div>
                       <h4 class="text-sm font-medium text-gray-900">{{ criterion.name }}</h4>
@@ -184,67 +211,56 @@
                     </div>
                     <div class="flex items-center">
                       <ng-container *ngFor="let i of [1,2,3,4,5]">
-                        <button type="button" (click)="reviewForm.get(criterion.id).setValue(i)" class="text-xl focus:outline-none">
+                        <button type="button" (click)="reviewForm.get(criterion.id).setValue(i)"
+                          class="text-xl focus:outline-none">
                           <span [class.text-yellow-400]="i <= reviewForm.get(criterion.id).value"
-                                [class.text-gray-300]="i > reviewForm.get(criterion.id).value">★</span>
+                            [class.text-gray-300]="i > reviewForm.get(criterion.id).value">★</span>
                         </button>
                       </ng-container>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Feedback -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Detailed Feedback</label>
-                <app-elearning-text-box
-                  formControlName="feedback"
-                  [placeholder]="'Provide specific and constructive feedback about the submission...'"
-                  [rows]="5">
+                <app-elearning-text-box formControlName="feedback"
+                  [placeholder]="'Provide specific and constructive feedback about the submission...'" [rows]="5">
                 </app-elearning-text-box>
                 <div *ngIf="reviewForm.get('feedback').touched && reviewForm.get('feedback').errors?.required"
-                     class="text-red-600 text-sm mt-1">
+                  class="text-red-600 text-sm mt-1">
                   Detailed feedback is required
                 </div>
                 <div *ngIf="reviewForm.get('feedback').touched && reviewForm.get('feedback').errors?.minlength"
-                     class="text-red-600 text-sm mt-1">
+                  class="text-red-600 text-sm mt-1">
                   Feedback should be at least 50 characters
                 </div>
               </div>
-              
+
               <!-- Strengths -->
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Strengths</label>
-                <app-elearning-text-box
-                  formControlName="strengthPoints"
-                  [placeholder]="'What are the strong points of this submission?'"
-                  [rows]="3">
+                <app-elearning-text-box formControlName="strengthPoints"
+                  [placeholder]="'What are the strong points of this submission?'" [rows]="3">
                 </app-elearning-text-box>
               </div>
-              
+
               <!-- Areas for Improvement -->
               <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Areas for Improvement</label>
-                <app-elearning-text-box
-                  formControlName="improvementPoints"
-                  [placeholder]="'What could be improved?'"
+                <app-elearning-text-box formControlName="improvementPoints" [placeholder]="'What could be improved?'"
                   [rows]="3">
                 </app-elearning-text-box>
               </div>
-              
+
               <!-- Action Buttons -->
               <div class="flex space-x-3">
-                <app-elearning-button
-                  buttonType="primary"
-                  [disabled]="isSubmitting"
-                  [type]="'submit'">
+                <app-elearning-button buttonType="primary" [disabled]="isSubmitting" [type]="'submit'">
                   {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
                 </app-elearning-button>
-                
-                <app-elearning-button
-                  buttonType="secondary"
-                  [disabled]="isSubmitting"
-                  (click)="cancelReview()">
+
+                <app-elearning-button buttonType="secondary" [disabled]="isSubmitting" (click)="cancelReview()">
                   Cancel
                 </app-elearning-button>
               </div>
@@ -252,23 +268,28 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Empty state for middle column -->
       <div *ngIf="!selectedAssignment" class="bg-white rounded-lg shadow-sm overflow-hidden col-span-2 lg:col-span-1">
         <div class="p-8 text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p class="mt-3 text-gray-600">Select an assignment to view submissions</p>
         </div>
       </div>
-      
+
       <!-- Empty state for right column -->
       <div *ngIf="selectedAssignment && !selectedSubmission" class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="p-8 text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
           <p class="mt-3 text-gray-600">Select a submission to review</p>
         </div>

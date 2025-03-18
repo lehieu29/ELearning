@@ -1,79 +1,230 @@
 <!-- File path: src/app/features/courses/note-taking/note-taking.component.html -->
 <div class="bg-gray-50 min-h-screen">
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex justify-center items-center h-64">
-        <app-loader></app-loader>
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-16">
+    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    <span class="ml-2 text-gray-600">Đang tải ghi chú...</span>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading" class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Ghi chú khóa học</h1>
+      <button 
+        (click)="toggleAddNote()" 
+        *ngIf="!isAddingNote"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Thêm ghi chú
+      </button>
     </div>
 
     <!-- Error State -->
-    <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-        {{ error }}
-        <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
-            <span class="text-xl">&times;</span>
-        </button>
+    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm">{{ error }}</p>
+          <button class="mt-2 text-sm text-red-600 hover:text-red-800 font-medium" (click)="clearError()">
+            Đóng
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="!isLoading" class="max-w-7xl mx-auto px-4 py-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Course Notes</h1>
-
-            <app-elearning-button buttonType="primary" (click)="toggleAddNote()" *ngIf="!isAddingNote">
-                <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Add Note
-            </app-elearning-button>
+    <!-- Add/Edit Note Form -->
+    <div *ngIf="isAddingNote || editingNoteId" class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">
+        {{ editingNoteId ? 'Chỉnh sửa ghi chú' : 'Tạo ghi chú mới' }}
+      </h2>
+      
+      <form (ngSubmit)="editingNoteId ? saveEditedNote() : addNote()">
+        <div class="mb-4">
+          <label for="noteTitle" class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
+          <input 
+            type="text" 
+            id="noteTitle" 
+            [ngModel]="editingNoteId ? editNote.title : newNote.title" 
+            (ngModelChange)="editingNoteId ? (editNote.title = $event) : (newNote.title = $event)"
+            name="title"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Nhập tiêu đề ghi chú"
+            required
+          >
         </div>
-
-        <!-- Add Note Form -->
-        <div *ngIf="isAddingNote" class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Create Note</h2>
-            <form (submit)="addNote()">
-                <div class="mb-4">
-                    <label for="noteTitle" class="block text-sm font-medium text-gray-700">Title</label>
-                    <input type="text" id="noteTitle" [(ngModel)]="newNote.title" name="title"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        required>
-                </div>
-                <div class="mb-4">
-                    <label for="noteContent" class="block text-sm font-medium text-gray-700">Content</label>
-                    <textarea id="noteContent" [(ngModel)]="newNote.content" name="content" rows="4"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        required></textarea>
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" class="mr-4 bg-gray-200 text-gray-700 px-4 py-2 rounded-md"
-                        (click)="toggleAddNote()">Cancel</button>
-                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Save</button>
-                </div>
-            </form>
+        
+        <div class="mb-4">
+          <label for="noteContent" class="block text-sm font-medium text-gray-700 mb-1">Nội dung</label>
+          <textarea 
+            id="noteContent" 
+            [ngModel]="editingNoteId ? editNote.content : newNote.content"
+            (ngModelChange)="editingNoteId ? (editNote.content = $event) : (newNote.content = $event)"
+            name="content" 
+            rows="5"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Nhập nội dung ghi chú"
+            required
+          ></textarea>
         </div>
-
-        <!-- Notes List -->
-        <div *ngIf="notes.length > 0" class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Your Notes</h2>
-            <ul>
-                <li *ngFor="let note of notes" class="mb-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-900">{{ note.title }}</h3>
-                            <p class="text-gray-700">{{ note.content }}</p>
-                        </div>
-                        <div class="flex items-center">
-                            <button class="text-blue-600 hover:text-blue-900 mr-4"
-                                (click)="editNote(note)">Edit</button>
-                            <button class="text-red-600 hover:text-red-900"
-                                (click)="deleteNote(note.id)">Delete</button>
-                        </div>
-                    </div>
-                </li>
-            </ul>
+        
+        <div class="mb-4">
+          <label for="noteTags" class="block text-sm font-medium text-gray-700 mb-1">Thẻ gắn (phân cách bằng dấu phẩy)</label>
+          <input 
+            type="text" 
+            id="noteTags" 
+            [ngModel]="editingNoteId ? editNote.tags : newNote.tags"
+            (ngModelChange)="editingNoteId ? (editNote.tags = $event) : (newNote.tags = $event)"
+            name="tags"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Ví dụ: quan trọng, cần xem lại, thuật toán"
+          >
         </div>
-
-        <!-- No Notes State -->
-        <div *ngIf="notes.length === 0" class="bg-white rounded-lg shadow-md p-6">
-            <p class="text-gray-700">You have no notes yet. Click "Add Note" to create your first note.</p>
+        
+        <div class="flex justify-end space-x-3">
+          <button 
+            type="button" 
+            (click)="editingNoteId ? cancelEditing() : toggleAddNote()"
+            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            Hủy
+          </button>
+          <button 
+            type="submit"
+            [disabled]="isSubmitting"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors">
+            
+            <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            
+            {{ isSubmitting ? 'Đang lưu...' : (editingNoteId ? 'Cập nhật' : 'Lưu ghi chú') }}
+          </button>
         </div>
+      </form>
     </div>
+
+    <!-- Search and Sort Controls -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <!-- Search -->
+        <div class="mb-4 sm:mb-0 w-full sm:w-64">
+          <div class="relative rounded-md shadow-sm">
+            <input
+              type="text"
+              placeholder="Tìm ghi chú..."
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange(searchQuery)"
+              class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sort Controls -->
+        <div class="flex items-center space-x-3">
+          <span class="text-sm text-gray-600">Sắp xếp:</span>
+          <button 
+            (click)="changeSorting('title')"
+            class="flex items-center px-3 py-1.5 text-xs rounded-md hover:bg-gray-100 focus:outline-none"
+            [ngClass]="{'font-medium': sortBy === 'title'}">
+            <span>Tiêu đề</span>
+            <svg 
+              *ngIf="sortBy === 'title'"
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-3.5 w-3.5 ml-1" 
+              [ngClass]="getSortClass('title')"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+          
+          <button 
+            (click)="changeSorting('dateCreated')"
+            class="flex items-center px-3 py-1.5 text-xs rounded-md hover:bg-gray-100 focus:outline-none"
+            [ngClass]="{'font-medium': sortBy === 'dateCreated'}">
+            <span>Ngày tạo</span>
+            <svg 
+              *ngIf="sortBy === 'dateCreated'"
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-3.5 w-3.5 ml-1" 
+              [ngClass]="getSortClass('dateCreated')"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+          
+          <button 
+            (click)="changeSorting('dateUpdated')"
+            class="flex items-center px-3 py-1.5 text-xs rounded-md hover:bg-gray-100 focus:outline-none"
+            [ngClass]="{'font-medium': sortBy === 'dateUpdated'}">
+            <span>Cập nhật</span>
+            <svg 
+              *ngIf="sortBy === 'dateUpdated'"
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-3.5 w-3.5 ml-1" 
+              [ngClass]="getSortClass('dateUpdated')"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes List -->
+    <div *ngIf="filteredNotes.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let note of filteredNotes" 
+           class="bg-white rounded-lg shadow-md p-6 relative"
+           [class.border-2]="note.id === editingNoteId"
+           [class.border-blue-300]="note.id === editingNoteId">
+        <!-- Note Header -->
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="text-lg font-medium text-gray-900 line-clamp-2">{{ note.title }}</h3>
+          
+          <!-- Action buttons -->
+          <div class="flex items-center space-x-2">
+            <button
+              (click)="editNoteStart(note)"
+              class="text-gray-400 hover:text-blue-500 transition-colors focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            
+            <button
+              (click)="deleteNote(note.id)"
+              class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Note Content -->
+        <p class="text-gray-700 mb-3 line-clamp-3">{{ note.content }}</p>
+        
+        <!-- Note Tags -->
+        <div class="flex flex-wrap space-x-2">
+          <span *ngFor="let tag of note.tags.split(',')" class="text-xs font-medium text-gray-600 bg-gray-200 rounded-full px-2 py-1">{{ tag.trim() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Notes State -->
+    <div *ngIf="filteredNotes.length === 0" class="bg-white rounded-lg shadow-md p-6">
+      <p class="text-gray-700">Bạn chưa có ghi chú nào. Nhấn "Thêm ghi chú" để tạo ghi chú đầu tiên của bạn.</p>
+    </div>
+  </div>
 </div>

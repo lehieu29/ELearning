@@ -1,65 +1,102 @@
 <!-- File path: src/app/features/courses/lesson-player/annotation-tools/annotation-tools.component.html -->
 <div class="bg-white rounded-lg shadow p-4">
-  <h3 class="text-lg font-medium text-gray-900 mb-4">Notes & Annotations</h3>
+  <h3 class="text-lg font-medium text-gray-900 mb-4">Ghi chú & Đánh dấu</h3>
   
   <!-- Add new annotation -->
   <div class="mb-4">
     <div class="flex items-center mb-2">
-      <div class="text-sm font-medium text-gray-700 mr-2">Highlight color:</div>
+      <div class="text-sm font-medium text-gray-700 mr-2">Màu đánh dấu:</div>
       <div class="flex space-x-2">
         <button 
           *ngFor="let color of colorOptions"
           (click)="selectedColor = color"
           class="w-6 h-6 rounded-full border border-gray-300"
           [style.background-color]="color"
-          [ngClass]="{'ring-2 ring-gray-400': selectedColor === color}">
+          [ngClass]="{'ring-2 ring-offset-1 ring-gray-400': selectedColor === color}">
         </button>
       </div>
     </div>
     
     <div class="flex">
-      <elearning-text-box 
-        placeholder="Add a note at the current timestamp..."
-        [(ngModel)]="newAnnotation"
-        [ngModelOptions]="{standalone: true}"
-        class="flex-1">
-      </elearning-text-box>
+      <div class="flex-1 relative">
+        <textarea 
+          [(ngModel)]="newAnnotation"
+          [disabled]="isSubmitting"
+          placeholder="Thêm ghi chú tại thời điểm hiện tại..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          rows="3"></textarea>
+        <div class="absolute top-2 right-2 bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+          {{ formatTimestamp(currentTime) }}
+        </div>
+      </div>
       
-      <app-elearning-button 
-        class="ml-2"
-        buttonType="primary"
-        [disabled]="!newAnnotation.trim()"
+      <button 
+        class="ml-3 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 self-end disabled:bg-blue-300 disabled:cursor-not-allowed"
+        [disabled]="!newAnnotation.trim() || isSubmitting"
         (click)="addAnnotation()">
-        Add Note
-      </app-elearning-button>
+        <span *ngIf="!isSubmitting">Thêm</span>
+        <div *ngIf="isSubmitting" class="flex items-center">
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Đang thêm...
+        </div>
+      </button>
     </div>
   </div>
   
-  <!-- Annotations list -->
-  <div *ngIf="isLoading" class="flex justify-center py-4">
-    <app-loader size="sm"></app-loader>
-  </div>
-  
-  <div *ngIf="!isLoading && annotations.length === 0" class="text-center py-4 text-gray-500">
-    No annotations yet. Add your first note above!
-  </div>
-  
-  <div *ngIf="!isLoading && annotations.length > 0" class="space-y-3">
-    <div *ngFor="let annotation of annotations" class="relative border border-gray-200 rounded-md p-3" [style.border-left-color]="annotation.color" [style.border-left-width]="'4px'">
-      <div class="flex justify-between items-start mb-1">
-        <div class="text-xs font-medium text-gray-500">
-          {{ formatTimestamp(annotation.timestamp) }} • {{ annotation.createdAt | date:'short' }}
-        </div>
-        <button 
-          (click)="deleteAnnotation(annotation.id)" 
-          class="text-gray-400 hover:text-red-500"
-          aria-label="Delete annotation">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-          </svg>
-        </button>
+  <!-- Error message if any -->
+  <div *ngIf="error" class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
       </div>
-      <p class="text-sm text-gray-700">{{ annotation.text }}</p>
+      <div class="ml-3">
+        <p class="text-sm text-red-600">{{ error }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+  
+  <!-- No annotations message -->
+  <div *ngIf="!isLoading && annotations.length === 0 && !error" class="text-center py-6 text-gray-500">
+    Không có ghi chú nào. Thêm ghi chú đầu tiên của bạn ở trên!
+  </div>
+  
+  <!-- Annotations list -->
+  <div *ngIf="!isLoading && annotations.length > 0" class="space-y-3 max-h-80 overflow-y-auto">
+    <div *ngFor="let annotation of annotations" 
+         class="relative border border-gray-200 rounded-md p-3" 
+         [style.border-left-color]="annotation.color" 
+         [style.border-left-width]="'4px'"
+         [ngClass]="{'bg-gray-50': isCurrentTimestamp(annotation.timestamp)}">
+      <div class="flex justify-between items-start mb-1">
+        <button 
+          (click)="seekToTimestamp(annotation.timestamp)"
+          class="text-xs font-medium px-2 py-0.5 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors">
+          {{ formatTimestamp(annotation.timestamp) }}
+        </button>
+        
+        <div class="flex items-center">
+          <span class="text-xs text-gray-500 mr-2">{{ annotation.createdAt | date:'short' }}</span>
+          <button 
+            (click)="deleteAnnotation(annotation.id)" 
+            class="text-gray-400 hover:text-red-500 transition-colors"
+            aria-label="Xóa ghi chú">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ annotation.text }}</p>
     </div>
   </div>
 </div>

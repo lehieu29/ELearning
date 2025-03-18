@@ -1,0 +1,331 @@
+<!-- File path: src/app/features/profile/certificates/certificates.component.html -->
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+    <!-- Header -->
+    <div class="border-b border-gray-200 px-6 py-4 flex flex-wrap justify-between items-center">
+      <h1 class="text-xl font-semibold text-gray-900">Chứng chỉ của tôi</h1>
+      <button
+        (click)="refreshCertificates()"
+        class="mt-2 sm:mt-0 inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Làm mới
+      </button>
+    </div>
+    
+    <!-- Filters -->
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+      <form [formGroup]="filterForm">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <!-- Search Box -->
+          <div class="col-span-1 sm:col-span-2 lg:col-span-2">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                formControlName="query"
+                placeholder="Tìm kiếm chứng chỉ..."
+                class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+          
+          <!-- Type Filter -->
+          <div class="col-span-1">
+            <select
+              formControlName="type"
+              class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+            >
+              <option *ngFor="let option of typeOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+          
+          <!-- Status Filter -->
+          <div class="col-span-1">
+            <select
+              formControlName="status"
+              class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+            >
+              <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+          
+          <!-- Date Picker (simplified) -->
+          <div class="col-span-1">
+            <div formGroupName="dateRange" class="flex items-center space-x-1">
+              <input
+                type="date"
+                formControlName="start"
+                class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                placeholder="Từ ngày"
+              />
+              <span class="text-gray-500">-</span>
+              <input
+                type="date"
+                formControlName="end"
+                class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                placeholder="Đến ngày"
+              />
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="px-6 py-12 flex justify-center">
+      <div class="w-16 h-16 border-4 border-blue-400 border-t-blue-600 border-b-blue-600 rounded-full animate-spin"></div>
+      <p class="ml-4 text-gray-600">Đang tải chứng chỉ...</p>
+    </div>
+    
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="px-6 py-4">
+      <div class="rounded-md bg-red-50 p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+            <div class="mt-2">
+              <button (click)="loadCertificates()" class="text-sm font-medium text-red-800 hover:underline">
+                Thử lại
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && filteredCertificates.length === 0" class="px-6 py-12">
+      <div class="text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">
+          {{ certificates.length === 0 ? 'Bạn chưa có chứng chỉ nào' : 'Không tìm thấy chứng chỉ phù hợp với bộ lọc' }}
+        </h3>
+        <p class="mt-1 text-sm text-gray-500">
+          {{ certificates.length === 0 ? 'Hoàn thành các khóa học để nhận chứng chỉ.' : 'Vui lòng điều chỉnh bộ lọc của bạn để xem kết quả khác.' }}
+        </p>
+      </div>
+    </div>
+    
+    <!-- Certificate List -->
+    <div *ngIf="!isLoading && !error && filteredCertificates.length > 0" class="overflow-hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        <div *ngFor="let certificate of filteredCertificates" class="bg-white border border-gray-200 rounded-lg shadow overflow-hidden flex flex-col">
+          <!-- Certificate Header -->
+          <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="getStatusClass(certificate.status)">
+                {{ getStatusText(certificate.status) }}
+              </span>
+              <span class="text-xs text-gray-500">{{ formatDate(certificate.issueDate) }}</span>
+            </div>
+          </div>
+          
+          <!-- Certificate Content -->
+          <div class="flex-grow p-4">
+            <div class="flex items-center mb-4">
+              <div class="h-10 w-10 flex-shrink-0">
+                <img 
+                  *ngIf="certificate.issuer?.logo" 
+                  [src]="certificate.issuer.logo" 
+                  alt="Issuer logo" 
+                  class="h-10 w-10 rounded"
+                />
+                <div 
+                  *ngIf="!certificate.issuer?.logo"
+                  class="h-10 w-10 rounded bg-blue-100 flex items-center justify-center text-blue-600"
+                >
+                  <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-base font-medium text-gray-900 line-clamp-2">{{ certificate.title }}</h3>
+                <p class="text-sm text-gray-500">{{ certificate.issuer.name }}</p>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="text-sm font-medium text-gray-700 mb-1">Khóa học</h4>
+              <p class="text-sm text-gray-900">{{ certificate.courseName }}</p>
+            </div>
+            
+            <!-- Skills (if any) -->
+            <div *ngIf="certificate.skills && certificate.skills.length > 0" class="mb-4">
+              <h4 class="text-sm font-medium text-gray-700 mb-1">Kỹ năng</h4>
+              <div class="flex flex-wrap gap-1">
+                <span *ngFor="let skill of certificate.skills" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ skill }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Certificate ID -->
+            <div class="mb-4">
+              <h4 class="text-sm font-medium text-gray-700 mb-1">Mã chứng chỉ</h4>
+              <div class="flex items-center">
+                <p class="text-sm text-gray-900 mr-2">{{ certificate.credentialId }}</p>
+                <a 
+                  [href]="certificate.verificationUrl" 
+                  target="_blank" 
+                  class="text-blue-600 hover:text-blue-800 text-xs" 
+                  title="Xác minh chứng chỉ"
+                >
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Certificate Actions -->
+          <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div>
+              <a 
+                [href]="certificate.certificateUrl" 
+                target="_blank" 
+                class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
+              >
+                <span>Xem</span>
+                <svg class="h-3 w-3 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+            <div class="flex space-x-2">
+              <button
+                (click)="addToLinkedIn(certificate)"
+                class="inline-flex items-center p-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                title="Thêm vào LinkedIn"
+              >
+                <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </button>
+              <button
+                (click)="openShareModal(certificate)"
+                class="inline-flex items-center p-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                title="Chia sẻ chứng chỉ"
+              >
+                <svg class="h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+              <button
+                (click)="downloadCertificate(certificate)"
+                class="inline-flex items-center p-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                title="Tải xuống"
+                [disabled]="isDownloading"
+              >
+                <svg class="h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Share Certificate Modal -->
+<div *ngIf="showShareModal && selectedCertificate" class="fixed inset-0 z-10 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+      <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+    </div>
+
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+            <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+              Chia sẻ chứng chỉ
+            </h3>
+            <div class="mt-1">
+              <p class="text-sm text-gray-500">
+                Chia sẻ chứng chỉ "{{ selectedCertificate.title }}" với các đối tác và đồng nghiệp.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <form [formGroup]="shareForm" class="mt-4">
+          <div class="mb-4">
+            <label for="emails" class="block text-sm font-medium text-gray-700 mb-1">
+              Địa chỉ email (ngăn cách bằng dấu phẩy)
+            </label>
+            <input
+              type="text"
+              id="emails"
+              formControlName="emails"
+              class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+              placeholder="example@email.com, another@email.com"
+            />
+          </div>
+          
+          <div class="mb-4">
+            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+              Tin nhắn (tùy chọn)
+            </label>
+            <textarea
+              id="message"
+              formControlName="message"
+              rows="3"
+              class="focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+              placeholder="Nhập tin nhắn kèm theo..."
+            ></textarea>
+          </div>
+        </form>
+      </div>
+      
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button 
+          type="button" 
+          (click)="shareCertificate()"
+          [disabled]="isSharing"
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+        >
+          <span *ngIf="isSharing" class="mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          Chia sẻ
+        </button>
+        <button 
+          type="button" 
+          (click)="closeShareModal()"
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+        >
+          Hủy
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

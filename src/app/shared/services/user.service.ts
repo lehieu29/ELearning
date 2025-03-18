@@ -3,50 +3,33 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { HttpService } from './http.service';
 import { User } from '../models/user.model';
-import { UserProfile, UserPreferences } from '../models/user.model';
+import { UserProfile, UserPreferences, UserProfileUpdateRequest } from '../models/user.model';
 import { ApiResponse } from '../models/api.model';
+import { environment } from '@environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  private apiUrl = environment.apiUrl;
+
   constructor(private http: HttpService) {}
   
   /**
    * Lấy thông tin chi tiết hồ sơ người dùng
    * @returns Observable chứa thông tin hồ sơ người dùng
    */
-  getUserProfile(): Observable<UserProfile> {
-    return this.http.get<ApiResponse<UserProfile>>('user/profile').pipe(
-      map(response => {
-        if (!response.data) {
-          throw new Error('Không tìm thấy hồ sơ người dùng');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        return throwError(() => new Error(error.error?.message || 'Không thể tải hồ sơ người dùng'));
-      })
-    );
+  getUserProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/users/profile`);
   }
   
   /**
    * Cập nhật thông tin hồ sơ người dùng
-   * @param profileData Thông tin cần cập nhật
+   * @param data Dữ liệu cập nhật cho hồ sơ
    * @returns Observable chứa thông tin hồ sơ sau khi cập nhật
    */
-  updateProfile(profileData: Partial<UserProfile>): Observable<UserProfile> {
-    return this.http.put<ApiResponse<UserProfile>>('user/profile', profileData).pipe(
-      map(response => {
-        if (!response.data) {
-          throw new Error('Không thể cập nhật hồ sơ');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        return throwError(() => new Error(error.error?.message || 'Không thể cập nhật hồ sơ'));
-      })
-    );
+  updateUserProfile(data: UserProfileUpdateRequest): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/users/profile`, data);
   }
   
   /**
@@ -54,21 +37,19 @@ export class UserService {
    * @param file File ảnh đại diện
    * @returns Observable chứa URL ảnh đại diện mới
    */
-  uploadProfilePicture(file: File): Observable<{ avatarUrl: string }> {
+  uploadProfileImage(file: File): Observable<{ imageUrl: string }> {
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append('image', file);
     
-    return this.http.post<ApiResponse<{ avatarUrl: string }>>('user/profile/avatar', formData).pipe(
-      map(response => {
-        if (!response.data) {
-          throw new Error('Không thể tải lên ảnh đại diện');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        return throwError(() => new Error(error.error?.message || 'Không thể tải lên ảnh đại diện'));
-      })
-    );
+    return this.http.post<{ imageUrl: string }>(`${this.apiUrl}/users/profile/image`, formData);
+  }
+  
+  /**
+   * Xóa ảnh đại diện hiện tại
+   * Removes the current profile picture
+   */
+  removeProfileImage(): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/users/profile/image`);
   }
   
   /**

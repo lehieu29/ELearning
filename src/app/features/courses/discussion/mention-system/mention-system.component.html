@@ -1,15 +1,41 @@
 <!-- File path: src/app/features/courses/discussion/mention-system/mention-system.component.html -->
 <div class="inline-block relative">
-  <span class="text-blue-600 font-semibold">@</span>
-  <span class="text-gray-600">mention</span>
+  <button 
+    class="flex items-center px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+    (click)="inputElement?.nativeElement?.focus()">
+    <span class="text-blue-600 font-semibold">@</span>
+    <span class="ml-1">mention</span>
+  </button>
   
   <!-- Mention Dropdown -->
-  <div *ngIf="isMentionActive" #mentionDropdown class="absolute z-10 mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200 max-h-56 w-64">
-    <div *ngIf="mentionUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
-      Loading users...
+  <div *ngIf="isMentionActive" 
+       #mentionDropdown
+       class="absolute z-10 mt-1 bg-white rounded-md shadow-lg overflow-hidden border border-gray-200 max-h-56 w-64"
+       style="top: 100%; left: 0;">
+    
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="py-3 px-3 text-center">
+      <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+      <p class="mt-1 text-xs text-gray-500">Đang tải...</p>
     </div>
     
-    <ul *ngIf="mentionUsers.length > 0" class="divide-y divide-gray-100">
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="p-3 text-xs text-red-500">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {{ error }}
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && mentionUsers.length === 0 && !error" class="p-4 text-center text-xs text-gray-500">
+      Không tìm thấy người dùng
+    </div>
+    
+    <!-- Users List -->
+    <ul *ngIf="mentionUsers.length > 0 && !isLoading" class="divide-y divide-gray-100 overflow-y-auto max-h-48">
       <li *ngFor="let user of mentionUsers; let i = index"
           (click)="selectUser(user)"
           [ngClass]="{'bg-blue-50': i === selectedIndex}"
@@ -26,8 +52,9 @@
       </li>
     </ul>
     
-    <div *ngIf="mentionUsers.length > 0" class="px-3 py-2 bg-gray-50 text-xs text-gray-500">
-      Use ↑↓ arrows to navigate, Enter to select
+    <!-- Navigation Help -->
+    <div *ngIf="mentionUsers.length > 0" class="px-3 py-2 bg-gray-50 text-xs text-gray-500 border-t border-gray-100">
+      Dùng ↑↓ để di chuyển, Enter để chọn
     </div>
   </div>
 </div>

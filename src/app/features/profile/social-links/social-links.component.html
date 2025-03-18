@@ -1,0 +1,389 @@
+<!-- File path: src/app/features/profile/social-links/social-links.component.html -->
+
+<div class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="md:flex md:items-center md:justify-between mb-8">
+      <div class="flex-1 min-w-0">
+        <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Liên kết mạng xã hội</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Kết nối tài khoản mạng xã hội với hồ sơ Udacity của bạn và chia sẻ thành tích học tập
+        </p>
+      </div>
+      <div class="mt-4 flex md:mt-0 md:ml-4">
+        <app-elearning-button 
+          type="primary"
+          icon="plus"
+          iconPosition="left"
+          (click)="openAddLinkModal()">
+          Thêm liên kết
+        </app-elearning-button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div *ngIf="socialLinkStats && !isLoading" class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white shadow-sm rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-blue-100 text-blue-600">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Tổng liên kết</dt>
+              <dd>
+                <div class="text-lg font-bold text-gray-900">{{ socialLinkStats.totalConnections }}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white shadow-sm rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-green-100 text-green-600">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Liên kết công khai</dt>
+              <dd>
+                <div class="text-lg font-bold text-gray-900">{{ socialLinkStats.publicConnections }}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white shadow-sm rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 rounded-md bg-purple-100 text-purple-600">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">Liên kết riêng tư</dt>
+              <dd>
+                <div class="text-lg font-bold text-gray-900">{{ socialLinkStats.privateConnections }}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center py-12">
+      <app-loader size="md"></app-loader>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+          <div class="mt-2 text-sm text-red-700">
+            <p>Vui lòng thử tải lại trang hoặc liên hệ với bộ phận hỗ trợ.</p>
+          </div>
+          <div class="mt-4">
+            <app-elearning-button
+              type="danger"
+              size="sm"
+              (click)="loadSocialLinks()">
+              Tải lại
+            </app-elearning-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !error && socialLinks.length === 0" class="bg-white shadow-sm rounded-lg p-8 text-center">
+      <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-blue-50 mb-4">
+        <svg class="h-12 w-12 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900">Chưa có liên kết nào</h3>
+      <p class="mt-2 text-sm text-gray-500 max-w-md mx-auto">
+        Kết nối tài khoản mạng xã hội để chia sẻ thành tích học tập và tạo cơ hội nghề nghiệp.
+      </p>
+      <div class="mt-6">
+        <app-elearning-button
+          type="primary"
+          icon="plus"
+          iconPosition="left"
+          (click)="openAddLinkModal()">
+          Thêm liên kết đầu tiên
+        </app-elearning-button>
+      </div>
+      
+      <div class="mt-8 border-t border-gray-200 pt-6">
+        <h4 class="text-sm font-medium text-gray-700 mb-4">Nền tảng mạng xã hội được hỗ trợ</h4>
+        <div class="flex flex-wrap justify-center gap-4">
+          <div *ngFor="let platform of supportedPlatforms" 
+               class="flex items-center justify-center h-10 w-10 rounded-full" 
+               [ngClass]="platform.color">
+            <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+              <path [attr.d]="'M0 0h24v24H0z'" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Links List -->
+    <div *ngIf="!isLoading && !error && socialLinks.length > 0" class="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div class="px-6 py-5 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">Tài khoản đã kết nối</h3>
+      </div>
+      
+      <ul class="divide-y divide-gray-200">
+        <li *ngFor="let link of socialLinks" class="px-6 py-5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center" [ngClass]="getPlatformColor(link.platform)">
+                <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                  <!-- Generic svg path as placeholder -->
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <div class="flex items-center">
+                  <h4 class="text-sm font-medium text-gray-900">{{ getPlatformLabel(link.platform) }}</h4>
+                  <span *ngIf="link.isConnected" class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Đã kết nối
+                  </span>
+                </div>
+                <p *ngIf="link.username" class="text-sm text-gray-500">
+                  {{ link.username }}
+                </p>
+                <div class="flex items-center mt-1">
+                  <span class="text-xs text-gray-500">
+                    Kết nối từ {{ formatDate(link.connectedDate) }}
+                  </span>
+                  <span class="mx-2 text-gray-300">•</span>
+                  <span class="text-xs text-gray-500" [ngClass]="{
+                    'text-green-600': link.visibility === 'public',
+                    'text-amber-600': link.visibility === 'connections',
+                    'text-gray-600': link.visibility === 'private'
+                  }">
+                    {{ link.visibility === 'public' ? 'Công khai' : link.visibility === 'connections' ? 'Chỉ kết nối' : 'Riêng tư' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+              <div class="relative" x-data="{ open: false }">
+                <button 
+                  type="button" 
+                  class="text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500"
+                  (click)="$event.currentTarget.nextElementSibling.classList.toggle('hidden')">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                  </svg>
+                </button>
+                <div class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-10">
+                  <div class="py-1">
+                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="$event.preventDefault(); openEditLinkModal(link)">
+                      <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                      </svg>
+                      Chỉnh sửa
+                    </a>
+                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="$event.preventDefault(); syncSocialLinkInfo(link)">
+                      <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                      </svg>
+                      Đồng bộ thông tin
+                    </a>
+                  </div>
+                  <div class="py-1">
+                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="$event.preventDefault(); updateLinkVisibility(link, 'public')">
+                      <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                      </svg>
+                      Đặt là công khai
+                    </a>
+                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      (click)="$event.preventDefault(); updateLinkVisibility(link, 'private')">
+                      <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                      </svg>
+                      Đặt là riêng tư
+                    </a>
+                  </div>
+                  <div class="py-1">
+                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                      (click)="$event.preventDefault(); disconnectSocialPlatform(link)">
+                      <svg class="mr-3 h-5 w-5 text-red-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm11 3a1 1 0 00-1-1H7a1 1 0 00-1 1v1a1 1 0 001 1h6a1 1 0 001-1V6zm-6 7a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd" />
+                      </svg>
+                      Ngắt kết nối
+                    </a>
+                    <a href="#" class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                      (click)="$event.preventDefault(); deleteSocialLink(link)">
+                      <svg class="mr-3 h-5 w-5 text-red-400 group-hover:text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                      </svg>
+                      Xóa
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+      
+      <div class="px-6 py-5 border-t border-gray-200 bg-gray-50">
+        <h4 class="text-sm font-medium text-gray-700 mb-4">Thêm tài khoản mạng xã hội</h4>
+        <div class="flex flex-wrap gap-3">
+          <button *ngFor="let platform of getUnconnectedPlatforms()"
+            type="button"
+            (click)="connectSocialPlatform(platform.value)"
+            class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <span class="flex items-center justify-center h-4 w-4 rounded-full mr-2" [ngClass]="platform.color">
+              <svg class="h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                <!-- Generic svg path as placeholder -->
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              </svg>
+            </span>
+            {{ platform.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Add/Edit Social Link -->
+<app-modal 
+  *ngIf="showAddLinkModal" 
+  [title]="editingLink ? 'Chỉnh sửa liên kết mạng xã hội' : 'Thêm liên kết mạng xã hội'" 
+  [showCloseButton]="true"
+  (close)="closeModal()">
+  
+  <div class="p-5">
+    <form [formGroup]="socialLinkForm" (ngSubmit)="saveSocialLink()">
+      <div class="grid grid-cols-1 gap-y-6">
+        <!-- Platform selection -->
+        <div>
+          <label for="platform" class="block text-sm font-medium text-gray-700">Nền tảng</label>
+          <select 
+            id="platform" 
+            formControlName="platform"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+            <option value="" disabled>Chọn nền tảng</option>
+            <option *ngFor="let platform of supportedPlatforms" [value]="platform.value" [disabled]="isPlatformConnected(platform.value) && !editingLink">
+              {{ platform.label }}
+            </option>
+          </select>
+          <p *ngIf="socialLinkForm.get('platform')?.invalid && socialLinkForm.get('platform')?.touched" class="mt-2 text-sm text-red-600">
+            Vui lòng chọn nền tảng
+          </p>
+        </div>
+        
+        <!-- Profile URL -->
+        <div>
+          <label for="profileUrl" class="block text-sm font-medium text-gray-700">URL hồ sơ</label>
+          <app-elearning-text-box
+            id="profileUrl"
+            formControlName="profileUrl"
+            placeholder="https://..."
+            [error]="socialLinkForm.get('profileUrl')?.invalid && socialLinkForm.get('profileUrl')?.touched ? 
+            'URL không hợp lệ' : ''">
+          </app-elearning-text-box>
+        </div>
+        
+        <!-- Username -->
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700">Tên người dùng</label>
+          <app-elearning-text-box
+            id="username"
+            formControlName="username"
+            placeholder="Tên hiển thị trên hồ sơ (tùy chọn)"
+            [error]="''">
+          </app-elearning-text-box>
+        </div>
+        
+        <!-- Visibility -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Quyền riêng tư</label>
+          <div class="mt-2 space-y-4">
+            <div class="flex items-center">
+              <input 
+                id="visibility-public" 
+                name="visibility" 
+                type="radio" 
+                formControlName="visibility" 
+                value="public"
+                class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+              <label for="visibility-public" class="ml-3 block text-sm font-medium text-gray-700">
+                Công khai
+                <p class="text-xs text-gray-500">Hiển thị trong hồ sơ công khai của bạn</p>
+              </label>
+            </div>
+            <div class="flex items-center">
+              <input 
+                id="visibility-connections" 
+                name="visibility" 
+                type="radio" 
+                formControlName="visibility" 
+                value="connections"
+                class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+              <label for="visibility-connections" class="ml-3 block text-sm font-medium text-gray-700">
+                Chỉ kết nối
+                <p class="text-xs text-gray-500">Chỉ hiển thị cho những người đã kết nối với bạn</p>
+              </label>
+            </div>
+            <div class="flex items-center">
+              <input 
+                id="visibility-private" 
+                name="visibility" 
+                type="radio" 
+                formControlName="visibility" 
+                value="private"
+                class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+              <label for="visibility-private" class="ml-3 block text-sm font-medium text-gray-700">
+                Riêng tư
+                <p class="text-xs text-gray-500">Chỉ bạn có thể xem</p>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 flex justify-end space-x-3">
+        <app-elearning-button
+          type="secondary"
+          (click)="closeModal()">
+          Hủy
+        </app-elearning-button>
+        <app-elearning-button
+          type="primary"
+          [disabled]="socialLinkForm.invalid || isSaving"
+          [isLoading]="isSaving"
+          buttonType="submit">
+          {{ editingLink ? 'Cập nhật' : 'Thêm liên kết' }}
+        </app-elearning-button>
+      </div>
+    </form>
+  </div>
+</app-modal>

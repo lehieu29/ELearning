@@ -1,1 +1,51 @@
-<p>quiz-timer works!</p>
+<!-- File path: src/app/features/courses/quiz/quiz-timer/quiz-timer.component.html -->
+<div class="quiz-timer bg-white rounded-md border border-gray-200 p-3 shadow-sm">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-sm font-medium text-gray-600">Thời gian còn lại:</span>
+    </div>
+    
+    <div [class]="getTimeTextColor() + ' text-lg font-bold'">
+      {{ formatTimeRemaining() }}
+    </div>
+  </div>
+  
+  <div class="w-full bg-gray-200 rounded-full h-2">
+    <div class="h-2 rounded-full transition-all ease-linear duration-1000"
+      [class]="getProgressBarColor()"
+      [style.width.%]="progress">
+    </div>
+  </div>
+  
+  <div *ngIf="isDanger()" class="mt-2 text-center text-sm text-red-600 animate-pulse">
+    Sắp hết thời gian!
+  </div>
+  
+  <div class="flex justify-center mt-3" *ngIf="isRunning || isPaused">
+    <button *ngIf="isRunning && !isPaused" 
+            (click)="pauseTimer()" 
+            class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors">
+      <span class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Tạm dừng
+      </span>
+    </button>
+    
+    <button *ngIf="isPaused" 
+            (click)="resumeTimer()" 
+            class="text-xs px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors">
+      <span class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Tiếp tục
+      </span>
+    </button>
+  </div>
+</div>

@@ -1,45 +1,78 @@
 <!-- File path: src/app/features/courses/discussion/threaded-comments/threaded-comments.component.html -->
 <div>
-    <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-        {{ error }}
-        <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
-            <span class="text-xl">&times;</span>
-        </button>
+    <!-- Error Message -->
+    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm">{{ error }}</p>
+                <button (click)="clearError()" class="mt-1 text-sm text-red-600 hover:text-red-800 font-medium">
+                    Thử lại
+                </button>
+            </div>
+            <button (click)="clearError()" class="ml-auto text-red-500 hover:text-red-700">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
     </div>
 
+    <!-- Empty State -->
     <div *ngIf="comments.length === 0" class="text-center py-6 text-gray-500">
-        No comments yet. Be the first to comment!
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 mb-2" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+        <p>Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
     </div>
 
+    <!-- Comments List -->
     <div class="space-y-6">
         <ng-container *ngFor="let comment of rootComments">
             <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <!-- Main Comment -->
                 <div class="p-4">
                     <div class="flex items-start">
+                        <!-- Avatar -->
                         <div class="mr-3">
-                            <div
-                                class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
-                                {{ comment.author.name.charAt(0) }}
+                            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium"
+                                [ngStyle]="{'background-color': comment.author.avatarColor || '#f3f4f6'}">
+                                {{ comment.author.name.charAt(0).toUpperCase() }}
                             </div>
                         </div>
+                        <!-- Comment Content -->
                         <div class="flex-1">
+                            <!-- Author & Time -->
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-medium text-gray-900">{{ comment.author.name }}</h4>
-                                    <p class="text-xs text-gray-500">{{ comment.createdAt | date:'medium' }}</p>
+                                    <p class="text-xs text-gray-500">{{ formatTimeAgo(comment.createdAt) }}</p>
                                 </div>
                                 <div>
                                     <button (click)="startReply(comment.id)"
-                                        class="text-sm text-blue-600 hover:text-blue-800">
-                                        Reply
+                                        class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                                        Phản hồi
                                     </button>
                                 </div>
                             </div>
-                            <div class="mt-2 text-gray-700">
+
+                            <!-- Comment Text -->
+                            <div class="mt-2 text-gray-700 whitespace-pre-line">
                                 {{ comment.text }}
                             </div>
+
+                            <!-- Like Button -->
                             <div class="mt-2 flex items-center space-x-4">
-                                <button (click)="likeComment(comment)" class="flex items-center text-sm"
+                                <button (click)="comment.isLiked ? unlikeComment(comment) : likeComment(comment)"
+                                    class="flex items-center text-sm transition-colors"
                                     [ngClass]="{'text-blue-600': comment.isLiked, 'text-gray-500 hover:text-blue-600': !comment.isLiked}">
                                     <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path
@@ -60,17 +93,33 @@
                                         </div>
                                     </div>
                                     <div class="flex-1 space-y-2">
-                                        <app-elearning-text-box [(ngModel)]="replyText"
-                                            placeholder="Write your reply..." [multiline]="true">
-                                        </app-elearning-text-box>
+                                        <textarea [(ngModel)]="replyText" [attr.data-comment-id]="comment.id"
+                                            placeholder="Viết phản hồi của bạn..." rows="3"
+                                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                            [disabled]="isSubmittingReply">
+                                        </textarea>
+
                                         <div class="flex justify-end space-x-2">
-                                            <app-elearning-button buttonType="secondary" (click)="cancelReply()">
-                                                Cancel
-                                            </app-elearning-button>
-                                            <app-elearning-button buttonType="primary" (click)="submitReply(comment)"
-                                                [disabled]="!replyText.trim()">
-                                                Reply
-                                            </app-elearning-button>
+                                            <button (click)="cancelReply()" type="button"
+                                                class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                [disabled]="isSubmittingReply">
+                                                Hủy bỏ
+                                            </button>
+
+                                            <button (click)="submitReply(comment)" type="button"
+                                                class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                                [disabled]="isSubmittingReply || !replyText.trim()">
+                                                <svg *ngIf="isSubmittingReply"
+                                                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
+                                                </svg>
+                                                {{ isSubmittingReply ? 'Đang gửi...' : 'Phản hồi' }}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -79,34 +128,42 @@
                     </div>
                 </div>
 
-                <!-- Replies -->
+                <!-- Replies Section -->
                 <div *ngIf="comment.replies && comment.replies.length > 0" class="border-t bg-gray-50">
                     <div class="p-4 pl-12 space-y-4">
                         <div *ngFor="let reply of comment.replies" class="flex items-start">
+                            <!-- Reply Avatar -->
                             <div class="mr-3">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-sm">
-                                    {{ reply.author.name.charAt(0) }}
+                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-sm"
+                                    [ngStyle]="{'background-color': reply.author.avatarColor || '#f3f4f6'}">
+                                    {{ reply.author.name.charAt(0).toUpperCase() }}
                                 </div>
                             </div>
+                            <!-- Reply Content -->
                             <div class="flex-1">
+                                <!-- Reply Author & Time -->
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h4 class="font-medium text-gray-900">{{ reply.author.name }}</h4>
-                                        <p class="text-xs text-gray-500">{{ reply.createdAt | date:'medium' }}</p>
+                                        <p class="text-xs text-gray-500">{{ formatTimeAgo(reply.createdAt) }}</p>
                                     </div>
                                     <div>
                                         <button (click)="startReply(reply.id)"
-                                            class="text-sm text-blue-600 hover:text-blue-800">
-                                            Reply
+                                            class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                                            Phản hồi
                                         </button>
                                     </div>
                                 </div>
-                                <div class="mt-2 text-gray-700">
+
+                                <!-- Reply Text -->
+                                <div class="mt-2 text-gray-700 whitespace-pre-line">
                                     {{ reply.text }}
                                 </div>
+
+                                <!-- Reply Like Button -->
                                 <div class="mt-2 flex items-center space-x-4">
-                                    <button (click)="likeComment(reply)" class="flex items-center text-sm"
+                                    <button (click)="reply.isLiked ? unlikeComment(reply) : likeComment(reply)"
+                                        class="flex items-center text-sm transition-colors"
                                         [ngClass]="{'text-blue-600': reply.isLiked, 'text-gray-500 hover:text-blue-600': !reply.isLiked}">
                                         <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                             <path
@@ -127,17 +184,60 @@
                                             </div>
                                         </div>
                                         <div class="flex-1 space-y-2">
-                                            <app-elearning-text-box [(ngModel)]="replyText"
-                                                placeholder="Write your reply..." [multiline]="true">
-                                            </app-elearning-text-box>
+                                            <textarea [(ngModel)]="replyText" [attr.data-comment-id]="reply.id"
+                                                placeholder="Viết phản hồi của bạn..." rows="3"
+                                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                                [disabled]="isSubmittingReply">
+                                            </textarea>
+
                                             <div class="flex justify-end space-x-2">
-                                                <app-elearning-button buttonType="secondary" (click)="cancelReply()">
-                                                    Cancel
-                                                </app-elearning-button>
-                                                <app-elearning-button buttonType="primary" (click)="submitReply(reply)"
-                                                    [disabled]="!replyText.trim()">
-                                                    Reply
-                                                </app-elearning-button>
+                                                <button (click)="cancelReply()" type="button"
+                                                    class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                    [disabled]="isSubmittingReply">
+                                                    Hủy bỏ
+                                                </button>
+
+                                                <button (click)="submitReply(comment)" type="button"
+                                                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                                    [disabled]="isSubmittingReply || !replyText.trim()">
+                                                    <svg *ngIf="isSubmittingReply"
+                                                        class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                            stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                        </path>
+                                                    </svg>
+                                                    {{ isSubmittingReply ? 'Đang gửi...' : 'Phản hồi' }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Nested Replies (if any) -->
+                                <div *ngIf="reply.replies && reply.replies.length > 0"
+                                    class="mt-4 space-y-4 pl-4 border-l-2 border-gray-200">
+                                    <!-- Recursively show nested replies (simplified for demonstration) -->
+                                    <div *ngFor="let nestedReply of reply.replies" class="flex items-start">
+                                        <div class="mr-3">
+                                            <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-xs"
+                                                [ngStyle]="{'background-color': nestedReply.author.avatarColor || '#f3f4f6'}">
+                                                {{ nestedReply.author.name.charAt(0).toUpperCase() }}
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center">
+                                                <h5 class="font-medium text-gray-900 text-sm">{{ nestedReply.author.name
+                                                    }}</h5>
+                                                <span class="mx-1 text-gray-500">•</span>
+                                                <p class="text-xs text-gray-500">{{ formatTimeAgo(nestedReply.createdAt)
+                                                    }}</p>
+                                            </div>
+                                            <div class="mt-1 text-sm text-gray-700 whitespace-pre-line">
+                                                {{ nestedReply.text }}
                                             </div>
                                         </div>
                                     </div>

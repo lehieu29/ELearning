@@ -1,7 +1,7 @@
 <!-- File path: src/app/features/course/code-editor/code-snippets/code-snippets.component.html -->
 <div class="relative">
   <button 
-    class="flex items-center space-x-1 text-sm text-gray-700 hover:text-blue-600 focus:outline-none"
+    class="flex items-center space-x-1 text-sm text-gray-700 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-md"
     (click)="toggleSnippetsPanel()"
     title="Code snippets">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -13,13 +13,13 @@
   <!-- Snippets Panel -->
   <div 
     *ngIf="showSnippetsPanel" 
-    class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10">
-    <div class="flex flex-col max-h-80 rounded-md">
+    class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+    <div class="flex flex-col max-h-80 rounded-md overflow-hidden">
       <!-- Header -->
-      <div class="flex justify-between items-center px-4 py-2 border-b">
-        <h3 class="text-sm font-medium text-gray-700">Code Snippets</h3>
+      <div class="flex justify-between items-center px-4 py-2 border-b bg-gray-50">
+        <h3 class="text-sm font-medium text-gray-700">Thư viện đoạn mã</h3>
         <button 
-          class="text-gray-400 hover:text-gray-600"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
           (click)="toggleSnippetsPanel()">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -29,25 +29,146 @@
       
       <!-- Search -->
       <div class="px-4 py-2 border-b">
-        <app-elearning-text-box
-          type="text"
-          placeholder="Search snippets..."
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearchChange()">
-        </app-elearning-text-box>
+        <div class="relative rounded-md shadow-sm">
+          <input
+            type="text"
+            placeholder="Tìm kiếm snippets..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+            class="block w-full pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          />
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="flex justify-center items-center p-4">
+        <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+      
+      <!-- Error State -->
+      <div *ngIf="error" class="p-4 text-sm text-red-600">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {{ error }}
+        </div>
+      </div>
+      
+      <!-- No snippets state -->
+      <div *ngIf="!isLoading && !error && snippets.length === 0" class="p-4 text-center">
+        <p class="text-sm text-gray-500">Chưa có snippet nào. Hãy tạo snippet đầu tiên!</p>
+        <button 
+          (click)="showNewSnippetForm()"
+          class="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Tạo snippet
+        </button>
+      </div>
+      
+      <!-- Snippet Form -->
+      <div *ngIf="snippetFormVisible" class="p-3 border-b bg-gray-50">
+        <h4 class="text-xs font-medium text-gray-700 mb-2">Tạo snippet mới</h4>
+        <div class="space-y-2">
+          <div>
+            <input 
+              [(ngModel)]="newSnippetName" 
+              placeholder="Tên snippet" 
+              class="w-full px-3 py-1.5 text-xs border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <input 
+              [(ngModel)]="newSnippetDescription" 
+              placeholder="Mô tả (tùy chọn)" 
+              class="w-full px-3 py-1.5 text-xs border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <textarea 
+              [(ngModel)]="newSnippetCode" 
+              placeholder="Mã nguồn snippet" 
+              rows="3" 
+              class="w-full px-3 py-1.5 text-xs border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono"
+            ></textarea>
+          </div>
+          <div>
+            <input 
+              [(ngModel)]="newSnippetTags" 
+              placeholder="Tags (phân cách bằng dấu phẩy)" 
+              class="w-full px-3 py-1.5 text-xs border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button 
+              (click)="resetSnippetForm()" 
+              class="inline-flex items-center px-2.5 py-1 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              [disabled]="isSaving">
+              Hủy
+            </button>
+            <button 
+              (click)="saveSnippet()" 
+              class="inline-flex items-center px-2.5 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
+              [disabled]="isSaving">
+              <svg *ngIf="isSaving" class="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSaving ? 'Đang lưu...' : 'Lưu' }}
+            </button>
+          </div>
+        </div>
       </div>
       
       <!-- Snippet List -->
       <div class="overflow-y-auto max-h-64">
-        <div *ngIf="filteredSnippets.length === 0" class="p-4 text-sm text-gray-500 italic">
-          No snippets found
+        <div *ngIf="!isLoading && !error && filteredSnippets.length === 0 && searchTerm" class="p-4 text-sm text-gray-500 italic text-center">
+          Không tìm thấy snippet nào
+        </div>
+        
+        <!-- Create snippet button -->
+        <div *ngIf="!snippetFormVisible && filteredSnippets.length >= 0" class="px-4 py-2 border-b">
+          <button 
+            (click)="showNewSnippetForm()"
+            class="w-full inline-flex justify-center items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Tạo snippet mới
+          </button>
         </div>
         
         <div *ngFor="let snippet of filteredSnippets" 
-            class="px-4 py-2 border-b hover:bg-gray-50 cursor-pointer"
+            class="px-4 py-2 border-b hover:bg-gray-50 cursor-pointer group"
             (click)="selectSnippet(snippet)">
-          <div class="text-sm font-medium text-gray-700">{{ snippet.name }}</div>
-          <div class="text-xs text-gray-500">{{ snippet.description }}</div>
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="text-sm font-medium text-gray-700">{{ snippet.name }}</div>
+              <div *ngIf="snippet.description" class="text-xs text-gray-500 line-clamp-2">{{ snippet.description }}</div>
+              <div *ngIf="snippet.tags && snippet.tags.length > 0" class="mt-1 flex flex-wrap gap-1">
+                <span *ngFor="let tag of snippet.tags" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+            <button 
+              *ngIf="!isDeleting"
+              (click)="deleteSnippet(snippet, $event)" 
+              class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Xóa snippet">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+            <div *ngIf="isDeleting" class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500"></div>
+          </div>
         </div>
       </div>
     </div>

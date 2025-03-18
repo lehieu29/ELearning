@@ -1,0 +1,462 @@
+<div class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="md:flex md:items-center md:justify-between mb-6">
+      <div class="flex-1 min-w-0">
+        <h1 class="text-2xl font-bold text-gray-900">Mục tiêu học tập</h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Thiết lập và theo dõi các mục tiêu học tập của bạn
+        </p>
+      </div>
+      <div class="mt-4 flex md:mt-0 md:ml-4">
+        <app-elearning-button type="primary" (click)="openCreateModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clip-rule="evenodd" />
+          </svg>
+          Thêm mục tiêu mới
+        </app-elearning-button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading.goals || isLoading.stats" class="text-center py-12">
+      <app-loader size="md"></app-loader>
+      <p class="mt-4 text-gray-500">Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error" class="bg-red-50 border border-red-200 rounded-md p-4 my-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-red-800">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Dashboard -->
+    <div *ngIf="!isLoading.stats && goalStatistics" class="mb-8">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Total Goals -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 bg-blue-50 rounded-md p-3">
+                <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Tổng số mục tiêu</dt>
+                  <dd class="flex items-baseline">
+                    <div class="text-2xl font-semibold text-gray-900">{{ goalStatistics.totalGoals }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed Goals -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 bg-green-50 rounded-md p-3">
+                <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Đã hoàn thành</dt>
+                  <dd class="flex items-baseline">
+                    <div class="text-2xl font-semibold text-gray-900">{{ goalStatistics.completedGoals }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- In Progress Goals -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 bg-yellow-50 rounded-md p-3">
+                <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Đang tiến hành</dt>
+                  <dd class="flex items-baseline">
+                    <div class="text-2xl font-semibold text-gray-900">{{ goalStatistics.inProgressGoals }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completion Rate -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 bg-indigo-50 rounded-md p-3">
+                <svg class="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Tỉ lệ hoàn thành</dt>
+                  <dd class="flex items-baseline">
+                    <div class="text-2xl font-semibold text-gray-900">{{ goalStatistics.completionRate | percent }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters and view controls -->
+    <div class="bg-white shadow rounded-lg mb-8">
+      <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+        <div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+          <div class="ml-4 mt-2">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Lọc và sắp xếp</h3>
+          </div>
+          <div class="ml-4 mt-2 flex-shrink-0">
+            <!-- View Switcher -->
+            <div class="flex items-center space-x-2 border rounded-md">
+              <button type="button" (click)="switchView('list')"
+                [ngClass]="{'bg-blue-50 text-blue-600': activeView === 'list', 'text-gray-500': activeView !== 'list'}"
+                class="p-2 rounded-l-md hover:bg-gray-50">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <button type="button" (click)="switchView('grid')"
+                [ngClass]="{'bg-blue-50 text-blue-600': activeView === 'grid', 'text-gray-500': activeView !== 'grid'}"
+                class="p-2 hover:bg-gray-50">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button type="button" (click)="switchView('calendar')"
+                [ngClass]="{'bg-blue-50 text-blue-600': activeView === 'calendar', 'text-gray-500': activeView !== 'calendar'}"
+                class="p-2 rounded-r-md hover:bg-gray-50">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-5 sm:px-6">
+        <form [formGroup]="filterForm">
+          <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <!-- Search -->
+            <div class="sm:col-span-2">
+              <label for="search" class="block text-sm font-medium text-gray-700">Tìm kiếm</label>
+              <div class="mt-1">
+                <app-elearning-text-box
+                  formControlName="search"
+                  id="search"
+                  placeholder="Tìm theo tên hoặc mô tả"></app-elearning-text-box>
+              </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="sm:col-span-2">
+              <label for="category" class="block text-sm font-medium text-gray-700">Danh mục</label>
+              <div class="mt-1">
+                <select id="category" formControlName="category"
+                  class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                  <option value="">Tất cả danh mục</option>
+                  <option *ngFor="let option of categoryOptions" [value]="option.value">{{ option.label }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Priority Filter -->
+            <div class="sm:col-span-1">
+              <label for="priority" class="block text-sm font-medium text-gray-700">Mức ưu tiên</label>
+              <div class="mt-1">
+                <select id="priority" formControlName="priority"
+                  class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                  <option value="">Tất cả</option>
+                  <option *ngFor="let option of priorityOptions" [value]="option.value">{{ option.label }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Timeframe Filter -->
+            <div class="sm:col-span-1">
+              <label for="timeframe" class="block text-sm font-medium text-gray-700">Thời gian</label>
+              <div class="mt-1">
+                <select id="timeframe" formControlName="timeframe"
+                  class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                  <option *ngFor="let option of timeframeOptions" [value]="option.value">{{ option.label }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex" aria-label="Tabs">
+        <button (click)="switchTab('active')"
+          [ngClass]="{'border-blue-500 text-blue-600': activeTab === 'active', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'active'}"
+          class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          Đang tiến hành
+        </button>
+        <button (click)="switchTab('completed')"
+          [ngClass]="{'border-blue-500 text-blue-600': activeTab === 'completed', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'completed'}"
+          class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          Đã hoàn thành
+        </button>
+        <button (click)="switchTab('all')"
+          [ngClass]="{'border-blue-500 text-blue-600': activeTab === 'all', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'all'}"
+          class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          Tất cả
+        </button>
+      </nav>
+    </div>
+
+    <!-- No goals state -->
+    <div *ngIf="!isLoading.goals && filteredGoals.length === 0" class="py-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Không có mục tiêu nào</h3>
+      <p class="mt-1 text-sm text-gray-500">
+        Bắt đầu bằng cách tạo mục tiêu học tập đầu tiên của bạn.
+      </p>
+      <div class="mt-6">
+        <app-elearning-button type="primary" (click)="openCreateModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clip-rule="evenodd" />
+          </svg>
+          Thêm mục tiêu mới
+        </app-elearning-button>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="!isLoading.goals && filteredGoals.length > 0 && activeView === 'list'" class="mt-6">
+      <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Mục tiêu
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Danh mục
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tiến độ
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Thời hạn
+              </th>
+              <th scope="col" class="relative px-6 py-3">
+                <span class="sr-only">Hành động</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let goal of filteredGoals" [ngClass]="{'bg-green-50': goal.status === 'completed'}">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center"
+                    [ngClass]="{'bg-green-100': goal.status === 'completed', 'bg-blue-100': goal.status === 'in_progress', 'bg-yellow-100': goal.status === 'not_started', 'bg-red-100': goal.status === 'overdue'}">
+                    <svg *ngIf="goal.status === 'completed'" class="h-6 w-6 text-green-600"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg *ngIf="goal.status === 'in_progress'" class="h-6 w-6 text-blue-600"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg *ngIf="goal.status === 'not_started'" class="h-6 w-6 text-yellow-600"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <svg *ngIf="goal.status === 'overdue'" class="h-6 w-6 text-red-600"
+                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900 flex items-center">
+                      {{ goal.title }}
+                      <span *ngIf="goal.priority === 'high'"
+                        class="ml-2 bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">Cao</span>
+                      <span *ngIf="goal.priority === 'medium'"
+                        class="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">Trung bình</span>
+                    </div>
+                    <div *ngIf="goal.description" class="text-sm text-gray-500 line-clamp-1">
+                      {{ goal.description }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <svg class="h-5 w-5 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <span class="text-sm text-gray-900">{{ goal.category }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="relative pt-1">
+                  <div class="flex mb-2 items-center justify-between">
+                    <div>
+                      <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                        {{ goal.progress }}%
+                      </span>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-xs font-semibold inline-block text-blue-600">
+                        {{ goal.progress }}%
+                      </span>
+                    </div>
+                  </div>
+                  <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                    <div [ngStyle]="{'width': goal.progress + '%'}" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ goal.deadline | date }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="!isLoading.goals && filteredGoals.length > 0 && activeView === 'grid'" class="mt-6">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div *ngFor="let goal of filteredGoals" class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center"
+                [ngClass]="{'bg-green-100': goal.status === 'completed', 'bg-blue-100': goal.status === 'in_progress', 'bg-yellow-100': goal.status === 'not_started', 'bg-red-100': goal.status === 'overdue'}">
+                <svg *ngIf="goal.status === 'completed'" class="h-6 w-6 text-green-600"
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg *ngIf="goal.status === 'in_progress'" class="h-6 w-6 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg *ngIf="goal.status === 'not_started'" class="h-6 w-6 text-yellow-600"
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <svg *ngIf="goal.status === 'overdue'" class="h-6 w-6 text-red-600"
+                  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900 flex items-center">
+                  {{ goal.title }}
+                  <span *ngIf="goal.priority === 'high'"
+                    class="ml-2 bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full">Cao</span>
+                  <span *ngIf="goal.priority === 'medium'"
+                    class="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">Trung bình</span>
+                </div>
+                <div *ngIf="goal.description" class="text-sm text-gray-500 line-clamp-1">
+                  {{ goal.description }}
+                </div>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="relative pt-1">
+                <div class="flex mb-2 items-center justify-between">
+                  <div>
+                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                      {{ goal.progress }}%
+                    </span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs font-semibold inline-block text-blue-600">
+                      {{ goal.progress }}%
+                    </span>
+                  </div>
+                </div>
+                <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                  <div [ngStyle]="{'width': goal.progress + '%'}" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 text-sm text-gray-500">
+              Thời hạn: {{ goal.deadline | date }}
+            </div>
+            <div class="mt-4 text-right">
+              <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar View -->
+    <div *ngIf="!isLoading.goals && filteredGoals.length > 0 && activeView === 'calendar'" class="mt-6">
+      <app-elearning-calendar [events]="calendarEvents"></app-elearning-calendar>
+    </div>
+  </div>
+</div>

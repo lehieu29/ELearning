@@ -1,6 +1,7 @@
 <!-- File path: src/app/features/courses/quiz/quiz-results/quiz-results.component.html -->
 <div class="bg-white rounded-lg shadow-md p-6">
-  <div class="text-center mb-8">
+  <!-- Header with Pass/Fail Status -->
+  <div class="text-center mb-6">
     <div class="inline-flex items-center justify-center w-20 h-20 rounded-full"
       [ngClass]="results.passed ? 'bg-green-100' : 'bg-red-100'">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" [ngClass]="results.passed ? 'text-green-600' : 'text-red-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -10,23 +11,29 @@
     </div>
     
     <h2 class="text-2xl font-bold mt-4">
-      {{ results.passed ? 'Quiz Passed!' : 'Try Again' }}
+      {{ results.passed ? 'Bài kiểm tra đạt!' : 'Thử lại' }}
     </h2>
+    
+    <!-- Quiz title if provided -->
+    <h3 *ngIf="quizTitle" class="text-lg text-gray-700 mt-1">
+      {{ quizTitle }}
+    </h3>
     
     <p class="text-gray-600 mt-2">
       {{ results.passed 
-        ? 'Congratulations! You have successfully completed this quiz.' 
-        : 'Your score is below the passing threshold. Keep practicing!' }}
+        ? 'Chúc mừng! Bạn đã hoàn thành thành công bài kiểm tra này.' 
+        : 'Điểm của bạn dưới ngưỡng đạt. Hãy tiếp tục luyện tập!' }}
     </p>
   </div>
   
+  <!-- Score Statistics -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    <!-- Score -->
+    <!-- Raw Score -->
     <div class="bg-gray-50 p-4 rounded-lg text-center">
       <div [ngClass]="getScoreColor()" class="text-xl font-bold">
         {{ results.score }}
       </div>
-      <div class="text-sm text-gray-500">Score</div>
+      <div class="text-sm text-gray-500">Điểm số</div>
     </div>
     
     <!-- Percentage -->
@@ -34,7 +41,7 @@
       <div [ngClass]="getScoreColor()" class="text-xl font-bold">
         {{ results.percentageScore }}%
       </div>
-      <div class="text-sm text-gray-500">Percentage</div>
+      <div class="text-sm text-gray-500">Phần trăm</div>
     </div>
     
     <!-- Correct Answers -->
@@ -42,7 +49,7 @@
       <div class="text-xl font-bold text-blue-600">
         {{ results.correctAnswers }}/{{ results.totalQuestions }}
       </div>
-      <div class="text-sm text-gray-500">Correct Answers</div>
+      <div class="text-sm text-gray-500">Câu trả lời đúng</div>
     </div>
     
     <!-- Time Spent -->
@@ -50,18 +57,18 @@
       <div class="text-xl font-bold text-gray-700">
         {{ formatTimeSpent() }}
       </div>
-      <div class="text-sm text-gray-500">Time Spent</div>
+      <div class="text-sm text-gray-500">Thời gian làm bài</div>
     </div>
   </div>
   
   <!-- Progress Bar -->
   <div class="mb-8">
     <div class="flex justify-between items-center mb-1">
-      <span class="text-sm">Your Score</span>
-      <span class="text-sm">Passing Score: {{ results.passingScore }}%</span>
+      <span class="text-sm">Điểm của bạn</span>
+      <span class="text-sm">Điểm đạt: {{ results.passingScore }}%</span>
     </div>
     <div class="w-full bg-gray-200 rounded-full h-2.5">
-      <div class="h-2.5 rounded-full" 
+      <div class="h-2.5 rounded-full transition-all duration-300 ease-in-out" 
         [style.width.%]="results.percentageScore"
         [ngClass]="{
           'bg-green-600': results.percentageScore >= 80,
@@ -74,21 +81,41 @@
   
   <!-- Question Feedback -->
   <div *ngIf="showDetailedFeedback && results.feedbackByQuestion?.length" class="mb-8">
-    <h3 class="font-medium text-gray-900 mb-4">Question Feedback</h3>
+    <h3 class="font-medium text-gray-900 mb-4">Phản hồi chi tiết</h3>
     
     <div class="space-y-3">
       <div *ngFor="let question of results.feedbackByQuestion; let i = index" 
-        class="p-3 rounded-md"
-        [ngClass]="question.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
-        <div class="flex justify-between">
-          <span class="font-medium">Question {{ i + 1 }}</span>
-          <span class="text-sm">
-            {{ question.isCorrect ? 'Correct' : 'Incorrect' }} ({{ question.points }} pts)
+        class="p-3 rounded-md cursor-pointer transition-all duration-200 hover:shadow-sm"
+        [ngClass]="question.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'"
+        (click)="toggleQuestionFeedback(question.questionId)">
+        <div class="flex justify-between items-center">
+          <span class="font-medium flex items-center">
+            <span class="mr-2">Câu {{ i + 1 }}</span>
+            <svg *ngIf="question.isCorrect" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg *ngIf="!question.isCorrect" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </span>
+          <span class="text-sm flex items-center">
+            {{ question.isCorrect ? 'Đúng' : 'Sai' }} ({{ question.points }} điểm)
+            <svg 
+              class="h-4 w-4 ml-1 transition-transform duration-200" 
+              [ngClass]="{'transform rotate-180': isQuestionExpanded(question.questionId)}"
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </span>
         </div>
-        <p *ngIf="question.feedback" class="text-sm mt-1">
+        
+        <div *ngIf="question.feedback && isQuestionExpanded(question.questionId)" 
+          class="text-sm mt-2 pt-2 border-t"
+          [ngClass]="question.isCorrect ? 'border-green-200 text-green-800' : 'border-red-200 text-red-800'">
           {{ question.feedback }}
-        </p>
+        </div>
       </div>
     </div>
   </div>
@@ -98,25 +125,29 @@
     <app-elearning-button 
       *ngIf="!results.passed && results.attemptsRemaining !== 0"
       buttonType="primary" 
-      (click)="onRetryClick()">
-      Try Again
+      (click)="onRetryClick()"
+      [disabled]="results.attemptsRemaining === 0">
+      Thử lại
     </app-elearning-button>
     
     <app-elearning-button 
       buttonType="secondary" 
       (click)="onViewSolutionsClick()">
-      View Solutions
+      Xem giải thích
     </app-elearning-button>
     
     <app-elearning-button 
-      buttonType="primary" 
+      [buttonType]="results.passed ? 'primary' : 'secondary'" 
       (click)="onContinueClick()">
-      Continue Course
+      Tiếp tục khóa học
     </app-elearning-button>
   </div>
   
   <!-- Attempts Info -->
   <div *ngIf="results.attemptsRemaining !== undefined" class="mt-6 text-center text-gray-500 text-sm">
-    Attempts remaining: {{ results.attemptsRemaining }}
+    Số lần thử còn lại: {{ results.attemptsRemaining }}
+    <span *ngIf="results.attemptsRemaining === 0" class="text-red-500 ml-1">
+      (đã hết lượt thử)
+    </span>
   </div>
 </div>

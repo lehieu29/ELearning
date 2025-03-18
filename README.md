@@ -149,15 +149,6 @@ Contains the core application features and shared functionalities.
   - `feature-flag-management/` → Control feature rollout
   - `bulk-operations/` → Mass actions on users/content
 
-##### 💳 **Payment & Subscription**
-- `payment/` → Payment processing
-  - `payment.module`
-  - `payment-processing/` → Transaction handling
-  - `subscription-plans/` → Membership tiers
-  - `coupon-system/` → Discount management
-  - `refund-processing/` → Return policies
-  - `invoice-generation/` → Billing documentation
-
 ##### 🔔 **Notifications**
 - `notifications/` → User alerts system
   - `notifications.module`

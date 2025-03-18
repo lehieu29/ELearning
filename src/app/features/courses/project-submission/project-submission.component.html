@@ -1,1 +1,214 @@
-<p>project-submission works!</p>
+<!-- File path: src/app/features/courses/project-submission/project-submission.component.html -->
+<div class="bg-gray-50 min-h-screen py-6">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center py-12">
+    <app-loader message="Đang tải thông tin dự án..."></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded relative" role="alert">
+      <p class="font-medium">Đã xảy ra lỗi</p>
+      <p>{{ error }}</p>
+      <button 
+        (click)="clearError()"
+        class="absolute top-0 right-0 px-4 py-3">
+        <svg class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !error && project" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">{{ project.title }}</h1>
+      <div class="flex items-center text-sm text-gray-500 mt-2">
+        <span class="flex items-center">
+          <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Hạn nộp: {{ project.dueDate | date:'medium' }}
+        </span>
+        <span *ngIf="submission.status" class="ml-4 px-2 py-1 text-xs rounded-full"
+              [ngClass]="getStatusClasses(submission.status)">
+          {{ submission.status === 'draft' ? 'Bản nháp' : 
+             submission.status === 'submitted' ? 'Đã nộp' :
+             submission.status === 'graded' ? 'Đã chấm điểm' :
+             submission.status === 'returned' ? 'Yêu cầu nộp lại' : 'Chưa nộp' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Project Description -->
+    <div class="bg-white shadow-sm rounded-lg mb-6 overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Thông tin dự án</h2>
+        <div class="prose max-w-none text-gray-700" [innerHTML]="project.description"></div>
+        
+        <!-- Project Requirements -->
+        <div *ngIf="project.requirements && project.requirements.length > 0" class="mt-6">
+          <h3 class="font-medium text-gray-900 mb-2">Yêu cầu dự án</h3>
+          <ul class="list-disc pl-5 space-y-1 text-gray-700">
+            <li *ngFor="let req of project.requirements">{{ req }}</li>
+          </ul>
+        </div>
+        
+        <!-- Rubric Summary -->
+        <div *ngIf="project.rubric" class="mt-6">
+          <h3 class="font-medium text-gray-900 mb-2">Tiêu chí đánh giá</h3>
+          <div class="border border-gray-200 rounded-md overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiêu chí</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Điểm</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let criterion of project.rubric">
+                  <td class="px-4 py-3 text-sm text-gray-900">{{ criterion.name }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-500">{{ criterion.maxPoints }}</td>
+                </tr>
+              </tbody>
+              <tfoot class="bg-gray-50">
+                <tr>
+                  <td class="px-4 py-3 text-sm font-medium text-gray-900">Tổng điểm</td>
+                  <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ project.totalPoints }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submission Form -->
+    <form *ngIf="canEdit()" [formGroup]="projectForm" class="bg-white shadow-sm rounded-lg mb-6">
+      <div class="p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Nộp dự án</h2>
+        
+        <!-- Title -->
+        <div class="mb-4">
+          <label for="title" class="block text-sm font-medium text-gray-700">Tiêu đề dự án</label>
+          <input 
+            type="text" 
+            id="title" 
+            formControlName="title" 
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+          <div *ngIf="projectForm.get('title').touched && projectForm.get('title').errors?.required" class="mt-1 text-sm text-red-600">
+            Vui lòng nhập tiêu đề dự án
+          </div>
+          <div *ngIf="projectForm.get('title').touched && projectForm.get('title').errors?.maxlength" class="mt-1 text-sm text-red-600">
+            Tiêu đề không được vượt quá 100 ký tự
+          </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-gray-700">Mô tả dự án</label>
+          <textarea 
+            id="description" 
+            formControlName="description" 
+            rows="6" 
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          ></textarea>
+          <div *ngIf="projectForm.get('description').touched && projectForm.get('description').errors?.required" class="mt-1 text-sm text-red-600">
+            Vui lòng nhập mô tả dự án
+          </div>
+          <div *ngIf="projectForm.get('description').touched && projectForm.get('description').errors?.minlength" class="mt-1 text-sm text-red-600">
+            Mô tả phải có ít nhất 50 ký tự
+          </div>
+          <div *ngIf="projectForm.get('description').touched && projectForm.get('description').errors?.maxlength" class="mt-1 text-sm text-red-600">
+            Mô tả không được vượt quá 1000 ký tự
+          </div>
+        </div>
+        
+        <!-- GitHub URL -->
+        <div class="mb-4">
+          <label for="githubUrl" class="block text-sm font-medium text-gray-700">GitHub URL (tùy chọn)</label>
+          <input 
+            type="text" 
+            id="githubUrl" 
+            formControlName="githubUrl" 
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="https://github.com/username/repository"
+          >
+          <div *ngIf="projectForm.get('githubUrl').touched && projectForm.get('githubUrl').errors?.pattern" class="mt-1 text-sm text-red-600">
+            URL GitHub không hợp lệ (ví dụ: https://github.com/username/repository)
+          </div>
+        </div>
+        
+        <!-- Additional Notes -->
+        <div class="mb-4">
+          <label for="additionalNotes" class="block text-sm font-medium text-gray-700">Ghi chú thêm (tùy chọn)</label>
+          <textarea 
+            id="additionalNotes" 
+            formControlName="additionalNotes" 
+            rows="3" 
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          ></textarea>
+          <div *ngIf="projectForm.get('additionalNotes').touched && projectForm.get('additionalNotes').errors?.maxlength" class="mt-1 text-sm text-red-600">
+            Ghi chú không được vượt quá 500 ký tự
+          </div>
+        </div>
+        
+        <!-- File Upload -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tệp đính kèm</label>
+          
+          <!-- File drop zone -->
+          <div 
+            [class.border-blue-400]="isFilesDragOver"
+            [class.bg-blue-50]="isFilesDragOver"
+            class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-colors duration-200"
+            (drop)="onFileDrop($event)"
+            (dragover)="onFileDragOver($event)"
+            (dragleave)="onFileDragLeave($event)"
+          >
+            <div class="space-y-1 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M28 8H20C18.8954 8 18 8.89543 18 10V38C18 39.1046 18.8954 40 20 40H28C29.1046 40 30 39.1046 30 38V10C30 8.89543 29.1046 8 28 8Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M14 12H34C35.1046 12 36 12.8954 36 14V34C36 35.1046 35.1046 36 34 36H14C12.8954 36 12 35.1046 12 34V14C12 12.8954 12.8954 12 14 12Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+              <div class="flex text-sm text-gray-600">
+                <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                  <span>Upload a file</span>
+                  <input id="file-upload" name="file-upload" type="file" class="sr-only" (change)="onFileSelect($event)">
+                </label>
+                <p class="pl-1">or drag and drop</p>
+              </div>
+              <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+            </div>
+          </div>
+          
+          <!-- File list -->
+          <ul class="mt-2 space-y-2">
+            <li *ngFor="let file of selectedFiles" class="flex items-center justify-between text-sm text-gray-600">
+              <span>{{ file.name }}</span>
+              <button type="button" class="text-red-600 hover:text-red-900" (click)="removeFile(file)">Remove</button>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+          <button 
+            type="submit" 
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            [disabled]="projectForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="mr-2">
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </span>
+            Nộp dự án
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

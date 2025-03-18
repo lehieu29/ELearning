@@ -1,11 +1,40 @@
-<div class="relative inline-block text-left">
+<div class="relative">
   <button 
-    type="button" 
-    class="flex items-center justify-center bg-gray-800 bg-opacity-70 hover:bg-opacity-80 text-white rounded p-2 transition"
+    type="button"
+    class="flex items-center text-sm text-gray-700 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-md px-2 py-1"
     (click)="toggleDropdown()"
-    [attr.aria-expanded]="isDropdownOpen"
-    aria-haspopup="true">
-    <span class="text-sm font-medium">{{ currentSpeed }}x</span>
-    <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+    aria-label="Điều chỉnh tốc độ phát">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+    <span>{{ formatSpeed(currentSpeed) }}</span>
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      class="h-4 w-4 ml-1 transition-transform duration-200" 
+      [ngClass]="{'transform rotate-180': isDropdownOpen}"
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
   </button>
+
+  <div *ngIf="isDropdownOpen" 
+       class="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+    <div class="py-1" role="menu" aria-orientation="vertical">
+      <button *ngFor="let speed of speeds"
+        (click)="selectSpeed(speed)"
+        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+        role="menuitem"
+        [ngClass]="{'font-medium text-blue-600': speed === currentSpeed}">
+        {{ formatSpeed(speed) }}
+      </button>
+    </div>
+  </div>
+  
+  <!-- Background overlay to capture clicks outside -->
+  <div *ngIf="isDropdownOpen" 
+    class="fixed inset-0 h-full w-full z-10" 
+    (click)="closeDropdown()">
+  </div>
 </div>

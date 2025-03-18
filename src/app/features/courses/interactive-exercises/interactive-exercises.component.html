@@ -1,15 +1,28 @@
 <div class="bg-gray-50 min-h-screen">
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
-    <app-loader></app-loader>
+  <div *ngIf="isLoading" class="flex justify-center items-center py-16">
+    <app-loader message="Đang tải bài tập..."></app-loader>
   </div>
 
   <!-- Error State -->
-  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-    {{ error }}
-    <button class="absolute top-0 right-0 px-4 py-3" (click)="error = ''">
-      <span class="text-xl">&times;</span>
-    </button>
+  <div *ngIf="error" class="max-w-5xl mx-auto px-4 py-6">
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm">{{ error }}</p>
+          <button class="mt-2 text-sm text-red-600 hover:text-red-800 font-medium" (click)="loadExercises()">
+            Thử lại
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Content -->
@@ -17,51 +30,53 @@
     <!-- Header with Progress -->
     <div class="mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-        <h1 class="text-2xl font-bold text-gray-900">Interactive Exercises</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Bài tập tương tác</h1>
         <div class="mt-2 sm:mt-0">
-          <span class="text-sm font-medium text-gray-700">Progress: {{ earnedPoints }} / {{ totalPoints }} points</span>
+          <span class="text-sm font-medium text-gray-700">Tiến độ: {{ earnedPoints }} / {{ totalPoints }} điểm</span>
           <div class="w-48 bg-gray-200 rounded-full h-2.5 mt-1">
-            <div class="bg-blue-600 h-2.5 rounded-full" [style.width.%]="totalPoints > 0 ? (earnedPoints / totalPoints * 100) : 0"></div>
+            <div class="bg-blue-600 h-2.5 rounded-full" [style.width.%]="getProgressPercentage()"></div>
           </div>
         </div>
       </div>
     </div>
-    
+
+    <!-- Empty State -->
     <div *ngIf="exercises.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
       </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No exercises available</h3>
-      <p class="mt-1 text-sm text-gray-500">There are no interactive exercises for this lesson.</p>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Không có bài tập</h3>
+      <p class="mt-1 text-sm text-gray-500">Không có bài tập tương tác nào cho bài học này.</p>
     </div>
-    
+
     <!-- Exercise Container -->
     <div *ngIf="currentExercise" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- Exercise Navigation -->
       <div class="bg-white rounded-lg shadow-sm p-4">
-        <h2 class="font-medium text-gray-800 mb-4">Exercises</h2>
+        <h2 class="font-medium text-gray-800 mb-4">Bài tập</h2>
         <div class="space-y-2">
-          <button *ngFor="let exercise of exercises; let i = index"
-                 (click)="setCurrentExercise(i)"
-                 class="w-full text-left px-3 py-2 rounded-md flex items-center justify-between"
-                 [ngClass]="{
+          <button *ngFor="let exercise of exercises; let i = index" (click)="setCurrentExercise(i)"
+            class="w-full text-left px-3 py-2 rounded-md flex items-center justify-between" [ngClass]="{
                    'bg-blue-50 text-blue-700': currentExerciseIndex === i,
                    'hover:bg-gray-50': currentExerciseIndex !== i
                  }">
             <div class="flex items-center">
               <span class="mr-2 w-5 h-5 flex items-center justify-center rounded-full text-xs"
-                    [ngClass]="exercise.completed ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'">
+                [ngClass]="exercise.completed ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'">
                 {{ i + 1 }}
               </span>
               <span class="truncate">{{ exercise.title }}</span>
             </div>
-            <svg *ngIf="exercise.completed" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg *ngIf="exercise.completed" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </button>
         </div>
       </div>
-      
+
       <!-- Current Exercise -->
       <div class="lg:col-span-3 space-y-6">
         <div class="bg-white rounded-lg shadow-sm p-6">
@@ -70,37 +85,36 @@
               <h2 class="text-xl font-bold text-gray-900">{{ currentExercise.title }}</h2>
               <div class="flex items-center mt-1">
                 <span class="text-xs px-2 py-0.5 rounded-full mr-2"
-                      [ngClass]="getDifficultyClass(currentExercise.difficulty)">
-                  {{ currentExercise.difficulty | titlecase }}
+                  [ngClass]="getDifficultyClass(currentExercise.difficulty)">
+                  {{ currentExercise.difficulty === 'easy' ? 'Dễ' :
+                  currentExercise.difficulty === 'medium' ? 'Trung bình' : 'Khó' }}
                 </span>
-                <span class="text-xs text-gray-500">{{ currentExercise.points }} points</span>
+                <span class="text-xs text-gray-500">{{ currentExercise.points }} điểm</span>
               </div>
             </div>
             <div *ngIf="currentExercise.completed" class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-md">
-              Completed
+              Đã hoàn thành
             </div>
           </div>
-          
+
           <div class="text-gray-700 mb-6">
             {{ currentExercise.description }}
           </div>
-          
+
           <!-- Exercise Content by Type -->
           <div [ngSwitch]="currentExercise.type">
             <!-- Multiple Choice -->
             <div *ngSwitchCase="'multiple-choice'" class="space-y-3">
               <div *ngFor="let option of currentExercise.content.options; let i = index"
-                   class="border rounded-md p-3 cursor-pointer"
-                   [ngClass]="{
+                class="border rounded-md p-3 cursor-pointer" [ngClass]="{
                      'border-blue-500 bg-blue-50': selectedAnswer === i && !isShowingFeedback,
                      'border-green-500 bg-green-50': isShowingFeedback && currentExercise.content.correctAnswer === i,
                      'border-red-500 bg-red-50': isShowingFeedback && selectedAnswer === i && selectedAnswer !== currentExercise.content.correctAnswer
-                   }"
-                   (click)="!isShowingFeedback && selectAnswer(i)">
+                   }" (click)="!isShowingFeedback && selectAnswer(i)">
                 <div class="flex items-start">
                   <div class="flex-shrink-0 h-5 w-5 relative top-1">
-                    <div class="h-5 w-5 border rounded-full flex items-center justify-center" 
-                         [ngClass]="{'border-blue-500': selectedAnswer === i && !isShowingFeedback}">
+                    <div class="h-5 w-5 border rounded-full flex items-center justify-center"
+                      [ngClass]="{'border-blue-500': selectedAnswer === i && !isShowingFeedback}">
                       <div *ngIf="selectedAnswer === i" class="h-3 w-3 rounded-full bg-blue-500"></div>
                     </div>
                   </div>
@@ -109,41 +123,133 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Feedback -->
-              <div *ngIf="isShowingFeedback" class="mt-6 p-4 rounded-md" 
-                   [ngClass]="isCorrect ? 'bg-green-100' : 'bg-red-100'">
+              <div *ngIf="isShowingFeedback" class="mt-6 p-4 rounded-md"
+                [ngClass]="isCorrect ? 'bg-green-100' : 'bg-red-100'">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <svg *ngIf="isCorrect" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg *ngIf="isCorrect" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <svg *ngIf="!isCorrect" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg *ngIf="!isCorrect" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </div>
                   <div class="ml-3">
                     <p class="text-sm font-medium" [ngClass]="isCorrect ? 'text-green-800' : 'text-red-800'">
-                      {{ isCorrect ? 'Correct!' : 'Incorrect' }}
+                      {{ isCorrect ? 'Chính xác!' : 'Không chính xác' }}
                     </p>
                     <p class="mt-1 text-sm" [ngClass]="isCorrect ? 'text-green-700' : 'text-red-700'">
-                      {{ currentExercise.content.feedback?.[isCorrect ? 'correct' : 'incorrect'] || (isCorrect ? 'Well done!' : 'Try again!') }}
+                      {{ currentExercise.content.feedback?.[isCorrect ? 'correct' : 'incorrect'] || (isCorrect ? 'Làm
+                      tốt lắm!' : 'Hãy thử lại!') }}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <!-- Placeholder for other exercise types -->
+
+            <!-- Drag & Drop -->
+            <div *ngSwitchCase="'drag-drop'"
+              class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
+              Bài tập Kéo & Thả hiện chưa được triển khai trong giao diện này. Vui lòng sử dụng module bài tập riêng
+              biệt.
+            </div>
+
+            <!-- Fill in the blanks -->
+            <div *ngSwitchCase="'fill-blank'"
+              class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
+              Bài tập Điền vào chỗ trống hiện chưa được triển khai trong giao diện này. Vui lòng sử dụng module bài tập
+              riêng biệt.
+            </div>
+
+            <!-- Code -->
+            <div *ngSwitchCase="'code'" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
+              Bài tập Viết mã hiện chưa được triển khai trong giao diện này. Vui lòng sử dụng module bài tập riêng biệt.
+            </div>
+
+            <!-- Matching -->
+            <div *ngSwitchCase="'match'" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
+              Bài tập Ghép cặp hiện chưa được triển khai trong giao diện này. Vui lòng sử dụng module bài tập riêng
+              biệt.
+            </div>
+
+            <!-- Default -->
             <div *ngSwitchDefault class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md">
-              {{ currentExercise.type | titlecase }} exercises are not yet implemented in this view. Please use the dedicated exercise component.
+              Loại bài tập {{ currentExercise.type }} chưa được hỗ trợ trong giao diện này. Vui lòng sử dụng module bài
+              tập riêng biệt.
             </div>
           </div>
         </div>
-        
+
         <!-- Action Buttons -->
         <div class="flex justify-between items-center">
-          <button 
-            *ngIf="currentExerciseIndex > 0"
-            (click)="previousExercise()"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounde
+          <button *ngIf="currentExerciseIndex > 0" (click)="previousExercise()"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Bài trước
+          </button>
+
+          <div class="flex space-x-3">
+            <button *ngIf="isShowingFeedback" (click)="retryExercise()"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Làm lại
+            </button>
+
+            <button
+              *ngIf="!isShowingFeedback && !currentExercise.completed && currentExercise.type === 'multiple-choice'"
+              (click)="submitAnswer()" [disabled]="isSubmitting || selectedAnswer === null"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors">
+              <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              {{ isSubmitting ? 'Đang kiểm tra...' : 'Kiểm tra câu trả lời' }}
+            </button>
+          </div>
+
+          <button *ngIf="currentExerciseIndex < exercises.length - 1" (click)="nextExercise()"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Bài tiếp
+            <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion Message -->
+    <div *ngIf="areAllExercisesCompleted() && exercises.length > 0"
+      class="mt-6 bg-white rounded-lg shadow-sm p-6 text-center">
+      <div class="rounded-full bg-green-100 h-24 w-24 flex items-center justify-center mx-auto mb-4">
+        <svg class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900">Bạn đã hoàn thành tất cả bài tập!</h3>
+      <p class="mt-2 text-sm text-gray-500">Chúc mừng bạn đã hoàn thành tất cả các bài tập tương tác trong bài học này.
+      </p>
+      <p class="text-sm text-gray-500">Tổng điểm đạt được: <span class="font-medium text-blue-600">{{ earnedPoints }}/{{
+          totalPoints }}</span></p>
+      <div class="mt-4">
+        <a routerLink="../.."
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Quay lại bài học
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>

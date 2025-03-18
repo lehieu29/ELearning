@@ -1,0 +1,73 @@
+<!-- File path: src/app/features/profile/preference-center/preference-center.component.html -->
+
+<div class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Tùy chỉnh trải nghiệm</h1>
+      <p class="mt-1 text-sm text-gray-500">
+        Điều chỉnh cách bạn tương tác với nền tảng học tập của chúng tôi để phù hợp với cách học của bạn.
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="bg-white shadow rounded-lg p-8 flex justify-center">
+      <app-loader message="Đang tải tùy chọn cá nhân hóa..."></app-loader>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-700">{{ error }}</p>
+          <p class="mt-2 text-sm text-red-700">
+            <button type="button" class="text-red-600 hover:text-red-500" (click)="loadPreferences()">
+              Thử lại
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="mb-6 bg-green-50 border-l-4 border-green-400 p-4">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-green-700">{{ successMessage }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preference Form -->
+    <form *ngIf="!isLoading && !error" (ngSubmit)="savePreferences()">
+      <div class="bg-white shadow rounded-lg p-8">
+        <div class="grid grid-cols-1 gap-6">
+          <!-- Example Preference -->
+          <div>
+            <label for="examplePreference" class="block text-sm font-medium text-gray-700">Ví dụ tùy chọn</label>
+            <select id="examplePreference" name="examplePreference" [(ngModel)]="preferences.examplePreference" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              <option value="option1">Tùy chọn 1</option>
+              <option value="option2">Tùy chọn 2</option>
+              <option value="option3">Tùy chọn 3</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Lưu thay đổi
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

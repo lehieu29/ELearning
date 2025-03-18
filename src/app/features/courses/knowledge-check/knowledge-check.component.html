@@ -2,13 +2,20 @@
 <div class="bg-gray-50 min-h-screen">
   <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
-    <app-loader></app-loader>
+    <app-loader message="Đang tải bài kiểm tra kiến thức..."></app-loader>
   </div>
 
   <!-- Error Message -->
   <div *ngIf="error" class="max-w-4xl mx-auto px-4 py-2">
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 relative">
       <p>{{ error }}</p>
+      <button class="absolute top-0 right-0 px-4 py-3" (click)="clearError()">
+        <span class="sr-only">Đóng</span>
+        <span class="text-xl">&times;</span>
+      </button>
+      <button class="mt-2 text-sm text-red-600 hover:text-red-800 font-medium" (click)="refreshKnowledgeCheck()">
+        Thử lại
+      </button>
     </div>
   </div>
 
@@ -24,17 +31,21 @@
       <div class="p-6 bg-gray-50">
         <div class="flex flex-col md:flex-row justify-between md:items-center">
           <div class="mb-4 md:mb-0">
-            <div class="text-sm text-gray-600">Passing Score: <span class="font-medium">{{ knowledgeCheck?.passingScore }}%</span></div>
+            <div class="text-sm text-gray-600">Điểm đỗ: <span class="font-medium">{{ knowledgeCheck?.passingScore
+                }}%</span></div>
             <div class="text-sm text-gray-600">
-              Attempts: <span class="font-medium">{{ attemptCount }} / {{ knowledgeCheck?.maxAttempts }}</span>
+              Số lần thử: <span class="font-medium">{{ attemptCount }} / {{ knowledgeCheck?.maxAttempts }}</span>
             </div>
           </div>
 
-          <div *ngIf="knowledgeCheck?.timeLimit && !isCompleted" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-md flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div *ngIf="knowledgeCheck?.timeLimit && !isCompleted"
+            class="bg-blue-100 text-blue-800 px-4 py-2 rounded-md flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Time Remaining: {{ formatTime(timeRemaining) }}
+            Thời gian còn lại: {{ formatTime(timeRemaining) }}
           </div>
         </div>
       </div>
@@ -43,42 +54,38 @@
     <!-- Results Screen -->
     <div *ngIf="isCompleted && !isReviewing" class="bg-white rounded-lg shadow-sm overflow-hidden">
       <div class="px-6 py-4 border-b border-gray-200">
-        <h2 class="text-lg font-medium text-gray-900">Your Results</h2>
+        <h2 class="text-lg font-medium text-gray-900">Kết quả của bạn</h2>
       </div>
 
       <div class="p-6">
         <div class="flex flex-col items-center text-center mb-6">
-          <div [ngClass]="hasPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="w-32 h-32 rounded-full flex items-center justify-center mb-4">
+          <div [ngClass]="hasPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+            class="w-32 h-32 rounded-full flex items-center justify-center mb-4">
             <span class="text-3xl font-bold">{{ score }}%</span>
           </div>
 
           <h3 class="text-xl font-medium" [ngClass]="hasPassed ? 'text-green-700' : 'text-red-700'">
-            {{ hasPassed ? 'Passed' : 'Not Passed' }}
+            {{ hasPassed ? 'Đã đỗ' : 'Chưa đỗ' }}
           </h3>
-          
+
           <p class="text-gray-600 mt-2">
-            {{ hasPassed ? 'Congratulations! You have successfully completed this knowledge check.' : 'You did not meet the required passing score. You can review your answers or try again.' }}
+            {{ hasPassed ? 'Chúc mừng! Bạn đã hoàn thành bài kiểm tra kiến thức này.' : 'Bạn chưa đạt điểm đỗ. Bạn có
+            thể xem lại câu trả lời hoặc thử lại.' }}
           </p>
         </div>
 
         <div class="flex justify-center space-x-4">
-          <app-elearning-button 
-            buttonType="primary" 
-            (click)="startReview()">
-            Review Answers
+          <app-elearning-button buttonType="primary" (click)="startReview()">
+            Xem lại câu trả lời
           </app-elearning-button>
 
-          <app-elearning-button 
-            *ngIf="!hasPassed && attemptCount < knowledgeCheck?.maxAttempts"
-            buttonType="secondary" 
+          <app-elearning-button *ngIf="!hasPassed && attemptCount < knowledgeCheck?.maxAttempts" buttonType="secondary"
             (click)="restartCheck()">
-            Try Again
+            Thử lại
           </app-elearning-button>
-          
-          <app-elearning-button 
-            buttonType="secondary" 
-            [routerLink]="['/courses', courseId, 'lesson', lessonId]">
-            Return to Lesson
+
+          <app-elearning-button buttonType="secondary" [routerLink]="['/courses', courseId, 'lesson', lessonId]">
+            Quay lại bài học
           </app-elearning-button>
         </div>
       </div>
@@ -87,49 +94,46 @@
     <!-- Question Review Mode -->
     <div *ngIf="isReviewing" class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 class="text-lg font-medium text-gray-900">Review Mode</h2>
+        <h2 class="text-lg font-medium text-gray-900">Chế độ xem lại</h2>
         <button (click)="isReviewing = false" class="text-blue-600 hover:text-blue-800">
-          Back to Results
+          Quay lại kết quả
         </button>
       </div>
 
       <div class="p-6">
-        <ng-container *ngTemplateOutlet="questionTemplate; context: {$implicit: getCurrentQuestion(), review: true}"></ng-container>
-        
+        <ng-container
+          *ngTemplateOutlet="questionTemplate; context: {$implicit: getCurrentQuestion(), review: true}"></ng-container>
+
         <div class="flex justify-between mt-6">
-          <app-elearning-button 
-            buttonType="secondary"
-            [disabled]="currentQuestionIndex === 0"
+          <app-elearning-button buttonType="secondary" [disabled]="currentQuestionIndex === 0"
             (click)="previousQuestion()">
-            Previous
+            Câu trước
           </app-elearning-button>
-          
-          <app-elearning-button 
-            buttonType="secondary"
-            [disabled]="currentQuestionIndex === knowledgeCheck?.questions?.length - 1"
-            (click)="nextQuestion()">
-            Next
+
+          <app-elearning-button buttonType="secondary"
+            [disabled]="currentQuestionIndex === knowledgeCheck?.questions?.length - 1" (click)="nextQuestion()">
+            Câu tiếp theo
           </app-elearning-button>
         </div>
       </div>
     </div>
 
     <!-- Knowledge Check Form -->
-    <form *ngIf="!isLoading && !isCompleted && !isReviewing" [formGroup]="answersForm" (ngSubmit)="submitAnswers()" class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <form *ngIf="!isLoading && !isCompleted && !isReviewing" [formGroup]="answersForm" (ngSubmit)="submitAnswers()"
+      class="bg-white rounded-lg shadow-sm overflow-hidden">
       <!-- Progress Bar -->
       <div class="w-full bg-gray-200 h-1">
         <div class="bg-blue-600 h-1" [style.width.%]="getQuestionProgressPercentage()"></div>
       </div>
 
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 class="text-lg font-medium text-gray-900">Question {{ currentQuestionIndex + 1 }} of {{ knowledgeCheck?.questions?.length }}</h2>
-        
+        <h2 class="text-lg font-medium text-gray-900">Câu hỏi {{ currentQuestionIndex + 1 }} / {{
+          knowledgeCheck?.questions?.length }}</h2>
+
         <!-- Question Navigation -->
         <div class="flex space-x-1">
           <ng-container *ngFor="let question of knowledgeCheck?.questions; let i = index">
-            <button type="button" 
-              (click)="goToQuestion(i)" 
-              [ngClass]="[
+            <button type="button" (click)="goToQuestion(i)" [ngClass]="[
                 'w-8 h-8 rounded-full text-sm font-medium',
                 currentQuestionIndex === i 
                   ? 'bg-blue-600 text-white' 
@@ -145,28 +149,22 @@
 
       <div class="p-6">
         <ng-container *ngTemplateOutlet="questionTemplate; context: {$implicit: getCurrentQuestion()}"></ng-container>
-        
+
         <div class="flex justify-between mt-6">
-          <app-elearning-button 
-            buttonType="secondary"
-            [disabled]="currentQuestionIndex === 0"
+          <app-elearning-button buttonType="secondary" [disabled]="currentQuestionIndex === 0"
             (click)="previousQuestion()">
-            Previous
+            Câu trước
           </app-elearning-button>
-          
+
           <div *ngIf="currentQuestionIndex < knowledgeCheck?.questions?.length - 1">
-            <app-elearning-button 
-              buttonType="primary"
-              (click)="nextQuestion()">
-              Next
+            <app-elearning-button buttonType="primary" (click)="nextQuestion()">
+              Câu tiếp theo
             </app-elearning-button>
           </div>
-          
+
           <div *ngIf="currentQuestionIndex === knowledgeCheck?.questions?.length - 1">
-            <app-elearning-button 
-              buttonType="primary"
-              [type]="'submit'">
-              Submit
+            <app-elearning-button buttonType="primary" [type]="'submit'" [loading]="isSubmitting">
+              Nộp bài
             </app-elearning-button>
           </div>
         </div>
@@ -183,115 +181,98 @@
         <h3 class="text-lg font-medium text-gray-900">{{ question.text }}</h3>
         <div class="text-sm text-gray-500 mt-1">Points: {{ question.points }}</div>
       </div>
-      
+
       <!-- Show correct/incorrect indicator in review mode -->
-      <div *ngIf="review" [ngClass]="isAnswerCorrect(question.id) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-3 py-1 rounded-full text-sm">
+      <div *ngIf="review"
+        [ngClass]="isAnswerCorrect(question.id) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+        class="px-3 py-1 rounded-full text-sm">
         {{ isAnswerCorrect(question.id) ? 'Correct' : 'Incorrect' }}
       </div>
     </div>
-    
+
     <!-- Multiple Choice Question -->
     <div *ngIf="question.type === 'multiple-choice'">
       <div class="space-y-2">
         <div *ngFor="let option of question.options" class="flex items-center">
-          <input 
-            type="radio" 
-            [id]="option.id" 
-            [value]="option.id"
-            [formControlName]="question.id"
-            [disabled]="review"
+          <input type="radio" [id]="option.id" [value]="option.id" [formControlName]="question.id" [disabled]="review"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
           <label [for]="option.id" class="ml-2 block text-gray-700">{{ option.text }}</label>
-          
+
           <!-- Show correct answer indicator in review mode -->
           <span *ngIf="review && option.id === question.correctAnswer" class="ml-2 text-green-600 text-sm">
             (Correct Answer)
           </span>
         </div>
       </div>
-      
+
       <!-- Validation Error -->
-      <div *ngIf="answersForm.get(question.id)?.touched && answersForm.get(question.id)?.errors?.required" class="text-red-600 text-sm mt-1">
+      <div *ngIf="answersForm.get(question.id)?.touched && answersForm.get(question.id)?.errors?.required"
+        class="text-red-600 text-sm mt-1">
         Please select an answer
       </div>
     </div>
-    
+
     <!-- True/False Question -->
     <div *ngIf="question.type === 'true-false'">
       <div class="space-y-2">
         <div class="flex items-center">
-          <input 
-            type="radio" 
-            [id]="question.id + '_true'" 
-            value="true"
-            [formControlName]="question.id"
-            [disabled]="review"
-            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <input type="radio" [id]="question.id + '_true'" value="true" [formControlName]="question.id"
+            [disabled]="review" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
           <label [for]="question.id + '_true'" class="ml-2 block text-gray-700">True</label>
-          
+
           <!-- Show correct answer indicator in review mode -->
           <span *ngIf="review && 'true' === question.correctAnswer" class="ml-2 text-green-600 text-sm">
             (Correct Answer)
           </span>
         </div>
-        
+
         <div class="flex items-center">
-          <input 
-            type="radio" 
-            [id]="question.id + '_false'" 
-            value="false"
-            [formControlName]="question.id"
-            [disabled]="review"
-            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <input type="radio" [id]="question.id + '_false'" value="false" [formControlName]="question.id"
+            [disabled]="review" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
           <label [for]="question.id + '_false'" class="ml-2 block text-gray-700">False</label>
-          
+
           <!-- Show correct answer indicator in review mode -->
           <span *ngIf="review && 'false' === question.correctAnswer" class="ml-2 text-green-600 text-sm">
             (Correct Answer)
           </span>
         </div>
       </div>
-      
+
       <!-- Validation Error -->
-      <div *ngIf="answersForm.get(question.id)?.touched && answersForm.get(question.id)?.errors?.required" class="text-red-600 text-sm mt-1">
+      <div *ngIf="answersForm.get(question.id)?.touched && answersForm.get(question.id)?.errors?.required"
+        class="text-red-600 text-sm mt-1">
         Please select an answer
       </div>
     </div>
-    
+
     <!-- Fill in the Blank Question -->
     <div *ngIf="question.type === 'fill-in-blank'">
-      <input 
-        type="text"
-        [formControlName]="question.id"
-        [disabled]="review"
-        placeholder="Type your answer here"
+      <input type="text" [formControlName]="question.id" [disabled]="review" placeholder="Type your answer here"
         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-      
+
       <!-- Show correct answer in review mode -->
       <div *ngIf="review" class="mt-2 text-green-600 text-sm">
         Correct answer: {{ question.correctAnswer }}
       </div>
-      
+
       <!-- Validation Error -->
-      <div *ngIf="answersForm.get(question.id)?.touched && answersForm.get(question.id)?.errors?.required" class="text-red-600 text-sm mt-1">
+      <div *ngIf="answersForm.get(question.id)?.touched && answersForm.get(question.id)?.errors?.required"
+        class="text-red-600 text-sm mt-1">
         Please enter your answer
       </div>
     </div>
-    
+
     <!-- Matching Question -->
     <div *ngIf="question.type === 'matching'" [formGroupName]="question.id">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div *ngFor="let option of question.options" class="flex flex-col">
           <label [for]="option.id" class="block text-sm font-medium text-gray-700 mb-1">{{ option.text }}</label>
-          <select 
-            [id]="option.id" 
-            [formControlName]="option.id"
-            [disabled]="review"
+          <select [id]="option.id" [formControlName]="option.id" [disabled]="review"
             class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
             <option value="">-- Select match --</option>
             <option *ngFor="let match of question.options" [value]="match.id">{{ match.text }}</option>
           </select>
-          
+
           <!-- Show correct match in review mode -->
           <div *ngIf="review" class="mt-1 text-green-600 text-sm">
             Correct match: {{ question.options.find(o => o.id === question.correctAnswer[option.id])?.text }}
@@ -299,7 +280,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Explanation (only shown in review mode) -->
     <div *ngIf="review && question.explanation" class="mt-4 bg-blue-50 border border-blue-200 rounded-md p-4">
       <h4 class="text-sm font-medium text-blue-800 mb-1">Explanation</h4>

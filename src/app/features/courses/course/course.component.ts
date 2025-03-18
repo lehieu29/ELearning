@@ -16,6 +16,18 @@ export class CourseComponent extends BaseComponent implements OnInit {
   error: string = '';
   activeSection: string = 'overview';
   
+  navItems = [
+    { id: 'overview', label: 'Overview', icon: 'info-circle', route: '' },
+    { id: 'syllabus', label: 'Syllabus', icon: 'list', route: 'syllabus' },
+    { id: 'resources', label: 'Resources', icon: 'file', route: 'resources' },
+    { id: 'discussions', label: 'Discussions', icon: 'message-circle', route: 'discussions' },
+    { id: 'notes', label: 'Notes', icon: 'edit-3', route: 'notes' },
+    { id: 'assignments', label: 'Assignments', icon: 'clipboard', route: 'assignments' },
+    { id: 'quizzes', label: 'Quizzes', icon: 'check-circle', route: 'quizzes' },
+    { id: 'bookmarks', label: 'Bookmarks', icon: 'bookmark', route: 'bookmarks' },
+    { id: 'feedback', label: 'Feedback', icon: 'star', route: 'feedback' }
+  ];
+  
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -24,29 +36,37 @@ export class CourseComponent extends BaseComponent implements OnInit {
     super();
   }
   
+  /**
+   * Khởi tạo component, đăng ký lắng nghe thay đổi params và load dữ liệu khóa học
+   * Initialize component, subscribe to route params and load course data
+   */
   ngOnInit(): void {
     this.route.paramMap
       .pipe(takeUntil(this._onDestroySub))
       .subscribe(params => {
-        // Lấy courseId từ URL và tải thông tin khóa học
         this.courseId = params.get('courseId');
-        this.loadCourseData();
-        
-        // Kiểm tra phần hiện tại từ URL
-        this.route.url.pipe(takeUntil(this._onDestroySub)).subscribe(segments => {
-          const lastSegment = segments[segments.length - 1]?.path;
-          if (lastSegment && lastSegment !== this.courseId) {
-            this.activeSection = lastSegment;
-          } else {
-            this.activeSection = 'overview';
-          }
-        });
+        if (this.courseId) {
+          this.loadCourseData();
+        }
+      });
+
+    // Theo dõi tuyến đường con cho các thay đổi phần
+    // Monitor the child route for section changes
+    this.route.firstChild?.url
+      .pipe(takeUntil(this._onDestroySub))
+      .subscribe(urlSegments => {
+        const section = urlSegments[0]?.path;
+        if (section) {
+          this.activeSection = section;
+        } else {
+          this.activeSection = 'overview';
+        }
       });
   }
-  
+
   /**
    * Tải dữ liệu khóa học từ API
-   * Loads course data from the API
+   * Load course data from API
    */
   loadCourseData(): void {
     this.isLoading = true;
@@ -55,32 +75,34 @@ export class CourseComponent extends BaseComponent implements OnInit {
     this.courseService.getCourseById(this.courseId)
       .pipe(takeUntil(this._onDestroySub))
       .subscribe({
-        next: (response) => {
-          this.course = response;
+        next: (course) => {
+          this.course = course;
           this.isLoading = false;
         },
         error: (err) => {
-          console.error('Error loading course data:', err);
+          console.error('Lỗi khi tải dữ liệu khóa học:', err);
           this.error = 'Không thể tải thông tin khóa học. Vui lòng thử lại sau.';
           this.isLoading = false;
         }
       });
   }
-  
+
   /**
-   * Điều hướng đến phần khác của khóa học
-   * Navigates to different sections of the course
+   * Chuyển hướng đến phần được chọn của khóa học
+   * Navigate to the selected section of the course
+   * @param route Tuyến đường của phần được chọn
    */
-  navigateTo(section: string): void {
-    this.activeSection = section;
-    this.router.navigate(['/courses', this.courseId, section]);
+  navigateToSection(route: string): void {
+    this.router.navigate(['/courses', this.courseId, route]);
   }
-  
+
   /**
-   * Kiểm tra xem phần nào đang được hiển thị
-   * Checks which section is currently active
+   * Kiểm tra xem một phần có đang hoạt động hay không
+   * Check if a section is currently active
+   * @param sectionId ID của phần cần kiểm tra
+   * @returns true nếu phần đang hoạt động
    */
-  isSectionActive(section: string): boolean {
-    return this.activeSection === section;
+  isSectionActive(sectionId: string): boolean {
+    return this.activeSection === sectionId;
   }
 }

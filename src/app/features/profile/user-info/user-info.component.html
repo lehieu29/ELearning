@@ -1,0 +1,354 @@
+<!-- File path: src/app/features/profile/user-info/user-info.component.html -->
+<div class="bg-white rounded-lg shadow-sm">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="p-6 flex justify-center">
+    <app-loader message="Đang tải thông tin hồ sơ..."></app-loader>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="p-6">
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p>{{ error }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-center">
+      <app-elearning-button
+        [label]="'Thử lại'"
+        [icon]="'refresh'"
+        [disabled]="isLoading"
+        (click)="refreshProfile()">
+      </app-elearning-button>
+    </div>
+  </div>
+
+  <!-- User Profile Content -->
+  <div *ngIf="!isLoading && !error && user" class="p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Thông tin cá nhân</h1>
+      
+      <div *ngIf="!isEditing">
+        <app-elearning-button
+          [label]="'Chỉnh sửa'"
+          [icon]="'pencil'"
+          [disabled]="isLoading"
+          (click)="enableEditMode()">
+        </app-elearning-button>
+      </div>
+      
+      <div *ngIf="isEditing" class="flex space-x-2">
+        <app-elearning-button
+          [label]="'Hủy'"
+          [type]="'secondary'"
+          [disabled]="isSaving"
+          (click)="cancelEdit()">
+        </app-elearning-button>
+        
+        <app-elearning-button
+          [label]="'Lưu'"
+          [icon]="'save'"
+          [loading]="isSaving"
+          (click)="saveProfile()">
+        </app-elearning-button>
+      </div>
+    </div>
+
+    <!-- View Mode -->
+    <div *ngIf="!isEditing" class="flex flex-col md:flex-row md:space-x-6">
+      <!-- Profile Image Column -->
+      <div class="md:w-1/3 mb-6 md:mb-0">
+        <div class="flex flex-col items-center">
+          <div class="relative h-40 w-40 rounded-full overflow-hidden bg-gray-100 mb-3">
+            <img *ngIf="user.profileImage" [src]="user.profileImage" alt="Profile" class="h-full w-full object-cover">
+            <div *ngIf="!user.profileImage" class="w-full h-full flex items-center justify-center bg-blue-100 text-blue-500">
+              <div class="text-5xl font-semibold">{{ (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') }}</div>
+            </div>
+          </div>
+          <h2 class="text-lg font-semibold text-center">{{ getFullName() }}</h2>
+          <p *ngIf="user.jobTitle" class="text-gray-600 text-sm text-center mt-1">{{ user.jobTitle }}</p>
+          <p *ngIf="user.company" class="text-gray-600 text-sm text-center">{{ user.company }}</p>
+        </div>
+      </div>
+
+      <!-- Profile Details Column -->
+      <div class="md:w-2/3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Info Section -->
+          <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Thông tin cơ bản</h3>
+            
+            <div *ngIf="user.biography" class="mb-4">
+              <div class="text-sm text-gray-500 mb-1">Tiểu sử</div>
+              <p class="text-gray-900">{{ user.biography }}</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div *ngIf="user.location">
+                <div class="text-sm text-gray-500 mb-1">Vị trí</div>
+                <p class="text-gray-900">{{ user.location }}</p>
+              </div>
+              
+              <div *ngIf="user.phone">
+                <div class="text-sm text-gray-500 mb-1">Số điện thoại</div>
+                <p class="text-gray-900">{{ user.phone }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Info Section -->
+          <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Thông tin bổ sung</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div *ngIf="user.website">
+                <div class="text-sm text-gray-500 mb-1">Website</div>
+                <a [href]="user.website" target="_blank" class="text-blue-600 hover:underline">{{ user.website }}</a>
+              </div>
+              
+              <div *ngIf="user.email">
+                <div class="text-sm text-gray-500 mb-1">Email</div>
+                <p class="text-gray-900">{{ user.email }}</p>
+              </div>
+              
+              <div *ngIf="user.language">
+                <div class="text-sm text-gray-500 mb-1">Ngôn ngữ</div>
+                <p class="text-gray-900">{{ 
+                  (languages.find(l => l.code === user.language)?.name) || user.language 
+                }}</p>
+              </div>
+              
+              <div *ngIf="user.timeZone">
+                <div class="text-sm text-gray-500 mb-1">Múi giờ</div>
+                <p class="text-gray-900">{{ 
+                  (timezones.find(t => t.code === user.timeZone)?.name) || user.timeZone 
+                }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interests & Skills Section -->
+          <div class="col-span-2" *ngIf="user.interests?.length || user.skills?.length">
+            <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Sở thích & Kỹ năng</h3>
+            
+            <div *ngIf="user.interests?.length" class="mb-4">
+              <div class="text-sm text-gray-500 mb-1">Sở thích</div>
+              <div class="flex flex-wrap gap-2">
+                <span 
+                  *ngFor="let interest of user.interests"
+                  class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                  {{ interest }}
+                </span>
+              </div>
+            </div>
+            
+            <div *ngIf="user.skills?.length">
+              <div class="text-sm text-gray-500 mb-1">Kỹ năng</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div 
+                  *ngFor="let skill of user.skills"
+                  class="flex items-center justify-between bg-gray-50 rounded-md p-3">
+                  <span class="font-medium text-gray-900">{{ skill.name }}</span>
+                  <span class="text-sm px-2 py-1 rounded"
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': skill.level === 'expert',
+                      'bg-blue-100 text-blue-800': skill.level === 'advanced',
+                      'bg-yellow-100 text-yellow-800': skill.level === 'intermediate',
+                      'bg-gray-100 text-gray-800': skill.level === 'beginner'
+                    }">
+                    {{ skill.level }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Info Section -->
+          <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Thông tin tài khoản</h3>
+            
+            <div class="flex items-center justify-between py-2">
+              <div>
+                <div class="font-medium">Hồ sơ công khai</div>
+                <div class="text-sm text-gray-500">
+                  {{ user.isProfilePublic ? 'Bật' : 'Tắt' }}
+                </div>
+              </div>
+              <div>
+                <div class="w-11 h-6 bg-gray-200 rounded-full flex items-center" 
+                    [ngClass]="{'bg-blue-600': user.isProfilePublic}">
+                  <div class="w-4 h-4 bg-white rounded-full transform transition-transform duration-300 mx-1" 
+                      [ngClass]="{'translate-x-5': user.isProfilePublic}"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="py-2">
+              <div class="font-medium">Ngày tham gia</div>
+              <div class="text-sm text-gray-500">
+                {{ user.createdAt | date:'mediumDate' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Edit Mode -->
+    <div *ngIf="isEditing" [formGroup]="userForm">
+      <div class="flex flex-col md:flex-row md:space-x-6">
+        <!-- Profile Image Column -->
+        <div class="md:w-1/3 mb-6 md:mb-0">
+          <div class="flex flex-col items-center">
+            <div class="relative h-40 w-40 rounded-full overflow-hidden bg-gray-100 mb-3">
+              <!-- Show image preview if a new file is selected -->
+              <img *ngIf="imagePreviewUrl" [src]="imagePreviewUrl" alt="Preview" class="h-full w-full object-cover">
+              
+              <!-- Show current profile image if no new file is selected -->
+              <img *ngIf="!imagePreviewUrl && user.profileImage" [src]="user.profileImage" alt="Profile" class="h-full w-full object-cover">
+              
+              <!-- Show initials if no image is available -->
+              <div *ngIf="!imagePreviewUrl && !user.profileImage" class="w-full h-full flex items-center justify-center bg-blue-100 text-blue-500">
+                <div class="text-5xl font-semibold">{{ (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '') }}</div>
+              </div>
+            </div>
+            <app-elearning-button
+              [label]="'Thay đổi ảnh'"
+              [icon]="'camera'"
+              [disabled]="isSaving"
+              (click)="changeProfileImage()">
+            </app-elearning-button>
+          </div>
+        </div>
+
+        <!-- Profile Details Column -->
+        <div class="md:w-2/3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Basic Info Section -->
+            <div class="col-span-2">
+              <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Thông tin cơ bản</h3>
+              
+              <div class="mb-4">
+                <label class="block text-sm text-gray-500 mb-1">Tiểu sử</label>
+                <textarea formControlName="biography" class="w-full border border-gray-300 rounded-md p-2" rows="3"></textarea>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-500 mb-1">Vị trí</label>
+                  <input formControlName="location" type="text" class="w-full border border-gray-300 rounded-md p-2">
+                </div>
+                
+                <div>
+                  <label class="block text-sm text-gray-500 mb-1">Số điện thoại</label>
+                  <input formControlName="phone" type="text" class="w-full border border-gray-300 rounded-md p-2">
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Info Section -->
+            <div class="col-span-2">
+              <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Thông tin bổ sung</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-500 mb-1">Website</label>
+                  <input formControlName="website" type="text" class="w-full border border-gray-300 rounded-md p-2">
+                </div>
+                
+                <div>
+                  <label class="block text-sm text-gray-500 mb-1">Email</label>
+                  <input formControlName="email" type="email" class="w-full border border-gray-300 rounded-md p-2">
+                </div>
+                
+                <div>
+                  <label class="block text-sm text-gray-500 mb-1">Ngôn ngữ</label>
+                  <select formControlName="language" class="w-full border border-gray-300 rounded-md p-2">
+                    <option *ngFor="let language of languages" [value]="language.code">{{ language.name }}</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-sm text-gray-500 mb-1">Múi giờ</label>
+                  <select formControlName="timeZone" class="w-full border border-gray-300 rounded-md p-2">
+                    <option *ngFor="let timezone of timezones" [value]="timezone.code">{{ timezone.name }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interests & Skills Section -->
+            <div class="col-span-2">
+              <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Sở thích & Kỹ năng</h3>
+              
+              <div class="mb-4">
+                <label class="block text-sm text-gray-500 mb-1">Sở thích</label>
+                <div class="flex flex-wrap gap-2">
+                  <span 
+                    *ngFor="let interest of user.interests"
+                    class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                    {{ interest }}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm text-gray-500 mb-1">Kỹ năng</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div 
+                    *ngFor="let skill of user.skills"
+                    class="flex items-center justify-between bg-gray-50 rounded-md p-3">
+                    <span class="font-medium text-gray-900">{{ skill.name }}</span>
+                    <span class="text-sm px-2 py-1 rounded"
+                      [ngClass]="{
+                        'bg-green-100 text-green-800': skill.level === 'expert',
+                        'bg-blue-100 text-blue-800': skill.level === 'advanced',
+                        'bg-yellow-100 text-yellow-800': skill.level === 'intermediate',
+                        'bg-gray-100 text-gray-800': skill.level === 'beginner'
+                      }">
+                      {{ skill.level }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Account Info Section -->
+            <div class="col-span-2">
+              <h3 class="text-lg font-semibold mb-2 text-gray-800 border-b border-gray-200 pb-2">Thông tin tài khoản</h3>
+              
+              <div class="flex items-center justify-between py-2">
+                <div>
+                  <div class="font-medium">Hồ sơ công khai</div>
+                  <div class="text-sm text-gray-500">
+                    {{ user.isProfilePublic ? 'Bật' : 'Tắt' }}
+                  </div>
+                </div>
+                <div>
+                  <div class="w-11 h-6 bg-gray-200 rounded-full flex items-center" 
+                      [ngClass]="{'bg-blue-600': user.isProfilePublic}">
+                    <div class="w-4 h-4 bg-white rounded-full transform transition-transform duration-300 mx-1" 
+                        [ngClass]="{'translate-x-5': user.isProfilePublic}"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="py-2">
+                <div class="font-medium">Ngày tham gia</div>
+                <div class="text-sm text-gray-500">
+                  {{ user.createdAt | date:'mediumDate' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

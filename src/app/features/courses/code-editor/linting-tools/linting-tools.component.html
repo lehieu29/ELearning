@@ -1,1 +1,126 @@
-<p>linting-tools works!</p>
+<!-- File path: src/app/features/courses/code-editor/linting-tools/linting-tools.component.html -->
+<div class="relative">
+  <!-- Linting status button -->
+  <button 
+    class="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+    (click)="toggleLintingPanel()"
+    [attr.aria-label]="'Mở công cụ kiểm tra mã nguồn'"
+    [attr.title]="'Kiểm tra mã nguồn'">
+    
+    <!-- Loading state -->
+    <div *ngIf="isLinting" class="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+    
+    <!-- Linting status indicators -->
+    <div *ngIf="!isLinting" class="flex items-center">
+      <svg *ngIf="hasErrors" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <svg *ngIf="!hasErrors && hasWarnings" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <svg *ngIf="!hasErrors && !hasWarnings && lintingResults.length > 0" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <svg *ngIf="!isLinting && lintingResults.length === 0" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      
+      <!-- Issue counts badge -->
+      <span *ngIf="errorCount > 0 || warningCount > 0" class="ml-1 text-xs font-medium">
+        <span *ngIf="errorCount > 0" class="text-red-500">{{ errorCount }}</span>
+        <span *ngIf="errorCount > 0 && warningCount > 0" class="text-gray-500">/</span>
+        <span *ngIf="warningCount > 0" class="text-yellow-500">{{ warningCount }}</span>
+      </span>
+    </div>
+  </button>
+  
+  <!-- Linting results panel -->
+  <div *ngIf="showLintingPanel" class="absolute right-0 mt-2 w-96 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+    <!-- Panel Header -->
+    <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-md">
+      <h3 class="text-sm font-medium text-gray-700">
+        Kết quả kiểm tra mã nguồn
+      </h3>
+      <div class="flex items-center space-x-2">
+        <button 
+          *ngIf="lintingResults.length > 0"
+          (click)="fixAllIssues()" 
+          class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors"
+          [disabled]="isLinting">
+          Tự động sửa
+        </button>
+        <button 
+          (click)="toggleLintingPanel()"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Đóng">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Loading state -->
+    <div *ngIf="isLinting" class="flex justify-center items-center p-6">
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <span class="ml-2 text-sm text-gray-600">Đang kiểm tra mã nguồn...</span>
+    </div>
+    
+    <!-- Error message -->
+    <div *ngIf="error" class="p-4 text-sm text-red-600 bg-red-50">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {{ error }}
+      </div>
+    </div>
+    
+    <!-- No issues state -->
+    <div *ngIf="!isLinting && !error && lintingResults.length === 0" class="p-6 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="mt-2 text-sm font-medium text-gray-800">Không tìm thấy vấn đề nào</p>
+      <p class="text-xs text-gray-500">Mã nguồn của bạn đã vượt qua kiểm tra.</p>
+    </div>
+    
+    <!-- Results list -->
+    <div *ngIf="!isLinting && lintingResults.length > 0" class="divide-y divide-gray-200 max-h-80 overflow-y-auto">
+      <div *ngFor="let issue of lintingResults" class="p-3 hover:bg-gray-50">
+        <div class="flex items-start">
+          <div [class]="getSeverityColor(issue.severity)" class="flex-shrink-0 mt-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path *ngIf="issue.severity === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <path *ngIf="issue.severity === 'warning'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <path *ngIf="issue.severity === 'info'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-3 w-full">
+            <div class="flex justify-between">
+              <p class="text-sm font-medium text-gray-800">
+                {{ issue.message }}
+              </p>
+              <span class="text-xs text-gray-500">
+                {{ issue.line }}:{{ issue.column }}
+              </span>
+            </div>
+            <div class="mt-1 text-xs text-gray-500">
+              {{ issue.ruleId || 'syntax-error' }}
+            </div>
+            
+            <!-- Code preview -->
+            <div *ngIf="issue.codePreview" class="mt-2 p-1.5 bg-gray-100 rounded-md overflow-x-auto">
+              <pre class="text-xs font-mono whitespace-pre">{{ issue.codePreview }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer with language info -->
+    <div class="px-4 py-2 text-xs text-gray-500 bg-gray-50 rounded-b-md border-t border-gray-200">
+      Ngôn ngữ: {{ language }}
+    </div>
+  </div>
+</div>

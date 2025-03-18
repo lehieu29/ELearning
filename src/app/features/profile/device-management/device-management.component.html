@@ -1,0 +1,410 @@
+<!-- File path: src/app/features/profile/device-management/device-management.component.html -->
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Quản lý thiết bị</h1>
+            <p class="mt-1 text-lg text-gray-500">
+                Xem và quản lý các thiết bị đã đăng nhập vào tài khoản của bạn
+            </p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div *ngIf="!isLoadingStats && deviceStats" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white shadow-sm rounded-lg p-5">
+                <p class="text-sm font-medium text-gray-500">Tổng số thiết bị</p>
+                <p class="mt-1 text-3xl font-semibold text-gray-900">{{deviceStats.totalDevices}}</p>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-lg p-5">
+                <p class="text-sm font-medium text-gray-500">Hoạt động trong 30 ngày</p>
+                <p class="mt-1 text-3xl font-semibold text-gray-900">{{deviceStats.activeInLast30Days}}</p>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-lg p-5">
+                <p class="text-sm font-medium text-gray-500">Thiết bị không xác định</p>
+                <p class="mt-1 text-3xl font-semibold text-green-600">{{deviceStats.unrecognizedDevices}}</p>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-lg p-5">
+                <p class="text-sm font-medium text-gray-500">Thiết bị có MFA</p>
+                <p class="mt-1 text-3xl font-semibold text-blue-600">{{deviceStats.mfaEnabledDevices}}</p>
+            </div>
+        </div>
+
+        <!-- Loading Stats -->
+        <div *ngIf="isLoadingStats" class="mb-8">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <app-skeleton-loader *ngFor="let i of [1,2,3,4]" height="104px"
+                    class="rounded-lg"></app-skeleton-loader>
+            </div>
+        </div>
+
+        <!-- Information Alert -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        Bạn sẽ nhận được thông báo khi có đăng nhập mới từ thiết bị lạ. Thường xuyên kiểm tra danh sách
+                        thiết bị để đảm bảo an toàn cho tài khoản.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device List -->
+        <div class="bg-white shadow overflow-hidden rounded-lg">
+            <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+                <h2 class="text-lg leading-6 font-medium text-gray-900">Thiết bị của bạn</h2>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoadingDevices" class="px-4 py-8 flex justify-center">
+                <app-loader message="Đang tải danh sách thiết bị..."></app-loader>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="error" class="px-4 py-5 border-b border-gray-200">
+                <div class="bg-red-50 border-l-4 border-red-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">{{error}}</p>
+                            <div class="mt-2">
+                                <app-elearning-button size="sm" type="secondary" (click)="loadDevices()">
+                                    Thử lại
+                                </app-elearning-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoadingDevices && !error && devices.length === 0" class="px-4 py-12 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Không có thiết bị nào</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Chưa có thiết bị nào đăng nhập vào tài khoản của bạn.
+                </p>
+            </div>
+
+            <!-- Device List -->
+            <div *ngIf="!isLoadingDevices && !error && devices.length > 0" class="bg-white overflow-hidden">
+                <ul class="divide-y divide-gray-200">
+                    <li *ngFor="let device of devices" class="px-4 py-4 sm:px-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div
+                                    class="flex-shrink-0 h-12 w-12 rounded-md bg-gray-100 flex items-center justify-center">
+                                    <i [class]="getDeviceIcon(device.deviceType) + ' text-gray-500 text-2xl'"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="flex items-center">
+                                        <h3 class="text-lg font-medium text-gray-900">{{ device.deviceName }}</h3>
+                                        <span *ngIf="device.isCurrent"
+                                            class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Thiết bị hiện tại
+                                        </span>
+                                        <span *ngIf="device.isTrusted"
+                                            class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Đáng tin cậy
+                                        </span>
+                                    </div>
+                                    <div class="mt-1 text-sm text-gray-500">
+                                        <span>{{ device.operatingSystem }}</span>
+                                        <span *ngIf="device.browser"> • {{ device.browser }}</span>
+                                        <span> • {{ formatLastActive(device.lastActive) }}</span>
+                                    </div>
+                                    <div class="mt-1 text-sm text-gray-500">
+                                        <span>{{ device.ipAddress }}</span>
+                                        <span *ngIf="device.location"> • {{ device.location }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <app-elearning-button size="sm" type="primary" (click)="showDeviceDetails(device)">
+                                    Chi tiết
+                                </app-elearning-button>
+                                <app-elearning-button size="sm" type="secondary" (click)="openRenameModal(device)">
+                                    Đổi tên
+                                </app-elearning-button>
+                                <app-elearning-button *ngIf="!device.isCurrent" size="sm" type="danger"
+                                    (click)="openLogoutConfirmation(device)">
+                                    Đăng xuất
+                                </app-elearning-button>
+                                <app-elearning-button *ngIf="!device.isCurrent" size="sm" type="danger"
+                                    (click)="openRemoveConfirmation(device)">
+                                    Xóa
+                                </app-elearning-button>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center">
+                            <div class="flex items-center">
+                                <div class="flex items-center">
+                                    <input id="trust-{{device.id}}" type="checkbox" [checked]="device.isTrusted"
+                                        (change)="toggleTrustedStatus(device)"
+                                        class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                    <label for="trust-{{device.id}}" class="ml-2 text-sm text-gray-600">
+                                        Đánh dấu là thiết bị đáng tin cậy
+                                    </label>
+                                </div>
+                                <span
+                                    class="ml-6 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                    [ngClass]="getActivityStatusColor(device.lastActive)">
+                                    {{ formatRelativeTime(device.lastActive) }}
+                                </span>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Device Details Modal -->
+<app-modal *ngIf="showDeviceDetailsModal" title="Chi tiết thiết bị" [showCloseButton]="true" (close)="closeModals()">
+
+    <div *ngIf="selectedDevice" class="p-6">
+        <div class="flex items-center mb-6">
+            <div class="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center">
+                <i [class]="getDeviceIcon(selectedDevice.deviceType) + ' text-gray-500 text-4xl'"></i>
+            </div>
+            <div class="ml-5">
+                <h3 class="text-xl font-medium text-gray-900">{{ selectedDevice.deviceName }}</h3>
+                <div class="mt-1 flex items-center space-x-2">
+                    <span *ngIf="selectedDevice.isCurrent"
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Thiết bị hiện tại
+                    </span>
+                    <span *ngIf="selectedDevice.isTrusted"
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Đáng tin cậy
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        [ngClass]="getActivityStatusColor(selectedDevice.lastActive)">
+                        {{ formatRelativeTime(selectedDevice.lastActive) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Loại thiết bị</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedDevice.deviceType | titlecase }}</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Hệ điều hành</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedDevice.operatingSystem }}</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Trình duyệt</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedDevice.browser || 'Không có thông tin' }}</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Địa chỉ IP</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedDevice.ipAddress || 'Không có thông tin' }}</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Vị trí</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedDevice.location || 'Không có thông tin' }}</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Ngày thêm thiết bị</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedDevice.dateAdded | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-medium text-gray-500">Hoạt động cuối</h4>
+                <p class="mt-1 text-sm text-gray-900">{{ formatLastActive(selectedDevice.lastActive) }}</p>
+            </div>
+        </div>
+
+        <!-- Device Activity Log -->
+        <div class="mb-6">
+            <h4 class="text-base font-medium text-gray-900 mb-3">Lịch sử hoạt động gần đây</h4>
+
+            <!-- Loading Activities -->
+            <div *ngIf="isLoadingActivities" class="py-4 flex justify-center">
+                <app-loader message="Đang tải hoạt động..."></app-loader>
+            </div>
+
+            <!-- Empty Activities -->
+            <div *ngIf="!isLoadingActivities && deviceActivities.length === 0"
+                class="text-center py-6 bg-gray-50 rounded-lg">
+                <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="mt-2 text-sm font-medium text-gray-900">Không có lịch sử hoạt động</p>
+                <p class="mt-1 text-sm text-gray-500">Chưa có hoạt động nào được ghi nhận cho thiết bị này.</p>
+            </div>
+
+            <!-- Activities List -->
+            <div *ngIf="!isLoadingActivities && deviceActivities.length > 0"
+                class="overflow-hidden bg-white shadow sm:rounded-md">
+                <ul class="divide-y divide-gray-200">
+                    <li *ngFor="let activity of deviceActivities" class="px-4 py-3">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{
+                                    getActivityTypeLabel(activity.activityType) }}</p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    {{ activity.details }}
+                                    <span *ngIf="activity.ipAddress">(IP: {{ activity.ipAddress }})</span>
+                                    <span *ngIf="activity.location"> • {{ activity.location }}</span>
+                                </p>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ activity.timestamp | date:'dd/MM/yyyy HH:mm' }}
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex justify-end space-x-3">
+            <app-elearning-button *ngIf="!selectedDevice.isCurrent" type="danger"
+                (click)="openLogoutConfirmation(selectedDevice)">
+                Đăng xuất thiết bị
+            </app-elearning-button>
+            <app-elearning-button type="secondary" (click)="openRenameModal(selectedDevice)">
+                Đổi tên thiết bị
+            </app-elearning-button>
+            <app-elearning-button *ngIf="!selectedDevice.isCurrent" type="danger"
+                (click)="openRemoveConfirmation(selectedDevice)">
+                Xóa thiết bị
+            </app-elearning-button>
+            <app-elearning-button type="primary" (click)="closeModals()">
+                Đóng
+            </app-elearning-button>
+        </div>
+    </div>
+</app-modal>
+
+<!-- Rename Device Modal -->
+<app-modal *ngIf="showRenameDeviceModal" title="Đổi tên thiết bị" [showCloseButton]="true" (close)="closeModals()">
+
+    <div *ngIf="selectedDevice" class="p-6">
+        <form [formGroup]="renameDeviceForm">
+            <div class="mb-4">
+                <label for="newName" class="block text-sm font-medium text-gray-700">Tên mới</label>
+                <app-elearning-text-box id="newName" formControlName="newName"
+                    [placeholder]="'Nhập tên mới cho thiết bị'" [maxLength]="50">
+                </app-elearning-text-box>
+                <p *ngIf="renameDeviceForm.get('newName')?.hasError('required') && renameDeviceForm.get('newName')?.touched"
+                    class="mt-1 text-sm text-red-600">
+                    Vui lòng nhập tên thiết bị.
+                </p>
+                <p *ngIf="renameDeviceForm.get('newName')?.hasError('minlength')" class="mt-1 text-sm text-red-600">
+                    Tên thiết bị phải có ít nhất 3 ký tự.
+                </p>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <app-elearning-button type="secondary" (click)="closeModals()" [disabled]="isProcessing">
+                    Hủy
+                </app-elearning-button>
+                <app-elearning-button type="primary" (click)="confirmRenameDevice()"
+                    [disabled]="renameDeviceForm.invalid || isProcessing">
+                    <span *ngIf="isProcessing">Đang xử lý...</span>
+                    <span *ngIf="!isProcessing">Lưu</span>
+                </app-elearning-button>
+            </div>
+        </form>
+    </div>
+</app-modal>
+
+<!-- Logout Device Confirmation Modal -->
+<app-modal *ngIf="showConfirmLogoutModal" title="Xác nhận đăng xuất" [showCloseButton]="true" (close)="closeModals()">
+
+    <div *ngIf="selectedDevice" class="p-6">
+        <div class="sm:flex sm:items-start">
+            <div
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Đăng xuất khỏi thiết bị</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500">
+                        Bạn có chắc chắn muốn đăng xuất khỏi thiết bị "{{ selectedDevice.deviceName }}"?
+                        Thiết bị này sẽ không còn quyền truy cập vào tài khoản của bạn cho đến khi đăng nhập lại.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <app-elearning-button type="secondary" (click)="closeModals()" [disabled]="isProcessing">
+                Hủy
+            </app-elearning-button>
+            <app-elearning-button type="danger" (click)="confirmLogoutDevice()" [disabled]="isProcessing">
+                <span *ngIf="isProcessing">Đang xử lý...</span>
+                <span *ngIf="!isProcessing">Đăng xuất</span>
+            </app-elearning-button>
+        </div>
+    </div>
+</app-modal>
+
+<!-- Remove Device Confirmation Modal -->
+<app-modal *ngIf="showConfirmRemoveModal" title="Xác nhận xóa thiết bị" [showCloseButton]="true"
+    (close)="closeModals()">
+
+    <div *ngIf="selectedDevice" class="p-6">
+        <div class="sm:flex sm:items-start">
+            <div
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Xóa thiết bị</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500">
+                        Bạn có chắc chắn muốn xóa thiết bị "{{ selectedDevice.deviceName }}" khỏi tài khoản của bạn?
+                        Hành động này không thể hoàn tác.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <app-elearning-button type="secondary" (click)="closeModals()" [disabled]="isProcessing">
+                Hủy
+            </app-elearning-button>
+            <app-elearning-button type="danger" (click)="confirmRemoveDevice()" [disabled]="isProcessing">
+                <span *ngIf="isProcessing">Đang xử lý...</span>
+                <span *ngIf="!isProcessing">Xóa thiết bị</span>
+            </app-elearning-button>
+        </div>
+    </div>
+</app-modal>
