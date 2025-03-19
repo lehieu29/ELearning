@@ -128,7 +128,7 @@
                                 </div>
 
                                 <div *ngIf="skill.lastAssessedDate" class="text-sm text-gray-500 mt-2">
-                                    Đánh giá gần nhất: {{ skill.lastAssessedDate | date:'dd/MM/yyyy' }}
+                                    Đánh giá gần nhất: {{ formatDate(skill.lastAssessedDate) }}
                                 </div>
 
                                 <div *ngIf="skill.relevantCourses && skill.relevantCourses.length > 0" class="mt-3">
@@ -143,43 +143,43 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Recommended Courses -->
-                    <div *ngIf="recommendedCourses && recommendedCourses.length > 0"
-                        class="mt-6 bg-white shadow rounded-lg p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-medium text-gray-900">Khóa học đề xuất</h3>
-                            <a routerLink="/courses" class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                                Xem tất cả khóa học
-                            </a>
-                        </div>
+                        <!-- Recommended Courses -->
+                        <div *ngIf="recommendedCourses && recommendedCourses.length > 0"
+                            class="mt-6 bg-white shadow rounded-lg p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Khóa học đề xuất</h3>
+                                <a routerLink="/courses" class="text-sm font-medium text-blue-600 hover:text-blue-800">
+                                    Xem tất cả khóa học
+                                </a>
+                            </div>
 
-                        <div *ngIf="isLoadingRecommendations" class="py-6 flex justify-center">
-                            <app-loader size="sm" message="Đang tải đề xuất..."></app-loader>
-                        </div>
+                            <div *ngIf="isLoadingRecommendations" class="py-6 flex justify-center">
+                                <app-loader size="sm" message="Đang tải đề xuất..."></app-loader>
+                            </div>
 
-                        <div *ngIf="!isLoadingRecommendations"
-                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div *ngFor="let course of recommendedCourses"
-                                class="border border-gray-200 rounded-lg overflow-hidden">
-                                <div class="p-4">
-                                    <h4 class="font-medium text-gray-900">{{ course.title }}</h4>
-                                    <div class="flex items-center mt-2">
-                                        <span class="px-2 py-1 text-xs rounded-full" [ngClass]="course.level === 'beginner' ? 'bg-green-100 text-green-800' : 
+                            <div *ngIf="!isLoadingRecommendations"
+                                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div *ngFor="let course of recommendedCourses"
+                                    class="border border-gray-200 rounded-lg overflow-hidden">
+                                    <div class="p-4">
+                                        <h4 class="font-medium text-gray-900">{{ course.title }}</h4>
+                                        <div class="flex items-center mt-2">
+                                            <span class="px-2 py-1 text-xs rounded-full" [ngClass]="course.level === 'beginner' ? 'bg-green-100 text-green-800' : 
                                     course.level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' : 
                                     'bg-red-100 text-red-800'">
-                                            {{ course.level === 'beginner' ? 'Mới bắt đầu' :
-                                            course.level === 'intermediate' ? 'Trung cấp' : 'Nâng cao' }}
-                                        </span>
-                                        <span class="ml-2 text-xs text-gray-500">Phù hợp {{ course.skillRelevance
-                                            }}%</span>
-                                    </div>
-                                    <div class="mt-4">
-                                        <app-elearning-button type="secondary" [routerLink]="['/courses', course.id]"
-                                            size="sm">
-                                            {{ course.enrolled ? 'Tiếp tục học' : 'Xem chi tiết' }}
-                                        </app-elearning-button>
+                                                {{ course.level === 'beginner' ? 'Mới bắt đầu' :
+                                                course.level === 'intermediate' ? 'Trung cấp' : 'Nâng cao' }}
+                                            </span>
+                                            <span class="ml-2 text-xs text-gray-500">Phù hợp {{ course.skillRelevance
+                                                }}%</span>
+                                        </div>
+                                        <div class="mt-4">
+                                            <app-elearning-button type="secondary"
+                                                [routerLink]="['/courses', course.id]" size="sm">
+                                                {{ course.enrolled ? 'Tiếp tục học' : 'Xem chi tiết' }}
+                                            </app-elearning-button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

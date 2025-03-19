@@ -62,12 +62,12 @@ export interface BillingHistory {
   receiptUrl?: string;
 }
 
-export type SubscriptionStatus = 
+export type SubscriptionStatus =
   'active' | 'cancelled' | 'expired' | 'trial' | 'past_due' | 'pending';
 
 export type BillingCycle = 'monthly' | 'annual' | 'quarterly';
 
-export type PaymentStatus = 
+export type PaymentStatus =
   'succeeded' | 'pending' | 'failed' | 'refunded' | 'voided';
 
 export interface SubscriptionUpdateOptions {
@@ -90,4 +90,28 @@ export interface CancellationRequest {
   explanation?: string;
   feedback?: string;
   retentionOfferAccepted?: boolean;
+}
+
+export interface PromoCodeResponse {
+  valid: boolean;
+  discount?: number;
+  type?: 'percentage' | 'fixed';
+  message?: string;
+  expiryDate?: string;
+}
+
+/**
+* Kiểm tra khả năng nâng cấp hoặc hạ cấp gói đăng ký
+* Check options for upgrading or downgrading subscription
+* @param subscriptionId ID của gói đăng ký
+* @returns Observable chứa thông tin về các gói có thể chuyển đổi
+*/
+export interface UpgradeOptionsResponse {
+  upgrades: SubscriptionPlan[];
+  downgrades: SubscriptionPlan[];
+  currentPlan: SubscriptionPlan;
+  prorationDetails: {
+    date: string;
+    credits: number
+  };
 }

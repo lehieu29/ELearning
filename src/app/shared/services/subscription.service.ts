@@ -9,8 +9,12 @@ import {
   BillingHistory,
   SubscriptionUpdateOptions,
   CancellationReason,
-  CancellationRequest
-} from '@app/shared/models/subscription.model';
+  CancellationRequest,
+  PromoCodeResponse,
+  UpgradeOptionsResponse
+} from '@app/shared/models/subscription';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -210,13 +214,8 @@ export class SubscriptionService extends HttpService {
    * @param subscriptionId ID của gói đăng ký
    * @returns Observable chứa thông tin về các gói có thể chuyển đổi
    */
-  getUpgradeOptions(subscriptionId: string): Observable<{
-    upgrades: SubscriptionPlan[],
-    downgrades: SubscriptionPlan[],
-    currentPlan: SubscriptionPlan,
-    prorationDetails: { date: string, credits: number }
-  }> {
-    return this.get(`${this.API_BASE}/${subscriptionId}/upgrade-options`)
+  getUpgradeOptions(subscriptionId: string): Observable<UpgradeOptionsResponse> {
+    return this.get<UpgradeOptionsResponse>(`${this.API_BASE}/${subscriptionId}/upgrade-options`)
       .pipe(
         catchError(error => {
           console.error('Error fetching upgrade options:', error);
@@ -231,19 +230,17 @@ export class SubscriptionService extends HttpService {
    * @param promoCode Mã giảm giá cần kiểm tra
    * @returns Observable chứa thông tin mã giảm giá
    */
-  validatePromoCode(promoCode: string): Observable<{
-    valid: boolean,
-    discount?: number,
-    type?: 'percentage' | 'fixed',
-    message?: string,
-    expiryDate?: string
-  }> {
-    return this.get(`${environment.apiUrl}/promo-codes/${promoCode}/validate`)
+  validatePromoCode(promoCode: string): Observable<PromoCodeResponse> {
+    return this.get<PromoCodeResponse>(`${environment.apiUrl}/promo-codes/${promoCode}/validate`)
       .pipe(
         catchError(error => {
           if (error.status === 404) {
-            return new Observable(observer => {
-              observer.next({ valid: false, message: 'Mã khuyến mãi không tồn tại' });
+            return new Observable<PromoCodeResponse>(observer => {
+              const errorResponse: PromoCodeResponse = {
+                valid: false,
+                message: 'Mã khuyến mãi không tồn tại'
+              };
+              observer.next(errorResponse);
               observer.complete();
             });
           }

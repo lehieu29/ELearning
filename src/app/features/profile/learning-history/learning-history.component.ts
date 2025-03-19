@@ -8,7 +8,7 @@ import { LearningActivity, ActivityType, ActivityStats, ActivityFilters } from '
 import { Course } from '@app/shared/models/course.model';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
-import * as dayjs from 'dayjs';
+import { DateUtils } from '@shared/fn/date-utils';
 
 @Component({
   selector: 'app-learning-history',

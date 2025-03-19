@@ -3,37 +3,30 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BaseComponent } from '@app/shared/components/base/base-component';
 import { SubscriptionService } from '@app/shared/services/subscription.service';
-import { PaymentService } from '@app/shared/services/payment.service';
 import { NotificationService } from '@app/shared/services/notification.service';
 import { 
   Subscription, 
   SubscriptionPlan, 
-  BillingHistory,
   CancellationReason,
-  BillingCycle
-} from '@app/shared/models/subscription.model';
-import { PaymentMethod } from '@app/shared/models/payment.model';
-import { takeUntil, finalize, catchError } from 'rxjs/operators';
-import { forkJoin, of } from 'rxjs';
-import * as dayjs from 'dayjs';
+  BillingCycle,
+  CancellationRequest
+} from '@app/shared/models/subscription';
+import { takeUntil, finalize } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-subscription-management',
   templateUrl: './subscription-management.component.html'
 })
 export class SubscriptionManagementComponent extends BaseComponent implements OnInit {
-  // Dữ liệu đăng ký và thanh toán
+  // Dữ liệu đăng ký và lập kế hoạch
   currentSubscription: Subscription | null = null;
   availablePlans: SubscriptionPlan[] = [];
-  billingHistory: BillingHistory[] = [];
-  paymentMethods: PaymentMethod[] = [];
   cancellationReasons: CancellationReason[] = [];
   
   // Trạng thái giao diện
   isLoadingSubscription = true;
   isLoadingPlans = true;
-  isLoadingBillingHistory = true;
-  isLoadingPaymentMethods = true;
   isProcessing = false;
   
   // Hiển thị modal
@@ -50,29 +43,22 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
   // Dữ liệu tạm thời
   selectedPlan: SubscriptionPlan | null = null;
   selectedBillingCycle: BillingCycle = 'monthly';
-  selectedPaymentMethod: string | null = null;
-  promoCodeDiscount: number | null = null;
-  promoCodeValid = false;
-  promoCodeMessage = '';
-  
-  // Pagination for billing history
-  currentPage = 1;
-  itemsPerPage = 5;
-  totalItems = 0;
-  
+  promoCodeVerified = false;
+  promoCodeError = '';
+  promoCodeDiscount = '';
+  cancellationReason = '';
+
   /**
    * Khởi tạo component với các services cần thiết
    * Initialize component with required services
    * @param fb FormBuilder để tạo các forms
    * @param subscriptionService Service xử lý đăng ký
-   * @param paymentService Service xử lý thanh toán
    * @param notificationService Service hiển thị thông báo
    * @param router Router để điều hướng
    */
   constructor(
     private fb: FormBuilder,
-    private subscriptionService: SubscriptionService,
-    private paymentService: PaymentService,
+    public subscriptionService: SubscriptionService, // Changed to public to allow template binding
     private notificationService: NotificationService,
     private router: Router
   ) {
@@ -129,8 +115,6 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
   loadSubscriptionData(): void {
     this.isLoadingSubscription = true;
     this.isLoadingPlans = true;
-    this.isLoadingBillingHistory = true;
-    this.isLoadingPaymentMethods = true;
     
     // Tải gói đăng ký hiện tại
     this.subscriptionService.getCurrentSubscription()
@@ -145,12 +129,10 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
             this.billingCycleForm.patchValue({
               billingCycle: subscription.billingCycle
             });
-            
-            // Tải lịch sử thanh toán nếu có đăng ký
-            this.loadBillingHistory();
           }
         },
         error: (error) => {
+          console.error('Không thể tải thông tin đăng ký:', error);
           this.notificationService.error('Không thể tải thông tin đăng ký. Vui lòng thử lại sau.');
           this.isLoadingSubscription = false;
         }
@@ -163,55 +145,19 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
         next: (plans) => {
           this.availablePlans = plans;
           this.isLoadingPlans = false;
+          
+          // Nếu có gói được đề xuất, chọn mặc định
+          const recommendedPlan = plans.find(p => p.recommended);
+          if (recommendedPlan) {
+            this.selectedPlan = recommendedPlan;
+          } else if (plans.length > 0) {
+            this.selectedPlan = plans[0];
+          }
         },
         error: (error) => {
+          console.error('Không thể tải danh sách gói đăng ký:', error);
           this.notificationService.error('Không thể tải danh sách gói đăng ký. Vui lòng thử lại sau.');
           this.isLoadingPlans = false;
-        }
-      });
-    
-    // Tải danh sách phương thức thanh toán
-    this.paymentService.getPaymentMethods()
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe({
-        next: (methods) => {
-          this.paymentMethods = methods;
-          
-          // Chọn phương thức thanh toán mặc định hoặc phương thức đầu tiên
-          const defaultMethod = methods.find(m => m.isDefault) || methods[0];
-          if (defaultMethod) {
-            this.selectedPaymentMethod = defaultMethod.id;
-          }
-          
-          this.isLoadingPaymentMethods = false;
-        },
-        error: (error) => {
-          this.notificationService.error('Không thể tải danh sách phương thức thanh toán. Vui lòng thử lại sau.');
-          this.isLoadingPaymentMethods = false;
-        }
-      });
-  }
-  
-  /**
-   * Tải lịch sử thanh toán
-   * Load billing history
-   */
-  loadBillingHistory(): void {
-    this.isLoadingBillingHistory = true;
-    
-    const offset = (this.currentPage - 1) * this.itemsPerPage;
-    
-    this.subscriptionService.getBillingHistory(this.itemsPerPage, offset)
-      .pipe(takeUntil(this._onDestroySub))
-      .subscribe({
-        next: (history) => {
-          this.billingHistory = history;
-          this.totalItems = history.length >= this.itemsPerPage ? (this.currentPage * this.itemsPerPage) + 1 : (this.currentPage * this.itemsPerPage);
-          this.isLoadingBillingHistory = false;
-        },
-        error: (error) => {
-          this.notificationService.error('Không thể tải lịch sử thanh toán. Vui lòng thử lại sau.');
-          this.isLoadingBillingHistory = false;
         }
       });
   }
@@ -273,9 +219,9 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
   openPromoCodeModal(): void {
     this.showPromoCodeModal = true;
     this.promoCodeForm.reset();
-    this.promoCodeValid = false;
-    this.promoCodeDiscount = null;
-    this.promoCodeMessage = '';
+    this.promoCodeVerified = false;
+    this.promoCodeDiscount = '';
+    this.promoCodeError = '';
   }
   
   /**
@@ -327,6 +273,7 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
           this.notificationService.success('Đã cập nhật chu kỳ thanh toán thành công.');
         },
         error: (error) => {
+          console.error('Không thể cập nhật chu kỳ thanh toán:', error);
           this.notificationService.error('Không thể cập nhật chu kỳ thanh toán. Vui lòng thử lại sau.');
         }
       });
@@ -337,19 +284,18 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
    * Subscribe to a new plan
    */
   subscribeToPlan(): void {
-    if (!this.selectedPlan || !this.selectedPaymentMethod) {
-      this.notificationService.warning('Vui lòng chọn gói đăng ký và phương thức thanh toán.');
+    if (!this.selectedPlan) {
+      this.notificationService.warning('Vui lòng chọn gói đăng ký.');
       return;
     }
     
     this.isProcessing = true;
     
-    const promoCode = this.promoCodeValid ? this.promoCodeForm.get('promoCode')?.value : undefined;
+    const promoCode = this.promoCodeVerified ? this.promoCodeForm.get('promoCode')?.value : undefined;
     
     this.subscriptionService.subscribeToPlan(
       this.selectedPlan.id,
       this.selectedBillingCycle,
-      this.selectedPaymentMethod,
       promoCode
     )
       .pipe(
@@ -363,9 +309,9 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
           this.currentSubscription = subscription;
           this.closeAllModals();
           this.notificationService.success('Đăng ký gói thành công!');
-          this.loadBillingHistory();
         },
         error: (error) => {
+          console.error('Không thể hoàn tất đăng ký:', error);
           this.notificationService.error('Không thể hoàn tất đăng ký. Vui lòng thử lại sau.');
         }
       });
@@ -398,6 +344,7 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
           this.notificationService.success('Đã thay đổi gói đăng ký thành công!');
         },
         error: (error) => {
+          console.error('Không thể thay đổi gói đăng ký:', error);
           this.notificationService.error('Không thể thay đổi gói đăng ký. Vui lòng thử lại sau.');
         }
       });
@@ -416,11 +363,14 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
     
     this.isProcessing = true;
     
-    this.subscriptionService.cancelSubscription(this.currentSubscription.id, {
+    const body: CancellationRequest = {
+      subscriptionId: this.currentSubscription.id,
       reasonId,
       explanation,
       feedback
-    })
+    }
+
+    this.subscriptionService.cancelSubscription(body)
       .pipe(
         takeUntil(this._onDestroySub),
         finalize(() => {
@@ -429,12 +379,59 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
       )
       .subscribe({
         next: () => {
-          this.currentSubscription = null;
+          // Cập nhật trạng thái đăng ký thành 'cancelled'
+          if (this.currentSubscription) {
+            this.currentSubscription.status = 'cancelled';
+          }
           this.closeAllModals();
           this.notificationService.success('Đã hủy đăng ký thành công.');
         },
         error: (error) => {
+          console.error('Không thể hủy đăng ký:', error);
           this.notificationService.error('Không thể hủy đăng ký. Vui lòng thử lại sau.');
+        }
+      });
+  }
+  
+  /**
+   * Kiểm tra mã giảm giá
+   * Verify promo code
+   */
+  verifyPromoCode(): void {
+    if (!this.promoCodeForm.valid) {
+      return;
+    }
+    
+    const promoCode = this.promoCodeForm.get('promoCode')?.value;
+    
+    this.isProcessing = true;
+    
+    this.subscriptionService.validatePromoCode(promoCode)
+      .pipe(
+        takeUntil(this._onDestroySub),
+        finalize(() => {
+          this.isProcessing = false;
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.promoCodeVerified = data.valid;
+          this.promoCodeError = '';
+          
+          if(data.valid) {
+            if (data.type === 'percentage') {
+              this.promoCodeDiscount = `Giảm ${data.discount}% cho đơn hàng của bạn`;
+            } else {
+              this.promoCodeDiscount = `Giảm ${data.discount.toLocaleString('vi-VN')}đ cho đơn hàng của bạn`;
+            }
+          } else {
+            this.promoCodeError = data.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn.';
+          }
+        },
+        error: (error) => {
+          console.error('Mã giảm giá không hợp lệ:', error);
+          this.promoCodeVerified = false;
+          this.promoCodeError = 'Mã giảm giá không hợp lệ hoặc đã hết hạn.';
         }
       });
   }
@@ -444,7 +441,7 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
    * Apply promo code
    */
   applyPromoCode(): void {
-    if (!this.promoCodeForm.valid) {
+    if (!this.currentSubscription || !this.promoCodeVerified) {
       return;
     }
     
@@ -452,7 +449,9 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
     
     this.isProcessing = true;
     
-    this.subscriptionService.applyPromoCode(promoCode)
+    this.subscriptionService.updateSubscription(this.currentSubscription.id, {
+      promoCode
+    })
       .pipe(
         takeUntil(this._onDestroySub),
         finalize(() => {
@@ -460,34 +459,62 @@ export class SubscriptionManagementComponent extends BaseComponent implements On
         })
       )
       .subscribe({
-        next: (discount) => {
-          this.promoCodeDiscount = discount;
-          this.promoCodeValid = true;
-          this.promoCodeMessage = 'Mã giảm giá hợp lệ!';
+        next: (updatedSubscription) => {
+          this.currentSubscription = updatedSubscription;
+          this.closeAllModals();
+          this.notificationService.success('Đã áp dụng mã giảm giá thành công!');
         },
         error: (error) => {
-          this.promoCodeValid = false;
-          this.promoCodeMessage = 'Mã giảm giá không hợp lệ. Vui lòng thử lại.';
+          console.error('Không thể áp dụng mã giảm giá:', error);
+          this.promoCodeVerified = false;
+          this.promoCodeError = 'Mã giảm giá không hợp lệ. Vui lòng thử lại.';
         }
       });
   }
   
   /**
-   * Đổi phương thức thanh toán
-   * Change payment method
-   * @param methodId ID của phương thức thanh toán mới
+   * Tính giá dựa trên chu kỳ thanh toán
+   * Calculate price based on billing cycle
+   * @param plan Gói đăng ký để tính giá
+   * @param cycle Chu kỳ thanh toán
+   * @returns Giá theo chu kỳ đã chọn
    */
-  changePaymentMethod(methodId: string): void {
-    this.selectedPaymentMethod = methodId;
+  calculatePrice(plan: SubscriptionPlan, cycle: BillingCycle): number {
+    if (cycle === 'monthly') {
+      return plan.monthlyPrice;
+    } else if (cycle === 'quarterly') {
+      return plan.monthlyPrice * 3 * 0.9; // 10% discount
+    } else {
+      return plan.annualPrice; // Annual price is already discounted
+    }
   }
   
   /**
-   * Chuyển trang trong lịch sử thanh toán
-   * Change page in billing history
-   * @param page Trang mới
+   * Tiến hành thanh toán và đăng ký
+   * Proceed to checkout and subscription
    */
-  changePage(page: number): void {
-    this.currentPage = page;
-    this.loadBillingHistory();
+  proceedToCheckout(): void {
+    if (!this.selectedPlan) {
+      this.notificationService.warning('Vui lòng chọn gói đăng ký.');
+      return;
+    }
+    
+    // Nếu đã có đăng ký, thay đổi gói
+    if (this.currentSubscription) {
+      this.changePlan();
+    } else {
+      // Nếu chưa có đăng ký, đăng ký mới
+      this.subscribeToPlan();
+    }
+  }
+  
+  /**
+   * Định dạng giá thành chuỗi có định dạng tiền tệ
+   * Format price to currency string
+   * @param price Giá cần định dạng
+   * @returns Chuỗi đã định dạng
+   */
+  formatPrice(price: number): string {
+    return price.toLocaleString('vi-VN') + ' VNĐ';
   }
 }

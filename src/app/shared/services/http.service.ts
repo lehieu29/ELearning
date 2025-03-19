@@ -113,4 +113,27 @@ export class HttpService {
       catchError(this.handleError)
     );
   }
+
+  /**
+   * Thực hiện một yêu cầu GET và trả về kết quả dưới dạng Blob
+   * @param endpoint Điểm cuối API
+   * @param params Các tham số truy vấn tùy chọn
+   * @returns Observable chứa kết quả dưới dạng Blob
+  */
+  getBlob(endpoint: string, params?: any): Observable<Blob> {
+    const options = {
+      headers: new HttpHeaders({
+        'Accept': 'application/pdf,application/octet-stream'
+        // Không bao gồm header Content-Type cho các phản hồi dạng Blob
+      }),
+      params: new HttpParams({ fromObject: params || {} }),
+      responseType: 'blob' as 'blob'  // Cần khẳng định kiểu cho TypeScript
+    };
+
+    return this.http.get(endpoint, options)
+      .pipe(
+        retry(1),
+        catchError(this.handleError)
+      ) as Observable<Blob>;
+  }
 }

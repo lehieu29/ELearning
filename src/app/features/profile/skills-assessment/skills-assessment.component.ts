@@ -9,9 +9,11 @@ import {
   AssessmentQuestion,
   AssessmentResult,
   RelevantCourse
-} from '@app/shared/models/skills-assessment.model';
+} from '@app/shared/models/skills-assessment';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { of } from 'rxjs';
+import * as dayjs from 'dayjs';
+import { DateUtils } from '@shared/fn/date-utils';
 
 @Component({
   selector: 'app-skills-assessment',
@@ -432,5 +434,35 @@ export class SkillsAssessmentComponent extends BaseComponent implements OnInit {
           this.notificationService.success('Đã cập nhật mức độ thành thạo kỹ năng.');
         }
       });
+  }
+  
+  /**
+   * Định dạng thời gian từ timestamp
+   * Format time from timestamp
+   * @param date Date object hoặc string timestamp
+   * @returns Chuỗi thời gian đã định dạng
+   */
+  formatDate(date: Date | string): string {
+    return DateUtils.dayjs(date).format('DD/MM/YYYY');
+  }
+  
+  /**
+   * Chuyển sang câu hỏi tiếp theo (sử dụng cho nút)
+   * Move to next question (for button use)
+   */
+  nextQuestion(): void {
+    if (this.currentQuestionIndex < this.currentQuestions.length - 1) {
+      this.currentQuestionIndex++;
+    }
+  }
+  
+  /**
+   * Quay lại câu hỏi trước (sử dụng cho nút)
+   * Go back to previous question (for button use)
+   */
+  previousQuestion(): void {
+    if (this.currentQuestionIndex > 0) {
+      this.currentQuestionIndex--;
+    }
   }
 }

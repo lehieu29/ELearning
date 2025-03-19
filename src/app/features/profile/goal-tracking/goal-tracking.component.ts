@@ -17,7 +17,7 @@ import {
 import { Course } from '@app/shared/models/course.model';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
-import * as dayjs from 'dayjs';
+import { DateUtils } from '@shared/fn/date-utils';
 
 @Component({
   selector: 'app-goal-tracking',
@@ -749,7 +749,7 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
    */
   formatDate(date: Date | string | null | undefined): string {
     if (!date) return 'Không có thời hạn';
-    return dayjs(date).format('DD/MM/YYYY');
+    return DateUtils.dayjs(date).format('DD/MM/YYYY');
   }
   
   /**
@@ -759,7 +759,7 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
    */
   daysRemaining(targetDate: Date | string | null | undefined): number | null {
     if (!targetDate) return null;
-    return dayjs(targetDate).diff(dayjs(), 'day');
+    return DateUtils.diff(DateUtils.dayjs(targetDate), DateUtils.dayjs(), 'day');
   }
   
   /**

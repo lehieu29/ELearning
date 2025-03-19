@@ -3,7 +3,7 @@
         <div class="md:flex md:items-center md:justify-between mb-8">
             <div class="flex-1 min-w-0">
                 <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Quản lý gói đăng ký</h1>
-                <p class="mt-1 text-sm text-gray-500">Quản lý gói đăng ký và thanh toán của bạn</p>
+                <p class="mt-1 text-sm text-gray-500">Quản lý gói đăng ký và thay đổi tài khoản của bạn</p>
             </div>
             <div class="mt-4 flex md:mt-0 md:ml-4">
                 <app-elearning-button *ngIf="!currentSubscription && !isLoadingSubscription" type="primary" size="md"
@@ -105,33 +105,38 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="flex items-center mt-5">
-                                <div class="relative inline-block">
-                                    <input type="checkbox" id="auto-renew" name="auto-renew" class="sr-only"
-                                        [checked]="currentSubscription.autoRenew"
-                                        [disabled]="currentSubscription.status === 'cancelled'" (change)="subscriptionService.toggleAutoRenewal(currentSubscription.id, !currentSubscription.autoRenew)
-                      .pipe(takeUntil(this._onDestroySub))
-                      .subscribe({
-                        next: (updated) => {
-                          this.currentSubscription = updated;
-                          this.notificationService.success('Đã cập nhật cài đặt tự động gia hạn.');
-                        },
-                        error: (error) => {
-                          this.notificationService.error('Không thể cập nhật cài đặt tự động gia hạn.');
-                        }
-                      })">
-                                    <label for="auto-renew"
-                                        class="w-11 h-6 bg-gray-300 rounded-full cursor-pointer flex items-center justify-start p-1 duration-300 ease-in-out"
-                                        [ngClass]="{'bg-blue-600 justify-end': currentSubscription.autoRenew, 'bg-gray-300 justify-start': !currentSubscription.autoRenew}">
-                                        <div class="w-4 h-4 rounded-full bg-white"></div>
-                                    </label>
-                                </div>
-                                <span class="ml-3 text-sm text-gray-700">Tự động gia hạn</span>
-                            </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 mt-6">
+                        <div class="flex items-center mt-5">
+                            <div class="relative inline-block">
+                                <input type="checkbox" id="auto-renew" name="auto-renew" class="sr-only"
+                                    [checked]="currentSubscription.autoRenew"
+                                    [disabled]="currentSubscription.status === 'cancelled'" (change)="subscriptionService.toggleAutoRenewal(currentSubscription.id, !currentSubscription.autoRenew)
+                    .pipe(takeUntil(_onDestroySub))
+                    .subscribe({
+                      next: (updated) => {
+                        currentSubscription = updated;
+                        notificationService.success('Đã cập nhật tự động gia hạn.');
+                      },
+                      error: (error) => {
+                        notificationService.error('Không thể cập nhật tự động gia hạn.');
+                      }
+                    })">
+                                <label for="auto-renew"
+                                    class="relative inline-flex items-center justify-center flex-shrink-0 h-6 w-11 cursor-pointer focus:outline-none">
+                                    <span aria-hidden="true" [class]="'absolute h-4 w-9 mx-auto rounded-full transition-colors ease-in-out duration-200 ' + 
+                    (currentSubscription.autoRenew ? 'bg-blue-600' : 'bg-gray-200')"></span>
+                                    <span aria-hidden="true" [class]="'absolute left-0 inline-flex h-5 w-5 border border-gray-200 rounded-full bg-white shadow transform ring-0 transition-transform ease-in-out duration-200 ' + 
+                    (currentSubscription.autoRenew ? 'translate-x-5' : 'translate-x-0')"></span>
+                                </label>
+                            </div>
+                            <span class="ml-3 text-sm font-medium text-gray-900"
+                                [class.opacity-50]="currentSubscription.status === 'cancelled'">
+                                Tự động gia hạn
+                            </span>
+                        </div>
+
+                        <div class="mt-6 flex flex-wrap gap-3">
                             <app-elearning-button *ngIf="currentSubscription.status !== 'cancelled'" type="secondary"
                                 size="md" (click)="openBillingCycleModal()">
                                 Đổi chu kỳ thanh toán
@@ -434,759 +439,258 @@
                         <input type="radio" id="cycle-monthly" name="billingCycle" value="monthly"
                             [checked]="selectedBillingCycle === 'monthly'" (change)="selectedBillingCycle = 'monthly'"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                        <label for="cycle-monthly" class="ml-3 text-sm text-<!-- filepath: d:\FrontEnd\elearning\src\app\features\profile\subscription-management\subscription-management.component.html -->
-
-<div class=" bg-gray-50 min-h-screen py-8">
-                            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                                <div class="md:flex md:items-center md:justify-between mb-8">
-                                    <div class="flex-1 min-w-0">
-                                        <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Quản lý gói đăng ký
-                                        </h1>
-                                        <p class="mt-1 text-sm text-gray-500">Quản lý gói đăng ký và thanh toán của bạn
-                                        </p>
-                                    </div>
-                                    <div class="mt-4 flex md:mt-0 md:ml-4">
-                                        <app-elearning-button *ngIf="!currentSubscription && !isLoadingSubscription"
-                                            type="primary" size="md" (click)="openPlanSelectionModal()">
-                                            Đăng ký ngay
-                                        </app-elearning-button>
-                                    </div>
-                                </div>
-
-                                <!-- Loading State -->
-                                <div *ngIf="isLoadingSubscription" class="bg-white shadow-sm rounded-lg p-8 mb-6">
-                                    <div class="flex justify-center items-center h-24">
-                                        <app-loader size="md"></app-loader>
-                                    </div>
-                                </div>
-
-                                <!-- Current Subscription Info -->
-                                <div *ngIf="currentSubscription && !isLoadingSubscription"
-                                    class="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
-                                    <div class="px-6 py-5 border-b border-gray-200 bg-blue-50">
-                                        <div class="flex items-center justify-between">
-                                            <h3 class="text-lg font-medium text-gray-900">Gói đăng ký hiện tại</h3>
-                                            <div class="flex items-center">
-                                                <span *ngIf="currentSubscription.status === 'active'"
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Đang hoạt động
-                                                </span>
-                                                <span *ngIf="currentSubscription.status === 'trial'"
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    Dùng thử
-                                                </span>
-                                                <span *ngIf="currentSubscription.status === 'cancelled'"
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    Đã hủy
-                                                </span>
-                                                <span *ngIf="currentSubscription.status === 'past_due'"
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    Quá hạn thanh toán
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="px-6 py-5">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <h4 class="text-lg font-semibold text-gray-900">{{
-                                                    currentSubscription.planName }}</h4>
-                                                <div class="mt-2 flex items-baseline">
-                                                    <span class="text-2xl font-bold text-gray-900">{{
-                                                        currentSubscription.price | currency:'VND':'symbol':'1.0-0'
-                                                        }}</span>
-                                                    <span class="ml-1 text-sm text-gray-500">
-                                                        / {{ currentSubscription.billingCycle === 'monthly' ? 'tháng' :
-                                                        currentSubscription.billingCycle === 'quarterly' ? 'quý' : 'năm'
-                                                        }}
-                                                    </span>
-                                                </div>
-
-                                                <ul class="mt-4 space-y-2">
-                                                    <li *ngFor="let feature of currentSubscription.features"
-                                                        class="flex items-start">
-                                                        <svg *ngIf="feature.included"
-                                                            class="flex-shrink-0 h-5 w-5 text-green-500"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                        <svg *ngIf="!feature.included"
-                                                            class="flex-shrink-0 h-5 w-5 text-gray-400"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                        <span
-                                                            [class]="feature.highlight ? 'ml-2 text-sm font-medium text-gray-900' : 'ml-2 text-sm text-gray-500'">
-                                                            {{ feature.name }}
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <div class="flex flex-col justify-between">
-                                                <div>
-                                                    <div class="rounded-md bg-gray-50 p-4">
-                                                        <div class="flex">
-                                                            <div class="flex-shrink-0">
-                                                                <svg class="h-5 w-5 text-blue-400"
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd"
-                                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                                                        clip-rule="evenodd" />
-                                                                </svg>
-                                                            </div>
-                                                            <div class="ml-3 flex-1 md:flex md:justify-between">
-                                                                <p class="text-sm text-gray-700">
-                                                                    <span
-                                                                        *ngIf="currentSubscription.status !== 'cancelled'">Chu
-                                                                        kỳ đăng ký tiếp theo: </span>
-                                                                    <span
-                                                                        *ngIf="currentSubscription.status === 'cancelled'">Gói
-                                                                        của bạn sẽ hết hạn vào: </span>
-                                                                    <span class="font-medium">{{
-                                                                        currentSubscription.renewalDate |
-                                                                        date:'dd/MM/yyyy' }}</span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="flex items-center mt-5">
-                                                        <div class="relative inline-block">
-                                                            <input type="checkbox" id="auto-renew" name="auto-renew"
-                                                                class="sr-only"
-                                                                [checked]="currentSubscription.autoRenew"
-                                                                [disabled]="currentSubscription.status === 'cancelled'"
-                                                                (change)="subscriptionService.toggleAutoRenewal(currentSubscription.id, !currentSubscription.autoRenew)
-                      .pipe(takeUntil(this._onDestroySub))
-                      .subscribe({
-                        next: (updated) => {
-                          this.currentSubscription = updated;
-                          this.notificationService.success('Đã cập nhật cài đặt tự động gia hạn.');
-                        },
-                        error: (error) => {
-                          this.notificationService.error('Không thể cập nhật cài đặt tự động gia hạn.');
-                        }
-                      })">
-                                                            <label for="auto-renew"
-                                                                class="w-11 h-6 bg-gray-300 rounded-full cursor-pointer flex items-center justify-start p-1 duration-300 ease-in-out"
-                                                                [ngClass]="{'bg-blue-600 justify-end': currentSubscription.autoRenew, 'bg-gray-300 justify-start': !currentSubscription.autoRenew}">
-                                                                <div class="w-4 h-4 rounded-full bg-white"></div>
-                                                            </label>
-                                                        </div>
-                                                        <span class="ml-3 text-sm text-gray-700">Tự động gia hạn</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="grid grid-cols-2 gap-3 mt-6">
-                                                    <app-elearning-button
-                                                        *ngIf="currentSubscription.status !== 'cancelled'"
-                                                        type="secondary" size="md" (click)="openBillingCycleModal()">
-                                                        Đổi chu kỳ thanh toán
-                                                    </app-elearning-button>
-
-                                                    <app-elearning-button type="secondary" size="md"
-                                                        (click)="openPlanSelectionModal()">
-                                                        {{ currentSubscription.status === 'cancelled' ? 'Đăng ký lại' :
-                                                        'Đổi gói đăng ký' }}
-                                                    </app-elearning-button>
-
-                                                    <app-elearning-button
-                                                        *ngIf="currentSubscription.status !== 'cancelled'"
-                                                        type="secondary" size="md" (click)="openPromoCodeModal()">
-                                                        Áp dụng mã giảm giá
-                                                    </app-elearning-button>
-
-                                                    <app-elearning-button
-                                                        *ngIf="currentSubscription.status !== 'cancelled'" type="danger"
-                                                        size="md" (click)="openCancellationModal()">
-                                                        Hủy đăng ký
-                                                    </app-elearning-button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Discount info if applied -->
-                                        <div *ngIf="currentSubscription.discountApplied"
-                                            class="mt-6 bg-green-50 border border-green-200 rounded-md p-4">
-                                            <div class="flex">
-                                                <div class="flex-shrink-0">
-                                                    <svg class="h-5 w-5 text-green-400"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                        fill="currentColor">
-                                                        <path fill-rule="evenodd"
-                                                            d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm2.5 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6.207 10.293a1 1 0 01-1.414 0L9.5 12.5l-2.293 2.293a1 1 0 01-1.414-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 010 1.414z"
-                                                            clip-rule="evenodd" />
-                                                    </svg>
-                                                </div>
-                                                <div class="ml-3">
-                                                    <h3 class="text-sm font-medium text-green-800">Khuyến mãi đã áp dụng
-                                                    </h3>
-                                                    <div class="mt-2 text-sm text-green-700">
-                                                        <p>
-                                                            Bạn đang được giảm
-                                                            {{ currentSubscription.discountApplied.type === 'percentage'
-                                                            ?
-                                                            currentSubscription.discountApplied.amount + '%' :
-                                                            (currentSubscription.discountApplied.amount |
-                                                            currency:'VND':'symbol':'1.0-0') }}
-                                                            với mã <span class="font-mono font-medium">{{
-                                                                currentSubscription.discountApplied.code }}</span>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- No Subscription State -->
-                                <div *ngIf="!currentSubscription && !isLoadingSubscription"
-                                    class="bg-white shadow-sm rounded-lg p-8 text-center mb-6">
-                                    <div
-                                        class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-50">
-                                        <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </div>
-                                    <h3 class="mt-2 text-lg font-medium text-gray-900">Chưa có gói đăng ký</h3>
-                                    <p class="mt-1 text-sm text-gray-500">
-                                        Bạn chưa đăng ký gói học nào. Đăng ký ngay để bắt đầu học và truy cập đầy đủ nội
-                                        dung khóa học.
-                                    </p>
-                                    <div class="mt-6">
-                                        <app-elearning-button type="primary" (click)="openPlanSelectionModal()">
-                                            Xem các gói đăng ký
-                                        </app-elearning-button>
-                                    </div>
-                                </div>
-
-                                <!-- Available Plans -->
-                                <div *ngIf="!isLoadingPlans" class="mb-6">
-                                    <h2 class="text-lg font-medium text-gray-900 mb-4">Các gói đăng ký có sẵn</h2>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        <div *ngFor="let plan of availablePlans"
-                                            class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200"
-                                            [ngClass]="{'border-blue-500 ring-2 ring-blue-500': plan.recommended}">
-
-                                            <div class="px-6 py-4" [class.bg-blue-50]="plan.recommended">
-                                                <div class="flex justify-between items-start">
-                                                    <h3 class="text-lg font-medium text-gray-900">{{ plan.name }}</h3>
-                                                    <span *ngIf="plan.popular"
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                        Phổ biến nhất
-                                                    </span>
-                                                    <span *ngIf="plan.recommended"
-                                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        Đề xuất
-                                                    </span>
-                                                </div>
-                                                <div class="mt-4 flex items-baseline">
-                                                    <span class="text-2xl font-bold text-gray-900">{{ plan.monthlyPrice
-                                                        | currency:'VND':'symbol':'1.0-0' }}</span>
-                                                    <span class="ml-1 text-sm text-gray-500">/ tháng</span>
-                                                </div>
-                                                <p class="mt-1 text-sm text-gray-500">hoặc {{ plan.annualPrice |
-                                                    currency:'VND':'symbol':'1.0-0' }} / năm</p>
-                                            </div>
-
-                                            <div class="border-t border-gray-200 px-6 py-4">
-                                                <ul class="space-y-2">
-                                                    <li *ngFor="let feature of plan.features" class="flex items-start">
-                                                        <svg *ngIf="feature.included"
-                                                            class="flex-shrink-0 h-5 w-5 text-green-500"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                        <svg *ngIf="!feature.included"
-                                                            class="flex-shrink-0 h-5 w-5 text-gray-400"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                        <span
-                                                            [class]="feature.highlight ? 'ml-2 text-sm font-medium text-gray-900' : 'ml-2 text-sm text-gray-500'">
-                                                            {{ feature.name }}
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <div class="border-t border-gray-200 px-6 py-4">
-                                                <app-elearning-button
-                                                    [type]="currentSubscription?.planId === plan.id ? 'secondary' : 'primary'"
-                                                    size="md" class="w-full"
-                                                    (click)="selectPlan(plan); openPlanSelectionModal();">
-                                                    {{ currentSubscription?.planId === plan.id ? 'Gói hiện tại' : 'Chọn
-                                                    gói này' }}
-                                                </app-elearning-button>
-
-                                                <p *ngIf="plan.trialDays"
-                                                    class="mt-2 text-xs text-center text-gray-500">
-                                                    Bao gồm {{ plan.trialDays }} ngày dùng thử miễn phí
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Billing History -->
-                                <div *ngIf="currentSubscription && !isLoadingBillingHistory"
-                                    class="bg-white shadow-sm rounded-lg overflow-hidden">
-                                    <div class="px-6 py-5 border-b border-gray-200">
-                                        <h3 class="text-lg font-medium text-gray-900">Lịch sử thanh toán</h3>
-                                    </div>
-
-                                    <div *ngIf="billingHistory.length === 0" class="px-6 py-5 text-center">
-                                        <p class="text-sm text-gray-500">Chưa có lịch sử thanh toán nào.</p>
-                                    </div>
-
-                                    <div *ngIf="billingHistory.length > 0" class="overflow-x-auto">
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th scope="col"
-                                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Ngày
-                                                    </th>
-                                                    <th scope="col"
-                                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Số tiền
-                                                    </th>
-                                                    <th scope="col"
-                                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Phương thức
-                                                    </th>
-                                                    <th scope="col"
-                                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Trạng thái
-                                                    </th>
-                                                    <th scope="col"
-                                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Hành động
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr *ngFor="let item of billingHistory">
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {{ item.date | date:'dd/MM/yyyy' }}
-                                                    </td>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {{ item.amount | currency:'VND':'symbol':'1.0-0' }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {{ item.paymentMethodType }}
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span *ngIf="item.status === 'succeeded'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            Thành công
-                                                        </span>
-                                                        <span *ngIf="item.status === 'pending'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                            Đang xử lý
-                                                        </span>
-                                                        <span *ngIf="item.status === 'failed'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                            Thất bại
-                                                        </span>
-                                                        <span *ngIf="item.status === 'refunded'"
-                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                            Đã hoàn tiền
-                                                        </span>
-                                                    </td>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <a *ngIf="item.receiptUrl" [href]="item.receiptUrl"
-                                                            target="_blank" class="text-blue-600 hover:text-blue-900">
-                                                            Biên lai
-                                                        </a>
-                                                        <span *ngIf="!item.receiptUrl" class="text-gray-400">
-                                                            Không có biên lai
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <!-- Pagination -->
-                                    <div *ngIf="totalItems > itemsPerPage"
-                                        class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                                        <div class="flex-1 flex justify-between sm:hidden">
-                                            <app-elearning-button [disabled]="currentPage === 1" type="secondary"
-                                                size="sm" (click)="changePage(currentPage - 1)">
-                                                Trước
-                                            </app-elearning-button>
-                                            <app-elearning-button [disabled]="billingHistory.length < itemsPerPage"
-                                                type="secondary" size="sm" (click)="changePage(currentPage + 1)">
-                                                Sau
-                                            </app-elearning-button>
-                                        </div>
-                                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                            <div>
-                                                <p class="text-sm text-gray-700">
-                                                    Hiển thị <span class="font-medium">{{ (currentPage - 1) *
-                                                        itemsPerPage + 1 }}</span> đến
-                                                    <span class="font-medium">{{ (currentPage - 1) * itemsPerPage +
-                                                        billingHistory.length }}</span> của
-                                                    <span class="font-medium">{{ totalItems }}</span> mục
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                                                    aria-label="Pagination">
-                                                    <a href="javascript:void(0)" [class.opacity-50]="currentPage === 1"
-                                                        [class.pointer-events-none]="currentPage === 1"
-                                                        (click)="changePage(currentPage - 1)"
-                                                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                                        <span class="sr-only">Previous</span>
-                                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </a>
-                                                    <a href="javascript:void(0)"
-                                                        [class.opacity-50]="billingHistory.length < itemsPerPage"
-                                                        [class.pointer-events-none]="billingHistory.length < itemsPerPage"
-                                                        (click)="changePage(currentPage + 1)"
-                                                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                                        <span class="sr-only">Next</span>
-                                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-                                                            viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </a>
-                                                </nav>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <label for="cycle-monthly" class="ml-3 text-sm text-gray-700">Hàng tháng</label>
                     </div>
+                    <div class="flex items-center mt-2">
+                        <input type="radio" id="cycle-quarterly" name="billingCycle" value="quarterly"
+                            [checked]="selectedBillingCycle === 'quarterly'"
+                            (change)="selectedBillingCycle = 'quarterly'"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                        <label for="cycle-quarterly" class="ml-3 text-sm text-gray-700">Hàng quý (giảm 10%)</label>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <input type="radio" id="cycle-annual" name="billingCycle" value="annual"
+                            [checked]="selectedBillingCycle === 'annual'" (change)="selectedBillingCycle = 'annual'"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                        <label for="cycle-annual" class="ml-3 text-sm text-gray-700">Hàng năm (giảm 20%)</label>
+                    </div>
+                </div>
 
-                    <!-- Plan Selection Modal -->
-                    <app-modal *ngIf="showPlanSelectionModal"
-                        [title]="currentSubscription ? 'Thay đổi gói đăng ký' : 'Chọn gói đăng ký'"
-                        [showCloseButton]="true" (close)="closeAllModals()">
+                <div class="mt-6 space-y-4">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900">Thanh toán trước</h4>
+                        <p class="text-sm text-gray-500">
+                            {{ selectedBillingCycle === 'monthly' ? selectedPlan.monthlyPrice :
+                            selectedBillingCycle === 'quarterly' ? selectedPlan.monthlyPrice * 3 * 0.9 :
+                            selectedPlan.annualPrice | currency:'VND':'symbol':'1.0-0' }}
+                            cho {{ selectedBillingCycle === 'monthly' ? '1 tháng' :
+                            selectedBillingCycle === 'quarterly' ? '3 tháng' : '12 tháng' }}
+                        </p>
+                    </div>
+                    <div *ngIf="selectedPlan.trialDays && !currentSubscription">
+                        <h4 class="text-sm font-medium text-gray-900">Dùng thử miễn phí</h4>
+                        <p class="text-sm text-gray-500">
+                            {{ selectedPlan.trialDays }} ngày dùng thử miễn phí, không mất phí nếu hủy trong thời gian
+                            dùng thử
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="p-5">
-                            <div *ngIf="isLoadingPlans" class="flex justify-center items-center p-8">
-                                <app-loader size="md"></app-loader>
-                            </div>
-
-                            <div *ngIf="!isLoadingPlans">
-                                <div *ngIf="selectedPlan" class="mb-6 p-4 bg-blue-50 rounded-md">
-                                    <h3 class="text-lg font-medium text-gray-900">Gói đã chọn: {{ selectedPlan.name }}
-                                    </h3>
-                                    <div class="mt-2 flex items-baseline">
-                                        <span class="text-2xl font-bold text-gray-900">
-                                            {{ selectedBillingCycle === 'monthly' ? selectedPlan.monthlyPrice :
-                                            selectedBillingCycle === 'annual' ? selectedPlan.annualPrice / 12 :
-                                            selectedPlan.monthlyPrice * 3 | currency:'VND':'symbol':'1.0-0' }}
-                                        </span>
-                                        <span class="ml-1 text-sm text-gray-500">
-                                            / {{ selectedBillingCycle === 'monthly' ? 'tháng' :
-                                            selectedBillingCycle === 'quarterly' ? 'quý' : 'năm' }}
-                                        </span>
-                                    </div>
-
-                                    <div class="mt-4">
-                                        <div class="flex items-center mt-2">
-                                            <input type="radio" id="cycle-monthly" name="billingCycle" value="monthly"
-                                                [checked]="selectedBillingCycle === 'monthly'"
-                                                (change)="selectedBillingCycle = 'monthly'"
-                                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                            <label for="cycle-monthly" class="ml-3 text-sm text-gray-700">Hàng
-                                                tháng</label>
-                                        </div>
-                                        <div class="flex items-center mt-2">
-                                            <input type="radio" id="cycle-quarterly" name="billingCycle"
-                                                value="quarterly" [checked]="selectedBillingCycle === 'quarterly'"
-                                                (change)="selectedBillingCycle = 'quarterly'"
-                                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                            <label for="cycle-quarterly" class="ml-3 text-sm text-gray-700">Hàng quý
-                                                (giảm 10%)</label>
-                                        </div>
-                                        <div class="flex items-center mt-2">
-                                            <input type="radio" id="cycle-annual" name="billingCycle" value="annual"
-                                                [checked]="selectedBillingCycle === 'annual'"
-                                                (change)="selectedBillingCycle = 'annual'"
-                                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                            <label for="cycle-annual" class="ml-3 text-sm text-gray-700">Hàng năm (giảm
-                                                20%)</label>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-6 space-y-4">
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-900">Thanh toán trước</h4>
-                                            <p class="text-sm text-gray-500">
-                                                {{ selectedBillingCycle === 'monthly' ? selectedPlan.monthlyPrice :
-                                                selectedBillingCycle === 'quarterly' ? selectedPlan.monthlyPrice * 3 *
-                                                0.9 :
-                                                selectedPlan.annualPrice | currency:'VND':'symbol':'1.0-0' }}
-                                                cho {{ selectedBillingCycle === 'monthly' ? '1 tháng' :
-                                                selectedBillingCycle === 'quarterly' ? '3 tháng' : '12 tháng' }}
-                                            </p>
-                                        </div>
-                                        <div *ngIf="selectedPlan.trialDays && !currentSubscription">
-                                            <h4 class="text-sm font-medium text-gray-900">Dùng thử miễn phí</h4>
-                                            <p class="text-sm text-gray-500">
-                                                {{ selectedPlan.trialDays }} ngày dùng thử miễn phí, không mất phí nếu
-                                                hủy trong thời gian dùng thử
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                                    <div *ngFor="let plan of availablePlans"
-                                        class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200 cursor-pointer"
-                                        [ngClass]="{'border-blue-500 ring-2 ring-blue-500': selectedPlan?.id === plan.id}"
-                                        (click)="selectPlan(plan)">
-                                        <div class="px-4 py-3">
-                                            <div class="flex justify-between items-start">
-                                                <h3 class="text-base font-medium text-gray-900">{{ plan.name }}</h3>
-                                                <div class="flex items-center">
-                                                    <input type="radio" [checked]="selectedPlan?.id === plan.id"
-                                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                                </div>
-                                            </div>
-                                            <div class="mt-1">
-                                                <span class="text-gray-700 font-medium">{{ plan.monthlyPrice |
-                                                    currency:'VND':'symbol':'1.0-0' }}</span>
-                                                <span class="text-xs text-gray-500">/ tháng</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-6 flex justify-end space-x-3">
-                                    <app-elearning-button type="secondary" (click)="closeAllModals()">
-                                        Hủy
-                                    </app-elearning-button>
-                                    <app-elearning-button type="primary" [disabled]="!selectedPlan"
-                                        (click)="proceedToCheckout()">
-                                        Tiếp tục thanh toán
-                                    </app-elearning-button>
-                                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div *ngFor="let plan of availablePlans"
+                    class="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200 cursor-pointer"
+                    [ngClass]="{'border-blue-500 ring-2 ring-blue-500': selectedPlan?.id === plan.id}"
+                    (click)="selectPlan(plan)">
+                    <div class="px-4 py-3">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-base font-medium text-gray-900">{{ plan.name }}</h3>
+                            <div class="flex items-center">
+                                <input type="radio" [checked]="selectedPlan?.id === plan.id"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
                             </div>
                         </div>
-                    </app-modal>
-
-                    <!-- Change Billing Cycle Modal -->
-                    <app-modal *ngIf="showBillingCycleModal" title="Đổi chu kỳ thanh toán" [showCloseButton]="true"
-                        (close)="closeAllModals()">
-
-                        <div class="p-5">
-                            <p class="text-sm text-gray-500 mb-4">
-                                Thay đổi chu kỳ thanh toán sẽ được áp dụng vào lần thanh toán tiếp theo.
-                            </p>
-
-                            <div class="space-y-4 mb-6">
-                                <div class="flex items-center">
-                                    <input type="radio" id="modal-cycle-monthly" name="modalBillingCycle"
-                                        value="monthly" [checked]="selectedBillingCycle === 'monthly'"
-                                        (change)="selectedBillingCycle = 'monthly'"
-                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <label for="modal-cycle-monthly" class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900">Hàng tháng</div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ currentSubscription?.planMonthlyPrice | currency:'VND':'symbol':'1.0-0'
-                                            }} mỗi tháng
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input type="radio" id="modal-cycle-quarterly" name="modalBillingCycle"
-                                        value="quarterly" [checked]="selectedBillingCycle === 'quarterly'"
-                                        (change)="selectedBillingCycle = 'quarterly'"
-                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <label for="modal-cycle-quarterly" class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900">Hàng quý</div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ currentSubscription?.planMonthlyPrice * 3 * 0.9 |
-                                            currency:'VND':'symbol':'1.0-0' }} mỗi quý (tiết kiệm 10%)
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div class="flex items-center">
-                                    <input type="radio" id="modal-cycle-annual" name="modalBillingCycle" value="annual"
-                                        [checked]="selectedBillingCycle === 'annual'"
-                                        (change)="selectedBillingCycle = 'annual'"
-                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <label for="modal-cycle-annual" class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900">Hàng năm</div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ currentSubscription?.planAnnualPrice | currency:'VND':'symbol':'1.0-0' }}
-                                            mỗi năm (tiết kiệm 20%)
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="mt-6 flex justify-end space-x-3">
-                                <app-elearning-button type="secondary" (click)="closeAllModals()">
-                                    Hủy
-                                </app-elearning-button>
-                                <app-elearning-button type="primary" (click)="changeBillingCycle(selectedBillingCycle)">
-                                    Xác nhận thay đổi
-                                </app-elearning-button>
-                            </div>
+                        <div class="mt-1">
+                            <span class="text-gray-700 font-medium">{{ plan.monthlyPrice |
+                                currency:'VND':'symbol':'1.0-0' }}</span>
+                            <span class="text-xs text-gray-500">/ tháng</span>
                         </div>
-                    </app-modal>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Promo Code Modal -->
-                    <app-modal *ngIf="showPromoCodeModal" title="Áp dụng mã giảm giá" [showCloseButton]="true"
-                        (close)="closeAllModals()">
+            <div class="mt-6 flex justify-end space-x-3">
+                <app-elearning-button type="secondary" (click)="closeAllModals()">
+                    Hủy
+                </app-elearning-button>
+                <app-elearning-button type="primary" [disabled]="!selectedPlan" (click)="proceedToCheckout()">
+                    Tiếp tục thanh toán
+                </app-elearning-button>
+            </div>
+        </div>
+    </div>
+</app-modal>
 
-                        <div class="p-5">
-                            <p class="text-sm text-gray-500 mb-4">
-                                Nhập mã giảm giá của bạn để được giảm giá cho gói đăng ký.
-                            </p>
+<!-- Change Billing Cycle Modal -->
+<app-modal *ngIf="showBillingCycleModal" title="Đổi chu kỳ thanh toán" [showCloseButton]="true"
+    (close)="closeAllModals()">
 
-                            <div class="mb-4">
-                                <label for="promo-code" class="block text-sm font-medium text-gray-700 mb-1">Mã giảm
-                                    giá</label>
-                                <div class="flex space-x-3">
-                                    <app-elearning-text-box id="promo-code" [(ngModel)]="promoCode"
-                                        placeholder="Nhập mã giảm giá" class="flex-1"></app-elearning-text-box>
-                                    <app-elearning-button type="primary" [disabled]="!promoCode || isApplyingPromoCode"
-                                        (click)="verifyPromoCode()">
-                                        {{ isApplyingPromoCode ? 'Đang kiểm tra...' : 'Kiểm tra' }}
-                                    </app-elearning-button>
-                                </div>
-                            </div>
+    <div class="p-5">
+        <p class="text-sm text-gray-500 mb-4">
+            Thay đổi chu kỳ thanh toán sẽ được áp dụng vào lần thanh toán tiếp theo.
+        </p>
 
-                            <div *ngIf="promoCodeVerified"
-                                class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-green-800">Mã giảm giá hợp lệ!</h3>
-                                        <div class="mt-2 text-sm text-green-700">
-                                            <p>{{ promoCodeDiscount }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="space-y-4 mb-6">
+            <div class="flex items-center">
+                <input type="radio" id="modal-cycle-monthly" name="modalBillingCycle" value="monthly"
+                    [checked]="selectedBillingCycle === 'monthly'" (change)="selectedBillingCycle = 'monthly'"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                <label for="modal-cycle-monthly" class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">Hàng tháng</div>
+                    <div class="text-sm text-gray-500">
+                        {{ currentSubscription?.planMonthlyPrice | currency:'VND':'symbol':'1.0-0' }} mỗi tháng
+                    </div>
+                </label>
+            </div>
 
-                            <div *ngIf="promoCodeError" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-red-800">Mã giảm giá không hợp lệ</h3>
-                                        <div class="mt-2 text-sm text-red-700">
-                                            <p>{{ promoCodeError }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="flex items-center">
+                <input type="radio" id="modal-cycle-quarterly" name="modalBillingCycle" value="quarterly"
+                    [checked]="selectedBillingCycle === 'quarterly'" (change)="selectedBillingCycle = 'quarterly'"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                <label for="modal-cycle-quarterly" class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">Hàng quý</div>
+                    <div class="text-sm text-gray-500">
+                        {{ currentSubscription?.planMonthlyPrice * 3 * 0.9 | currency:'VND':'symbol':'1.0-0' }} mỗi quý
+                        (tiết kiệm 10%)
+                    </div>
+                </label>
+            </div>
 
-                            <div class="mt-6 flex justify-end space-x-3">
-                                <app-elearning-button type="secondary" (click)="closeAllModals()">
-                                    Hủy
-                                </app-elearning-button>
-                                <app-elearning-button type="primary"
-                                    [disabled]="!promoCodeVerified || isApplyingPromoCode" (click)="applyPromoCode()">
-                                    Áp dụng mã giảm giá
-                                </app-elearning-button>
-                            </div>
-                        </div>
-                    </app-modal>
+            <div class="flex items-center">
+                <input type="radio" id="modal-cycle-annual" name="modalBillingCycle" value="annual"
+                    [checked]="selectedBillingCycle === 'annual'" (change)="selectedBillingCycle = 'annual'"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                <label for="modal-cycle-annual" class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">Hàng năm</div>
+                    <div class="text-sm text-gray-500">
+                        {{ currentSubscription?.planAnnualPrice | currency:'VND':'symbol':'1.0-0' }} mỗi năm (tiết kiệm
+                        20%)
+                    </div>
+                </label>
+            </div>
+        </div>
 
-                    <!-- Cancellation Modal -->
-                    <app-modal *ngIf="showCancellationModal" title="Hủy gói đăng ký" [showCloseButton]="true"
-                        (close)="closeAllModals()">
+        <div class="mt-6 flex justify-end space-x-3">
+            <app-elearning-button type="secondary" (click)="closeAllModals()">
+                Hủy
+            </app-elearning-button>
+            <app-elearning-button type="primary" (click)="changeBillingCycle(selectedBillingCycle)">
+                Xác nhận thay đổi
+            </app-elearning-button>
+        </div>
+    </div>
+</app-modal>
 
-                        <div class="p-5">
-                            <div class="mb-4">
-                                <h3 class="text-lg font-medium text-gray-900 mb-2">Bạn muốn hủy gói đăng ký của mình?
-                                </h3>
-                                <p class="text-sm text-gray-500">
-                                    Khi hủy gói đăng ký, bạn sẽ vẫn giữ quyền truy cập vào các nội dung cho đến hết kỳ
-                                    thanh toán hiện tại:
-                                    <span class="font-medium">{{ currentSubscription?.renewalDate | date:'dd/MM/yyyy'
-                                        }}</span>.
-                                    Sau đó, gói đăng ký của bạn sẽ không được tự động gia hạn.
-                                </p>
-                            </div>
+<!-- Promo Code Modal -->
+<app-modal *ngIf="showPromoCodeModal" title="Áp dụng mã giảm giá" [showCloseButton]="true" (close)="closeAllModals()">
 
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-yellow-800">Trước khi hủy</h3>
-                                        <div class="mt-2 text-sm text-yellow-700">
-                                            <p>
-                                                Sau khi hủy, bạn sẽ mất quyền truy cập vào tất cả các khóa học và nội
-                                                dung cao cấp. Bạn có thể đăng ký lại vào bất kỳ lúc nào.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    <div class="p-5">
+        <p class="text-sm text-gray-500 mb-4">
+            Nhập mã giảm giá của bạn để được giảm giá cho gói đăng ký.
+        </p>
 
-                            <div class="mb-4">
-                                <label for="cancellation-reason" class="block text-sm font-medium text-gray-700 mb-1">Lý
-                                    do hủy đăng ký (tùy chọn)</label>
-                                <textarea id="cancellation-reason" rows="3" [(ngModel)]="cancellationReason"
-                                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Hãy cho chúng tôi biết lý do bạn hủy gói đăng ký"></textarea>
-                            </div>
+        <div class="mb-4">
+            <label for="promo-code" class="block text-sm font-medium text-gray-700 mb-1">Mã giảm giá</label>
+            <div class="flex space-x-3">
+                <app-elearning-text-box id="promo-code" [(ngModel)]="promoCode" placeholder="Nhập mã giảm giá"
+                    class="flex-1"></app-elearning-text-box>
+                <app-elearning-button type="primary" [disabled]="!promoCode || isApplyingPromoCode"
+                    (click)="verifyPromoCode()">
+                    {{ isApplyingPromoCode ? 'Đang kiểm tra...' : 'Kiểm tra' }}
+                </app-elearning-button>
+            </div>
+        </div>
 
-                            <div class="mt-6 flex justify-end space-x-3">
-                                <app-elearning-button type="secondary" (click)="closeAllModals()">
-                                    Giữ gói đăng ký
-                                </app-elearning-button>
-                                <app-elearning-button type="danger" [disabled]="isCancelling"
-                                    (click)="cancelSubscription()">
-                                    {{ isCancelling ? 'Đang hủy...' : 'Xác nhận hủy đăng ký' }}
-                                </app-elearning-button>
-                            </div>
-                        </div>
-                    </app-modal>
+        <div *ngIf="promoCodeVerified" class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">Mã giảm giá hợp lệ!</h3>
+                    <div class="mt-2 text-sm text-green-700">
+                        <p>{{ promoCodeDiscount }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="promoCodeError" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Mã giảm giá không hợp lệ</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <p>{{ promoCodeError }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <app-elearning-button type="secondary" (click)="closeAllModals()">
+                Hủy
+            </app-elearning-button>
+            <app-elearning-button type="primary" [disabled]="!promoCodeVerified || isApplyingPromoCode"
+                (click)="applyPromoCode()">
+                Áp dụng mã giảm giá
+            </app-elearning-button>
+        </div>
+    </div>
+</app-modal>
+
+<!-- Cancellation Modal -->
+<app-modal *ngIf="showCancellationModal" title="Hủy gói đăng ký" [showCloseButton]="true" (close)="closeAllModals()">
+
+    <div class="p-5">
+        <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Bạn muốn hủy gói đăng ký của mình?</h3>
+            <p class="text-sm text-gray-500">
+                Khi hủy gói đăng ký, bạn sẽ vẫn giữ quyền truy cập vào các nội dung cho đến hết kỳ thanh toán hiện tại:
+                <span class="font-medium">{{ currentSubscription?.renewalDate | date:'dd/MM/yyyy' }}</span>.
+                Sau đó, gói đăng ký của bạn sẽ không được tự động gia hạn.
+            </p>
+        </div>
+
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">Trước khi hủy</h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <p>
+                            Sau khi hủy, bạn sẽ mất quyền truy cập vào tất cả các khóa học và nội dung cao cấp. Bạn có
+                            thể đăng ký lại vào bất kỳ lúc nào.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="cancellation-reason" class="block text-sm font-medium text-gray-700 mb-1">Lý do hủy đăng ký (tùy
+                chọn)</label>
+            <textarea id="cancellation-reason" rows="3" [(ngModel)]="cancellationReason"
+                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Hãy cho chúng tôi biết lý do bạn hủy gói đăng ký"></textarea>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <app-elearning-button type="secondary" (click)="closeAllModals()">
+                Giữ gói đăng ký
+            </app-elearning-button>
+            <app-elearning-button type="danger" [disabled]="isCancelling" (click)="cancelSubscription()">
+                {{ isCancelling ? 'Đang hủy...' : 'Xác nhận hủy đăng ký' }}
+            </app-elearning-button>
+        </div>
+    </div>
+</app-modal>

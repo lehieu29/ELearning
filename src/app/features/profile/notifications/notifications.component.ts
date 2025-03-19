@@ -7,6 +7,7 @@ import { NotificationPreferences, NotificationType, Notification, NotificationCa
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NotificationService as ToastService } from '@app/shared/services/notification.service';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-notifications',

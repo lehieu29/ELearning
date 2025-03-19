@@ -9,10 +9,10 @@ import {
   LearningActivitySharingLevel,
   DataExportRequest,
   DataDeletionRequest 
-} from '@app/shared/models/privacy-settings.model';
+} from '@app/shared/models/privacy-settings';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import * as dayjs from 'dayjs';
+import { DateUtils } from '@shared/fn/date-utils';
 
 @Component({
   selector: 'app-privacy-settings',
@@ -366,7 +366,7 @@ export class PrivacySettingsComponent extends BaseComponent implements OnInit {
    * @returns Chuỗi ngày đã định dạng
    */
   formatDate(date: Date): string {
-    return dayjs(date).format('DD/MM/YYYY HH:mm');
+    return DateUtils.dayjs(date).format('DD/MM/YYYY HH:mm');
   }
   
   /**

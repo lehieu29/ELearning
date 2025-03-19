@@ -5,16 +5,14 @@ import { DeviceManagementService } from '@app/shared/services/device-management.
 import { NotificationService } from '@app/shared/services/notification.service';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import * as dayjsImport from 'dayjs';
 import { Device, DeviceActivity, DeviceManagementStats } from '@shared/models/device';
+import { DateUtils } from '@shared/fn/date-utils';
 
 @Component({
   selector: 'app-device-management',
   templateUrl: './device-management.component.html'
 })
 export class DeviceManagementComponent extends BaseComponent implements OnInit {
-  
-  dayjs = (date: any) => (dayjsImport as any)(date);
 
   // Danh sách thiết bị và trạng thái
   devices: Device[] = [];
@@ -354,7 +352,7 @@ export class DeviceManagementComponent extends BaseComponent implements OnInit {
    * @returns Chuỗi thời gian đã định dạng
    */
   formatLastActive(date: Date): string {
-    return this.dayjs(date).format('DD/MM/YYYY HH:mm');
+    return DateUtils.dayjs(date).format('DD/MM/YYYY HH:mm');
   }
 
   /**
@@ -364,8 +362,8 @@ export class DeviceManagementComponent extends BaseComponent implements OnInit {
    * @returns Chuỗi thời gian tương đối
    */
   formatRelativeTime(date: Date): string {
-    const now = this.dayjs(new Date());
-    const activityTime = this.dayjs(date);
+    const now = DateUtils.dayjs(new Date());
+    const activityTime = DateUtils.dayjs(date);
     const diffMinutes = now.diff(activityTime, 'minute');
     
     if (diffMinutes < 1) {
@@ -388,7 +386,7 @@ export class DeviceManagementComponent extends BaseComponent implements OnInit {
    * @returns Lớp màu CSS
    */
   getActivityStatusColor(date: Date): string {
-    const diffHours = this.dayjs(new Date()).diff(this.dayjs(date), 'hour');
+    const diffHours = DateUtils.dayjs().diff(DateUtils.dayjs(date), 'hour');
     
     if (diffHours < 1) {
       return 'bg-green-100 text-green-800'; // Đang hoạt động

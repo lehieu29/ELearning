@@ -13,21 +13,25 @@ import { of } from 'rxjs';
 })
 export class SocialLinksComponent extends BaseComponent implements OnInit {
   // Danh sách liên kết mạng xã hội
+  // Social links list
   socialLinks: SocialLink[] = [];
   socialLinkStats: SocialLinkStats | null = null;
   
   // Trạng thái UI
+  // UI states
   isLoading = true;
   isSaving = false;
   isConnecting = false;
   error = '';
   
   // Form xử lý
+  // Form handling
   socialLinkForm: FormGroup;
   editingLink: SocialLink | null = null;
   showAddLinkModal = false;
   
   // Danh sách nền tảng mạng xã hội được hỗ trợ
+  // List of supported social platforms
   supportedPlatforms: { value: SocialPlatform, label: string, icon: string, color: string }[] = [
     { value: 'linkedin', label: 'LinkedIn', icon: 'linkedin', color: 'bg-blue-700' },
     { value: 'github', label: 'GitHub', icon: 'github', color: 'bg-gray-800' },
