@@ -7,6 +7,7 @@ import { Certificate } from '@app/shared/models/certificate.model';
 import { takeUntil, finalize, debounceTime } from 'rxjs/operators';
 import { saveAs } from 'file-saver';
 import * as dayjs from 'dayjs';
+import { DateUtils } from '@shared/fn/date-utils';
 
 @Component({
   selector: 'app-certificates',
@@ -300,7 +301,7 @@ export class CertificatesComponent extends BaseComponent implements OnInit {
    * @param date Ngày cần định dạng
    */
   formatDate(date: string): string {
-    return dayjs(date).format('DD/MM/YYYY');
+    return DateUtils.dayjs(date).format('DD/MM/YYYY');
   }
   
   /**

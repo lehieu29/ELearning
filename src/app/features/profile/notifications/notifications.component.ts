@@ -1,6 +1,6 @@
 // File path: src/app/features/profile/notifications/notifications.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, AbstractControl } from '@angular/forms';
 import { BaseComponent } from '@app/shared/components/base/base-component';
 import { NotificationService } from '@app/shared/services/notification.service';
 import { NotificationPreferences, NotificationType, Notification, NotificationCategoryPreference } from '@app/shared/models/notification.model';
@@ -135,17 +135,9 @@ export class NotificationsComponent extends BaseComponent implements OnInit {
    * @param categories Danh sách các tùy chọn thông báo theo danh mục
    */
   createCategoriesFormArray(categories: NotificationCategoryPreference[]): FormArray {
-    const categoriesArray = this.fb.array([]);
-    
-    // Đảm bảo có đủ các loại thông báo trong form
-    // Ensure all notification types are present in the form
-    this.notificationTypes.forEach(type => {
-      // Tìm tùy chọn hiện tại cho loại thông báo này
-      // Find current preferences for this notification type
+    // Create array of form groups first
+    const formGroups = this.notificationTypes.map(type => {
       const existingCategory = categories.find(c => c.type === type.type);
-      
-      // Nếu tìm thấy, sử dụng giá trị đó; nếu không, tạo mặc định
-      // If found, use those values; otherwise create defaults
       const category = existingCategory || {
         type: type.type,
         email: true,
@@ -153,17 +145,16 @@ export class NotificationsComponent extends BaseComponent implements OnInit {
         browser: true
       };
       
-      categoriesArray.push(
-        this.fb.group({
-          type: [category.type],
-          email: [category.email],
-          push: [category.push],
-          browser: [category.browser]
-        })
-      );
+      return this.fb.group({
+        type: [category.type],
+        email: [category.email],
+        push: [category.push],
+        browser: [category.browser]
+      });
     });
     
-    return categoriesArray;
+    // Create FormArray from the array of form groups
+    return this.fb.array(formGroups);
   }
   
   /**

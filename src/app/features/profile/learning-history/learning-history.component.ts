@@ -4,7 +4,7 @@ import { BaseComponent } from '@app/shared/components/base/base-component';
 import { LearningHistoryService } from '@app/shared/services/learning-history.service';
 import { CourseService } from '@app/shared/services/course.service';
 import { NotificationService } from '@app/shared/services/notification.service';
-import { LearningActivity, ActivityType, ActivityStats, ActivityFilters } from '@app/shared/models/learning-activity.model';
+import { LearningActivity, ActivityType, ActivityStats, ActivityFilters } from '@app/shared/models/learning-activity';
 import { Course } from '@app/shared/models/course.model';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
@@ -127,7 +127,7 @@ export class LearningHistoryComponent extends BaseComponent implements OnInit {
    * @param range Khoảng thời gian được chọn
    */
   handleTimeRangeChange(range: string): void {
-    const today = dayjs();
+    const today = DateUtils.dayjs();
     let startDate = null;
     let endDate = today.toDate();
     
@@ -317,7 +317,7 @@ export class LearningHistoryComponent extends BaseComponent implements OnInit {
    * @returns Chuỗi thời gian đã định dạng
    */
   formatActivityTime(date: Date | string): string {
-    return dayjs(date).format('DD/MM/YYYY HH:mm');
+    return DateUtils.dayjs(date).format('DD/MM/YYYY HH:mm');
   }
 
   /**

@@ -65,12 +65,15 @@ export class HttpService {
    * @param data The data to send in the request body
    * @returns Observable with the response data
    */
-  post<T>(endpoint: string, data: any): Observable<T> {
-    return this.http.post<T>(`${this.apiUrl}/${endpoint}`, data, {
-      headers: this.getHttpHeaders()
-    }).pipe(
+  post<T>(endpoint: string, data: any, options?: any): Observable<T> {
+    const httpOptions = {
+      headers: this.getHttpHeaders(),
+      ...options
+    };
+
+    return this.http.post<T>(`${this.apiUrl}/${endpoint}`, data, httpOptions).pipe(
       catchError(this.handleError)
-    );
+    ) as Observable<T>;
   }
 
   /**

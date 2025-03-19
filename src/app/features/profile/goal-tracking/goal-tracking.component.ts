@@ -13,7 +13,7 @@ import {
   GoalPriority,
   GoalStatistics,
   GoalTask 
-} from '@app/shared/models/goal.model';
+} from '@app/shared/models/goal';
 import { Course } from '@app/shared/models/course.model';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
@@ -257,36 +257,36 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
     }
     
     if (filters.timeframe && filters.timeframe !== 'all') {
-      const now = dayjs();
+      const now = DateUtils.dayjs();
       
       if (filters.timeframe === 'this_week') {
         const endOfWeek = now.endOf('week');
         filtered = filtered.filter(goal => {
           if (!goal.targetDate) return false;
-          return dayjs(goal.targetDate).isBefore(endOfWeek);
+          return DateUtils.dayjs(goal.targetDate).isBefore(endOfWeek);
         });
       } else if (filters.timeframe === 'this_month') {
         const endOfMonth = now.endOf('month');
         filtered = filtered.filter(goal => {
           if (!goal.targetDate) return false;
-          return dayjs(goal.targetDate).isBefore(endOfMonth);
+          return DateUtils.dayjs(goal.targetDate).isBefore(endOfMonth);
         });
       } else if (filters.timeframe === 'this_quarter') {
         const endOfQuarter = now.endOf('quarter');
         filtered = filtered.filter(goal => {
           if (!goal.targetDate) return false;
-          return dayjs(goal.targetDate).isBefore(endOfQuarter);
+          return DateUtils.dayjs(goal.targetDate).isBefore(endOfQuarter);
         });
       } else if (filters.timeframe === 'this_year') {
         const endOfYear = now.endOf('year');
         filtered = filtered.filter(goal => {
           if (!goal.targetDate) return false;
-          return dayjs(goal.targetDate).isBefore(endOfYear);
+          return DateUtils.dayjs(goal.targetDate).isBefore(endOfYear);
         });
       } else if (filters.timeframe === 'overdue') {
         filtered = filtered.filter(goal => {
           if (!goal.targetDate || goal.status === 'completed') return false;
-          return dayjs(goal.targetDate).isBefore(now);
+          return DateUtils.dayjs(goal.targetDate).isBefore(now);
         });
       }
     }
@@ -372,7 +372,7 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
       category: goal.category,
       type: goal.type,
       priority: goal.priority,
-      targetDate: goal.targetDate ? dayjs(goal.targetDate).format('YYYY-MM-DD') : null,
+      targetDate: goal.targetDate ? DateUtils.dayjs(goal.targetDate).format('YYYY-MM-DD') : null,
       relatedCourseIds: goal.relatedCourseIds || [],
       relatedSkills: goal.relatedSkills || []
     });
@@ -645,7 +645,7 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
       id: [task?.id || ''],
       title: [task?.title || '', [Validators.required, Validators.maxLength(100)]],
       completed: [task?.completed || false],
-      dueDate: [task?.dueDate ? dayjs(task.dueDate).format('YYYY-MM-DD') : null]
+      dueDate: [task?.dueDate ? DateUtils.dayjs(task.dueDate).format('YYYY-MM-DD') : null]
     });
     
     this.getTasksFormArray().push(taskForm);
@@ -719,7 +719,7 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
    */
   isOverdue(goal: Goal): boolean {
     if (!goal.targetDate || goal.status === 'completed') return false;
-    return dayjs(goal.targetDate).isBefore(dayjs());
+    return DateUtils.dayjs(goal.targetDate).isBefore(DateUtils.dayjs());
   }
   
   /**
@@ -759,7 +759,7 @@ export class GoalTrackingComponent extends BaseComponent implements OnInit {
    */
   daysRemaining(targetDate: Date | string | null | undefined): number | null {
     if (!targetDate) return null;
-    return DateUtils.diff(DateUtils.dayjs(targetDate), DateUtils.dayjs(), 'day');
+    return DateUtils.diff(targetDate, null, 'day');
   }
   
   /**

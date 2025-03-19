@@ -3,7 +3,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { HttpService } from './http.service';
 import { environment } from '@environments/environment';
-import { SocialLink, SocialPlatform, SocialLinkStats, ConnectResponse } from '../models/social-link.model';
+import { SocialLink, SocialPlatform, SocialLinkStats, ConnectResponse } from '../models/social-link';
 
 @Injectable({
   providedIn: 'root'

@@ -1,19 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { BaseComponent } from '@app/shared/components/base/base-component';
-import { AccountSettingsService } from '../services/account-settings.service';
 import { NotificationService } from '@app/shared/services/notification.service';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ViewChild } from '@angular/core';
-import { 
-  AccountSettings, 
-  TIMEZONES, 
-  LANGUAGES,
-  SecuritySettingsResponse,
-  SessionInfo
-} from '../models/account-settings.model';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
+import { AccountSettingsService } from '@shared/services/account-settings.service';
+import { AccountSettings, LANGUAGES, SecuritySettingsResponse, SessionInfo, TIMEZONES } from '@shared/models/account-settings';
 
 @Component({
   selector: 'app-account-settings',
@@ -211,7 +205,7 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
    */
   openChangePasswordModal(): void {
     this.passwordForm.reset();
-    this.passwordModal.open();
+    this.passwordModal.openModal();
   }
   
   /**
@@ -243,7 +237,7 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
         next: (result) => {
           if (result.success) {
             this.notificationService.success('Cập nhật mật khẩu thành công');
-            this.passwordModal.close();
+            this.passwordModal.closeModal();
             this.loadUserSettings(); // Reload security settings to get new password change date
           } else {
             this.notificationService.error(result.message);
@@ -322,7 +316,7 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
    * Open two-factor authentication modal
    */
   openTwoFactorModal(): void {
-    this.twoFactorModal.open();
+    this.twoFactorModal.openModal();
   }
   
   /**
@@ -349,7 +343,7 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
               'Đã bật xác thực hai yếu tố' : 
               'Đã tắt xác thực hai yếu tố'
             );
-            this.twoFactorModal.close();
+            this.twoFactorModal.closeModal();
           } else {
             this.notificationService.error(result.message);
           }
@@ -427,42 +421,6 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
    * Terminate all other sessions
    */
   terminateAllOtherSessions(): void {
-    // Không thể đóng phiên hiện tại
-    // Cannot terminate current session
-    if (session.current) {
-      this.notificationService.warning('Không thể đóng phiên hiện tại');
-      return;
-    }
-    
-    this.isTerminatingSession = true;
-    
-    this.accountSettingsService.terminateSession(session.id)
-      .pipe(
-        takeUntil(this._onDestroySub),
-        finalize(() => {
-          this.isTerminatingSession = false;
-        })
-      )
-      .subscribe({
-        next: (result) => {
-          if (result.success) {
-            // Xóa phiên đăng nhập khỏi danh sách
-            // Remove terminated session from list
-            this.securitySettings.activeSessions = this.securitySettings.activeSessions.filter(s => s.id !== session.id);
-            this.notificationService.success('Đã đóng phiên đăng nhập');
-          }
-        },
-        error: (error) => {
-          console.error('Failed to terminate session:', error);
-        }
-      });
-  }
-  
-  /**
-   * Đóng tất cả phiên đăng nhập khác
-   * Terminate all other sessions
-   */
-  terminateAllOtherSessions(): void {
     this.isTerminatingSession = true;
     
     this.accountSettingsService.terminateAllOtherSessions()
@@ -493,7 +451,7 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
    */
   openDeleteAccountModal(): void {
     this.deleteConfirmText = '';
-    this.deleteAccountModal.open();
+    this.deleteAccountModal.openModal();
   }
   
   /**
@@ -519,7 +477,7 @@ export class AccountSettingsComponent extends BaseComponent implements OnInit {
         next: (result) => {
           if (result.success) {
             this.notificationService.success('Yêu cầu xóa tài khoản đã được gửi');
-            this.deleteAccountModal.close();
+            this.deleteAccountModal.closeModal();
           } else {
             this.notificationService.error(result.message);
           }

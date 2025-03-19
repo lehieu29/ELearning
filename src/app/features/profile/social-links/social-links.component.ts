@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BaseComponent } from '@app/shared/components/base/base-component';
-import { SocialLinksService } from '@app/shared/services/social-links.service';
 import { NotificationService } from '@app/shared/services/notification.service';
-import { SocialLink, SocialPlatform, SocialLinkStats } from '@app/shared/models/social-link.model';
+import { SocialLink, SocialPlatform, SocialLinkStats } from '@app/shared/models/social-link';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { SocialLinksService } from '@shared/services/social-link.service';
 
 @Component({
   selector: 'app-social-links',
