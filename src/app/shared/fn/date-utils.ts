@@ -5,6 +5,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 
 // Cấu hình plugins dayjs
 dayjs.extend(relativeTime);
@@ -12,9 +13,17 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(advancedFormat);
 dayjs.extend(customParseFormat);
+dayjs.extend(quarterOfYear);
 
 // Đặt locale mặc định là tiếng Việt
 dayjs.locale('vi');
+
+declare module 'dayjs' {
+  interface Dayjs {
+    quarter(): number;
+    quarter(quarter: number): Dayjs;
+  }
+}
 
 /**
  * Class tiện ích xử lý ngày tháng sử dụng dayjs
@@ -30,11 +39,11 @@ export class DateUtils {
     if (input === undefined) {
       return dayjs();
     }
-    
+
     if (typeof input === 'string' && format) {
       return dayjs(input, format);
     }
-    
+
     return dayjs(input);
   }
 
@@ -80,7 +89,7 @@ export class DateUtils {
   static compare(date1: Date | string | number, date2: Date | string | number): number {
     const d1 = DateUtils.dayjs(date1);
     const d2 = DateUtils.dayjs(date2);
-    
+
     if (d1.isAfter(d2)) return 1;
     if (d1.isBefore(d2)) return -1;
     return 0;
@@ -95,14 +104,55 @@ export class DateUtils {
    * @returns Khoảng cách giữa hai ngày tháng theo đơn vị đã chọn
    */
   static diff(
-    date1: Date | string | number, 
-    date2?: Date | string | number, 
-    unit: dayjs.OpUnitType = 'millisecond', 
+    date1: Date | string | number,
+    date2?: Date | string | number,
+    unit: dayjs.OpUnitType | 'quarter' = 'millisecond',
     precise: boolean = false
   ): number {
     const d1 = DateUtils.dayjs(date1);
     const d2 = date2 ? DateUtils.dayjs(date2) : DateUtils.dayjs();
-    
+
     return d1.diff(d2, unit, precise);
+  }
+
+  /**
+ * Các phương thức bổ sung cho DateUtils để làm việc với quý (quarter)
+ */
+
+  /**
+   * Trả về đối tượng dayjs cho thời điểm đầu quý
+   * @param date Ngày tháng (mặc định: thời gian hiện tại)
+   * @returns Đối tượng dayjs cho thời điểm đầu quý
+   */
+  static startOfQuarter(date?: Date | string | number): dayjs.Dayjs {
+    return DateUtils.dayjs(date).startOf('quarter');
+  }
+
+  /**
+   * Trả về đối tượng dayjs cho thời điểm cuối quý
+   * @param date Ngày tháng (mặc định: thời gian hiện tại)
+   * @returns Đối tượng dayjs cho thời điểm cuối quý
+   */
+  static endOfQuarter(date?: Date | string | number): dayjs.Dayjs {
+    return DateUtils.dayjs(date).endOf('quarter');
+  }
+
+  /**
+   * Lấy số thứ tự quý của ngày (1-4)
+   * @param date Ngày tháng (mặc định: thời gian hiện tại)
+   * @returns Số thứ tự quý (1-4)
+   */
+  static getQuarter(date?: Date | string | number): number {
+    return DateUtils.dayjs(date).quarter();
+  }
+
+  /**
+   * Định dạng ngày tháng theo quý
+   * @param date Ngày tháng
+   * @param formatString Chuỗi định dạng (mặc định: 'Quý [Q]/YYYY')
+   * @returns Chuỗi đã định dạng theo quý
+   */
+  static formatQuarter(date: Date | string | number, formatString: string = 'Quý [Q]/YYYY'): string {
+    return DateUtils.dayjs(date).format(formatString);
   }
 }

@@ -12,8 +12,15 @@ export class ModalComponent extends BaseComponent {
   @Input() isOpen: boolean = false;
   
   @Output() close = new EventEmitter<void>();
+  @Output() opened = new EventEmitter<void>();
+
+  openModal(): void {
+    this.isOpen = true;
+    this.opened.emit();
+  }
   
   closeModal(): void {
+    this.isOpen = false;
     this.close.emit();
   }
   
